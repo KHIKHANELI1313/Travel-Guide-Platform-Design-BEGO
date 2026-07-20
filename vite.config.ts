@@ -1,9 +1,38 @@
 import { defineConfig, type HtmlTagDescriptor, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import fs from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-import siteConfiguration from './.figma/make/site.json'
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+type FigmaSiteConfiguration = {
+  title?: string
+  description?: string
+  language?: string
+  robots?: {
+    index?: boolean
+  }
+  icons?: {
+    icon?: string
+  }
+  openGraph?: {
+    image?: string
+  }
+  analytics?: {
+    googleAnalyticsId?: string
+  }
+  customScripts?: {
+    headStart?: string
+    headEnd?: string
+    bodyStart?: string
+    bodyEnd?: string
+  }
+  accessibility?: {
+    addBypassLinks?: boolean
+  }
+}
 
 const isFigmaSandbox = process.env.FIGMA === '1' || process.env.FIGMA === 'true'
 
@@ -12,12 +41,37 @@ const isFigmaSandbox = process.env.FIGMA === '1' || process.env.FIGMA === 'true'
 // embed source.
 const emitSourcemaps = process.env.EMIT_SOURCEMAPS === 'true'
 
+function loadSiteConfiguration(): FigmaSiteConfiguration {
+  const candidates = [
+    path.resolve(__dirname, '.figma/make/site.json'),
+    path.resolve(__dirname, 'site.config.json'),
+  ]
+
+  for (const filePath of candidates) {
+    if (!fs.existsSync(filePath)) continue
+    try {
+      return JSON.parse(fs.readFileSync(filePath, 'utf8')) as FigmaSiteConfiguration
+    } catch {
+      // fall through to next candidate / defaults
+    }
+  }
+
+  return {
+    title: 'BEGO Travel Guide',
+    description: 'Travel Guide Platform',
+    language: 'en',
+  }
+}
+
+const siteConfiguration = loadSiteConfiguration()
+
 // Vite config — https://vitejs.dev/config/
 export default defineConfig({
   base: process.env.FIGMA_PUBLIC_URL ? `${process.env.FIGMA_PUBLIC_URL}/` : '/',
   build: {
     sourcemap: emitSourcemaps ? 'inline' : false,
     minify: !emitSourcemaps,
+    chunkSizeWarningLimit: 3500,
   },
   plugins: [
     react(),
@@ -47,33 +101,6 @@ export default defineConfig({
     port: parseInt(process.env.PORT || '8443'),
   },
 })
-
-type FigmaSiteConfiguration = {
-  title?: string
-  description?: string
-  language?: string
-  robots?: {
-    index?: boolean
-  }
-  icons?: {
-    icon?: string
-  }
-  openGraph?: {
-    image?: string
-  }
-  analytics?: {
-    googleAnalyticsId?: string
-  }
-  customScripts?: {
-    headStart?: string
-    headEnd?: string
-    bodyStart?: string
-    bodyEnd?: string
-  }
-  accessibility?: {
-    addBypassLinks?: boolean
-  }
-}
 
 /** Applies /.figma/make/site.json to the generated document shell. */
 function figmaSiteConfiguration(config: FigmaSiteConfiguration): Plugin {
