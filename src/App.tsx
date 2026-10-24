@@ -24,6 +24,8 @@ import DateRangeSearch from "./components/date-range/DateRangeSearch"
 import TripPricingPanel from "./components/pricing/TripPricingPanel"
 import CountryHistory from "./components/CountryHistory"
 import CountryCulture from "./components/CountryCulture"
+import TravelWordOverview from "./components/TravelWordOverview"
+import TravelWordExperience from "./travelword/TravelWordExperience"
 import { hasPricingCatalog } from "./data/destinations/catalog"
 import { useAutoReveal } from "./lib/autoReveal"
 import { LANGS, useI18n } from "./lib/i18n"
@@ -2037,155 +2039,11 @@ function MapPage() {
 // ——————————————————————————————————————————————————
 
 function TripPlannerPage() {
-  const [step, setStep] = useState(1)
-  const [tripData, setTripData] = useState({ destination: "", dateFrom: "", dateTo: "", people: "2", budget: "Medium", style: "Culture" })
-  const [days, _setDays] = useState([
-    {
-      day: 1, date: "July 20", activities: [
-        { time: "Morning", title: "Senso-ji Temple", type: "Attraction" },
-        { time: "Afternoon", title: "Asakusa District Walk", type: "Exploration" },
-        { time: "Evening", title: "Sushi Dinner in Ginza", type: "Food" },
-      ]
-    },
-    {
-      day: 2, date: "July 21", activities: [
-        { time: "Morning", title: "Meiji Shrine", type: "Attraction" },
-        { time: "Afternoon", title: "Harajuku & Shibuya", type: "Shopping" },
-        { time: "Evening", title: "Shibuya Crossing", type: "Exploration" },
-      ]
-    },
-  ])
-
-  const styles = ["Adventure", "Relax", "Culture", "Luxury", "Family"]
-  const budgets = ["Budget", "Medium", "Luxury"]
-
-  const activityColors: Record<string, string> = {
-    Attraction: "bg-blue-100 text-blue-700",
-    Exploration: "bg-green-100 text-green-700",
-    Food: "bg-orange-100 text-orange-700",
-    Shopping: "bg-purple-100 text-purple-700",
-  }
-
   return (
-    <div className="min-h-screen bg-[#F5F7FA]">
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pt-28 pb-10">
-        <div className="text-center mb-10">
-          <h1 className="text-5xl font-extrabold text-[#111827] mb-3">Create Your Perfect Trip</h1>
-          <p className="text-[#94A3B8] text-lg">Plan every detail in one place</p>
-        </div>
-
-        {step === 1 && (
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-              <h2 className="text-2xl font-bold text-[#111827] mb-6">Where are you going?</h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm text-[#94A3B8] mb-1.5 block">Destination</label>
-                  <div className="flex items-center gap-3 border border-gray-200 rounded-xl px-4 py-3">
-                    <MapPin className="w-4 h-4 text-[#1677FF]" />
-                    <input value={tripData.destination} onChange={e => setTripData(p => ({ ...p, destination: e.target.value }))} placeholder="Japan, Tokyo, Paris..." className="flex-1 text-sm outline-none text-[#111827]" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm text-[#94A3B8] mb-1.5 block">From</label>
-                    <input type="date" value={tripData.dateFrom} onChange={e => setTripData(p => ({ ...p, dateFrom: e.target.value }))} className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none text-[#111827]" />
-                  </div>
-                  <div>
-                    <label className="text-sm text-[#94A3B8] mb-1.5 block">To</label>
-                    <input type="date" value={tripData.dateTo} onChange={e => setTripData(p => ({ ...p, dateTo: e.target.value }))} className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none text-[#111827]" />
-                  </div>
-                </div>
-                <div>
-                  <label className="text-sm text-[#94A3B8] mb-1.5 block">Budget Level</label>
-                  <div className="flex gap-3">
-                    {budgets.map(b => (
-                      <button key={b} onClick={() => setTripData(p => ({ ...p, budget: b }))} className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-colors cursor-pointer border ${tripData.budget === b ? "bg-[#0B1F3A] text-white border-[#0B1F3A]" : "border-gray-200 text-[#94A3B8] hover:text-[#111827]"}`}>{b}</button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label className="text-sm text-[#94A3B8] mb-1.5 block">Travel Style</label>
-                  <div className="flex gap-2 flex-wrap">
-                    {styles.map(s => (
-                      <button key={s} onClick={() => setTripData(p => ({ ...p, style: s }))} className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors cursor-pointer border ${tripData.style === s ? "bg-[#1677FF] text-white border-[#1677FF]" : "border-gray-200 text-[#94A3B8] hover:text-[#111827]"}`}>{s}</button>
-                    ))}
-                  </div>
-                </div>
-                <button onClick={() => setStep(2)} className="w-full py-3.5 bg-[#1677FF] text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors cursor-pointer mt-2">
-                  Generate Itinerary →
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {step === 2 && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-[#111827]">Your Japan Itinerary</h2>
-                <button onClick={() => setStep(1)} className="text-sm text-[#1677FF] font-medium cursor-pointer hover:underline">← Edit Trip</button>
-              </div>
-              <div className="space-y-5">
-                {days.map(day => (
-                  <div key={day.day} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                    <div className="flex items-center gap-3 mb-5">
-                      <div className="w-10 h-10 rounded-xl bg-[#1677FF] flex items-center justify-center">
-                        <span className="text-white font-bold text-sm">{day.day}</span>
-                      </div>
-                      <div>
-                        <p className="font-bold text-[#111827]">Day {day.day}</p>
-                        <p className="text-[#94A3B8] text-sm">{day.date}, 2026</p>
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      {day.activities.map(a => (
-                        <div key={a.title} className="flex items-center gap-4 p-3 rounded-xl bg-[#F5F7FA]">
-                          <div className="w-20 text-xs text-[#94A3B8] font-medium shrink-0">{a.time}</div>
-                          <div className="w-1 h-8 bg-[#E2E8F0] rounded-full shrink-0" />
-                          <div className="flex-1">
-                            <p className="font-semibold text-[#111827] text-sm">{a.title}</p>
-                          </div>
-                          <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${activityColors[a.type] ?? "bg-gray-100 text-gray-600"}`}>{a.type}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="space-y-5">
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <h3 className="font-bold text-[#111827] mb-4">Budget Breakdown</h3>
-                {[
-                  { label: "Hotels (2 nights)", cost: "$1,160", color: "bg-blue-500" },
-                  { label: "Food & Dining", cost: "$280", color: "bg-orange-500" },
-                  { label: "Transport", cost: "$120", color: "bg-green-500" },
-                  { label: "Activities", cost: "$200", color: "bg-purple-500" },
-                ].map(({ label, cost, color }) => (
-                  <div key={label} className="flex items-center justify-between py-2.5 border-b border-gray-100 last:border-0">
-                    <div className="flex items-center gap-2.5">
-                      <div className={`w-2.5 h-2.5 rounded-full ${color}`} />
-                      <span className="text-[#94A3B8] text-sm">{label}</span>
-                    </div>
-                    <span className="font-semibold text-[#111827] text-sm">{cost}</span>
-                  </div>
-                ))}
-                <div className="mt-4 pt-4 flex justify-between">
-                  <span className="font-bold text-[#111827]">Total</span>
-                  <span className="font-extrabold text-[#1677FF] text-lg">$1,760</span>
-                </div>
-              </div>
-              <button className="w-full py-3.5 bg-[#0B1F3A] text-white rounded-xl font-semibold hover:bg-[#1677FF] transition-colors cursor-pointer">
-                Save Trip
-              </button>
-              <button className="w-full py-3.5 border border-[#1677FF] text-[#1677FF] rounded-xl font-semibold hover:bg-[#1677FF]/5 transition-colors cursor-pointer">
-                Share Itinerary
-              </button>
-            </div>
-          </div>
-        )}
+    <div className="min-h-screen bg-[#F5F8FC]">
+      <TravelWordExperience />
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-10">
+        <TravelWordOverview />
       </div>
     </div>
   )

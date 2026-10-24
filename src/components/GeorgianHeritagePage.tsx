@@ -1,20 +1,22 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from "react"
 import "./georgian-heritage.css"
 import "./georgian-heritage-pages.css"
+import "./georgian-heritage-planner.css"
 import GeorgiaAntiqueMap, { type MonumentIcon } from "./GeorgiaAntiqueMap"
 import { AUTO_REVEAL_SELECTOR, canAutoReveal } from "@/lib/autoReveal"
 import { INNER_BORDERS_D, OUTLINE_D, type MapAreaId as Kutkhe } from "./georgiaMapGeo"
 
 type Lang = "ka" | "en"
 type Theme = "dark" | "light"
-export type View = "home" | "regions" | "history" | "customs" | "legends" | "archive"
+export type View = "home" | "regions" | "history" | "customs" | "legends" | "archive" | "plan"
 
 interface GeorgianHeritagePageProps {
   onBack: () => void
   /** fromView is the view the region was opened from, so the region page can come back to it */
   onSelectRegion: (regionId: string, fromView: View) => void
   initialView?: View
-  onPlanTrip: () => void
+  /** the atlas has its own Georgia planner ("plan" view); kept for callers that still pass it */
+  onPlanTrip?: () => void
 }
 
 const IMG = (id: string, width: number) => `https://sspark.genspark.ai/i/${id}?width=${width}`
@@ -45,6 +47,12 @@ const KUTKHEEBI: { id: Kutkhe; name: string }[] = [
   { id: "khevi", name: "ხევი" }, { id: "khevsureti", name: "ხევსურეთი" }, { id: "tusheti", name: "თუშეთი" },
   { id: "kakheti", name: "კახეთი" },
 ]
+// a photo per kutkhe: the matching REGIONS card, otherwise a nearby landmark
+const KUTKHE_IMG_FALLBACK: Partial<Record<Kutkhe, string>> = {
+  guria: "I72M3lBSTf9EJVn8", kartli: "udCSb0N7UMcdNPVt", kvemo: "NdqxwOI6eY0U1C0e", mtiuleti: "imUv4nTweClsx1gI",
+}
+const kutkheImg = (k: { id: Kutkhe; name: string }) =>
+  REGIONS.find((r) => r.ka === k.name)?.img ?? KUTKHE_IMG_FALLBACK[k.id] ?? "GnuUxvVGfsjcN7yA"
 
 const TIMELINE_SHORT = [
   { areas: ["samegrelo","imereti","guria","adjara","abkhazia"], year: "ძვ. წ. VI–IV სს.", img: "I72M3lBSTf9EJVn8", alt: "მარტვილის კანიონი — კოლხეთის დაბლობი", title: "კოლხეთის სამეფო", text: "ანტიკური წყაროები აღწერს შავი ზღვის აღმოსავლეთ სანაპიროს მდიდარ, ოქროთი ცნობილ სამეფოს — დღევანდელი დასავლეთ საქართველოს ტერიტორიას." },
@@ -57,30 +65,30 @@ const TIMELINE_SHORT = [
 
 const TIMELINE_FULL = [
   TIMELINE_SHORT[0],
-  { areas: ["kartli"], year: "ძვ. წ. IV–III სს.", title: "ქართლის (იბერიის) სამეფო", text: "ტრადიცია ქართლის პირველ მეფედ ფარნავაზს მიიჩნევს, რომელსაც ქართული დამწერლობის შექმნასაც მიაწერს. დედაქალაქი — მცხეთა." },
+  { areas: ["kartli"], year: "ძვ. წ. IV–III სს.", img: "udCSb0N7UMcdNPVt", alt: "მცხეთა — ქართლის ძველი დედაქალაქი", title: "ქართლის (იბერიის) სამეფო", text: "ტრადიცია ქართლის პირველ მეფედ ფარნავაზს მიიჩნევს, რომელსაც ქართული დამწერლობის შექმნასაც მიაწერს. დედაქალაქი — მცხეთა." },
   TIMELINE_SHORT[1],
-  { areas: ["kvemo"], year: "V ს.", title: "უძველესი ქართული წარწერები და წიგნი", text: "ბოლნისისა და პალესტინის ქართული წარწერები, „შუშანიკის წამება“ — ქართული მწერლობის უძველესი ძეგლები." },
+  { areas: ["kvemo"], year: "V ს.", img: "NdqxwOI6eY0U1C0e", alt: "შუა საუკუნეების ქართული ფრესკები", title: "უძველესი ქართული წარწერები და წიგნი", text: "ბოლნისისა და პალესტინის ქართული წარწერები, „შუშანიკის წამება“ — ქართული მწერლობის უძველესი ძეგლები." },
   TIMELINE_SHORT[2],
-  { areas: ["kvemo","tbilisi"], year: "1121", title: "დიდგორის ბრძოლა", text: "დავით აღმაშენებლის გამარჯვება, რომლის შემდეგაც 1122 წელს თბილისი კვლავ ქართული სამეფოს დედაქალაქი ხდება." },
+  { areas: ["kvemo","tbilisi"], year: "1121", img: "FrGDd2uxyFH4E7g0", alt: "მუცოს ციხე-სოფელი", title: "დიდგორის ბრძოლა", text: "დავით აღმაშენებლის გამარჯვება, რომლის შემდეგაც 1122 წელს თბილისი კვლავ ქართული სამეფოს დედაქალაქი ხდება." },
   TIMELINE_SHORT[3],
-  { areas: [], year: "XII ს.", title: "„ვეფხისტყაოსანი“", text: "შოთა რუსთაველის პოემა — ქართული ლიტერატურის მწვერვალი, თამარ მეფის ეპოქის სულისკვეთების ანარეკლი." },
+  { areas: [], year: "XII ს.", img: "fkQYrZB1ZU6oDjUg", alt: "ბაგრატის ტაძარი, ქუთაისი", title: "„ვეფხისტყაოსანი“", text: "შოთა რუსთაველის პოემა — ქართული ლიტერატურის მწვერვალი, თამარ მეფის ეპოქის სულისკვეთების ანარეკლი." },
   TIMELINE_SHORT[4],
-  { areas: ["kartli","kakheti"], year: "1801", title: "რუსეთის იმპერიის შემადგენლობაში", text: "ქართლ-კახეთის სამეფოს გაუქმება; XIX საუკუნეში დანარჩენი ქართული სამეფო-სამთავროებიც იმპერიას უერთდება." },
-  { areas: [], year: "1918", title: "საქართველოს დემოკრატიული რესპუბლიკა", text: "26 მაისს გამოცხადდა დამოუკიდებლობა. 1921 წელს წითელი არმიის შემოჭრის შემდეგ ქვეყანა საბჭოთა კავშირის ნაწილი ხდება." },
-  { areas: [], year: "1991", title: "დამოუკიდებლობის აღდგენა", text: "9 აპრილს საქართველომ სახელმწიფოებრივი დამოუკიდებლობა აღადგინა." },
+  { areas: ["kartli","kakheti"], year: "1801", img: "HsYlX0J2VDTJfFnX", alt: "სიღნაღი, კახეთი", title: "რუსეთის იმპერიის შემადგენლობაში", text: "ქართლ-კახეთის სამეფოს გაუქმება; XIX საუკუნეში დანარჩენი ქართული სამეფო-სამთავროებიც იმპერიას უერთდება." },
+  { areas: [], year: "1918", img: "GnuUxvVGfsjcN7yA", alt: "გერგეტის სამების ეკლესია, ხევი", title: "საქართველოს დემოკრატიული რესპუბლიკა", text: "26 მაისს გამოცხადდა დამოუკიდებლობა. 1921 წელს წითელი არმიის შემოჭრის შემდეგ ქვეყანა საბჭოთა კავშირის ნაწილი ხდება." },
+  { areas: [], year: "1991", img: "GxpZw8gO36Dy5gz8", alt: "უშგულის სოფელი შემოდგომაზე", title: "დამოუკიდებლობის აღდგენა", text: "9 აპრილს საქართველომ სახელმწიფოებრივი დამოუკიდებლობა აღადგინა." },
   TIMELINE_SHORT[5],
-  { areas: ["guria","kakheti"], year: "2001–2016", title: "არამატერიალური მემკვიდრეობა", text: "იუნესკომ აღიარა ქართული მრავალხმიანი სიმღერა (2001), ქვევრის ღვინის დაყენების მეთოდი (2013) და ქართული ანბანის სამი სახეობის ცოცხალი კულტურა (2016)." },
+  { areas: ["guria","kakheti"], year: "2001–2016", img: "6spWZQrYvFFuBNwb", alt: "შაორის წყალსაცავი, რაჭა", title: "არამატერიალური მემკვიდრეობა", text: "იუნესკომ აღიარა ქართული მრავალხმიანი სიმღერა (2001), ქვევრის ღვინის დაყენების მეთოდი (2013) და ქართული ანბანის სამი სახეობის ცოცხალი კულტურა (2016)." },
 ]
 
 const CUSTOMS = [
-  { areas: [], icon: "🍷", title: "სუფრა და თამადა", region: "მთელი საქართველო", text: "ქართული სუფრა რიტუალია: თამადა წარმართავს სადღეგრძელოებს — მშვიდობის, წინაპრების, მეგობრობის. სტუმარი „ღვთისაა“, ასე ამბობს ძველი სიტყვა." },
-  { areas: ["kakheti","imereti"], icon: "🏺", title: "ქვევრის ღვინო", region: "კახეთი · იმერეთი", text: "მიწაში ჩაფლულ თიხის ქვევრში ყურძნის დადუღება 8000-წლიანი ტრადიციაა. მეთოდი იუნესკოს არამატერიალური მემკვიდრეობის სიაშია (2013)." },
-  { areas: ["guria","svaneti","kakheti"], icon: "🎶", title: "მრავალხმიანი სიმღერა", region: "გურია · სვანეთი · კახეთი", text: "სამხმიანი სიმღერა — „ჩაკრულო“, „ლილე“, გურული კრიმანჭული. იუნესკომ ქართული პოლიფონია 2001 წელს აღიარა." },
-  { areas: ["khevsureti"], icon: "🧥", title: "ჩოხა და ტრადიციული სამოსი", region: "მთელი საქართველო", text: "ჩოხა, ახალუხი, ხევსურული ნაქარგი პერანგი — სამოსი, რომელიც კუთხის, სტატუსისა და დღესასწაულის ენაზე „ლაპარაკობს“." },
-  { areas: ["adjara","khevsureti"], icon: "💃", title: "ქართული ცეკვა", region: "კუთხეების ცეკვები", text: "ქართული, ხორუმი, ხევსურული, აჭარული — ცეკვები, რომლებშიც ომიც, სიყვარულიც და მთის რიტმიც ცოცხლობს." },
-  { areas: ["svaneti"], icon: "🔥", title: "ლამპრობა", region: "სვანეთი", text: "ზამთრის ბოლოს სვანეთში ჩირაღდნებით გადიან — ცეცხლით ლოცავენ ოჯახში ვაჟების სიცოცხლესა და მომავალ წელს." },
-  { areas: [], icon: "✍️", title: "ქართული ანბანი", region: "ასომთავრული · ნუსხური · მხედრული", text: "სამი დამწერლობის ცოცხალი კულტურა იუნესკოს არამატერიალური მემკვიდრეობის სიაშია (2016) — ერთ-ერთი უნიკალური ანბანი მსოფლიოში." },
-  { areas: [], icon: "🤼", title: "ჭიდაობა", region: "მთელი საქართველო", text: "ქართული ჭიდაობა დოლ-ზურნის თანხლებით — სახალხო დღესასწაულების განუყოფელი ნაწილი, იუნესკოს სიაში 2018 წლიდან." },
+  { areas: [], icon: "🍷", img: "jjOmHfVQPImWIMho", alt: "ძველი თბილისი და ნარიყალა", title: "სუფრა და თამადა", region: "მთელი საქართველო", text: "ქართული სუფრა რიტუალია: თამადა წარმართავს სადღეგრძელოებს — მშვიდობის, წინაპრების, მეგობრობის. სტუმარი „ღვთისაა“, ასე ამბობს ძველი სიტყვა." },
+  { areas: ["kakheti","imereti"], icon: "🏺", img: "HsYlX0J2VDTJfFnX", alt: "სიღნაღი და ალაზნის ველი, კახეთი", title: "ქვევრის ღვინო", region: "კახეთი · იმერეთი", text: "მიწაში ჩაფლულ თიხის ქვევრში ყურძნის დადუღება 8000-წლიანი ტრადიციაა. მეთოდი იუნესკოს არამატერიალური მემკვიდრეობის სიაშია (2013)." },
+  { areas: ["guria","svaneti","kakheti"], icon: "🎶", img: "GxpZw8gO36Dy5gz8", alt: "უშგულის სოფელი შემოდგომაზე", title: "მრავალხმიანი სიმღერა", region: "გურია · სვანეთი · კახეთი", text: "სამხმიანი სიმღერა — „ჩაკრულო“, „ლილე“, გურული კრიმანჭული. იუნესკომ ქართული პოლიფონია 2001 წელს აღიარა." },
+  { areas: ["khevsureti"], icon: "🧥", img: "FrGDd2uxyFH4E7g0", alt: "მუცო, ხევსურეთი", title: "ჩოხა და ტრადიციული სამოსი", region: "მთელი საქართველო", text: "ჩოხა, ახალუხი, ხევსურული ნაქარგი პერანგი — სამოსი, რომელიც კუთხის, სტატუსისა და დღესასწაულის ენაზე „ლაპარაკობს“." },
+  { areas: ["adjara","khevsureti"], icon: "💃", img: "Xd32m9fOP1J74Urx", alt: "ბათუმი, აჭარა", title: "ქართული ცეკვა", region: "კუთხეების ცეკვები", text: "ქართული, ხორუმი, ხევსურული, აჭარული — ცეკვები, რომლებშიც ომიც, სიყვარულიც და მთის რიტმიც ცოცხლობს." },
+  { areas: ["svaneti"], icon: "🔥", img: "fu29FaDzh3624NIW", alt: "მესტია, სვანეთი", title: "ლამპრობა", region: "სვანეთი", text: "ზამთრის ბოლოს სვანეთში ჩირაღდნებით გადიან — ცეცხლით ლოცავენ ოჯახში ვაჟების სიცოცხლესა და მომავალ წელს." },
+  { areas: [], icon: "✍️", img: "NdqxwOI6eY0U1C0e", alt: "ვარძიის ღვთისმშობლის ეკლესიის ფრესკები", title: "ქართული ანბანი", region: "ასომთავრული · ნუსხური · მხედრული", text: "სამი დამწერლობის ცოცხალი კულტურა იუნესკოს არამატერიალური მემკვიდრეობის სიაშია (2016) — ერთ-ერთი უნიკალური ანბანი მსოფლიოში." },
+  { areas: [], icon: "🤼", img: "KU1gZAB04l0ixryO", alt: "კესელოს კოშკები, თუშეთი", title: "ჭიდაობა", region: "მთელი საქართველო", text: "ქართული ჭიდაობა დოლ-ზურნის თანხლებით — სახალხო დღესასწაულების განუყოფელი ნაწილი, იუნესკოს სიაში 2018 წლიდან." },
 ]
 
 const LEGENDS = [
@@ -97,6 +105,11 @@ const STORIES: { areas: Kutkhe[]; img: string; alt: string; tagClass: string; ta
   { areas: ["mtiuleti"], img: "imUv4nTweClsx1gI", alt: "ანანურის ციხესიმაგრე", tagClass: "oral", tag: "ზეპირი გადმოცემა", title: "ანანური — ციხე, რომელსაც წყალი მიუახლოვდა", text: "ადგილობრივი თქმულებები ჟინვალის წყალსაცავის მშენებლობისა და წყალქვეშ დარჩენილი სოფლების შესახებ — და რა ითქმის ამაზე დოკუმენტებში.", meta: ["დუშეთი · მცხეთა-მთიანეთი", "6 წთ კითხვა", "2026-01-05"] },
   { areas: ["khevi"], img: "GnuUxvVGfsjcN7yA", alt: "გერგეტის სამების ეკლესია ყაზბეგის მიდამოებში", tagClass: "fact", tag: "ისტორიული ფაქტი", regionId: "kazbegi", title: "გერგეტის სამება — სალოცავი უღელტეხილზე", text: "როგორ აღწერს წყაროები გერგეტის სამების ეკლესიის ისტორიას, მცხეთის სიწმინდეების შენახვას და საბჭოთა პერიოდში დახურული სალოცავის ბედს.", meta: ["ხევი · ყაზბეგი", "7 წთ კითხვა", "2025-12-20"] },
 ]
+
+// one shape for everything shown as a photo mosaic tile and in the full-screen viewer
+type Spot = { key: string; img: string; alt: string; title: string; text: string; region: string; icon?: string; badge?: string; meta?: string; regionId?: string }
+const areaNames = (areas: readonly string[], fallback = "მთელი საქართველო") =>
+  areas.map((a) => KUTKHEEBI.find((k) => k.id === a)?.name).filter(Boolean).join(" · ") || fallback
 
 type ArchCat = "temple" | "mountain" | "city" | "nature"
 const ARCH_CATS: { id: ArchCat | "all"; label: string }[] = [
@@ -121,12 +134,148 @@ const ARCHIVE: { areas: Kutkhe[]; img: string; alt: string; title: string; capti
   { areas: ["racha"], img: "6spWZQrYvFFuBNwb", alt: "შაორის წყალსაცავი, რაჭა", title: "შაორი, რაჭა", cat: "nature", caption: "შაორის წყალსაცავი, რაჭა. ფოტო: Flickr (CC)" },
 ]
 
+// photos each page header cycles through (the first is the page's `img`)
+const PAGE_SLIDES: Record<Exclude<View, "home">, { img: string; alt: string }[]> = {
+  regions: [
+    { img: "HsYlX0J2VDTJfFnX", alt: "სიღნაღი, კახეთი" }, { img: "fu29FaDzh3624NIW", alt: "მესტია, სვანეთი" },
+    { img: "Xd32m9fOP1J74Urx", alt: "ბათუმი, აჭარა" }, { img: "KU1gZAB04l0ixryO", alt: "კესელოს კოშკები, თუშეთი" },
+  ],
+  history: [
+    { img: "fkQYrZB1ZU6oDjUg", alt: "ბაგრატის ტაძარი, ქუთაისი" }, { img: "5w0mZLBWlE7r71zC", alt: "ვარძია, სამცხე-ჯავახეთი" },
+    { img: "udCSb0N7UMcdNPVt", alt: "მცხეთა და სვეტიცხოველი" }, { img: "imUv4nTweClsx1gI", alt: "ანანურის ციხესიმაგრე" },
+  ],
+  customs: [
+    { img: "6spWZQrYvFFuBNwb", alt: "შაორის წყალსაცავი, რაჭა" }, { img: "HsYlX0J2VDTJfFnX", alt: "სიღნაღი, კახეთი" },
+    { img: "KU1gZAB04l0ixryO", alt: "კესელოს კოშკები, თუშეთი" }, { img: "GxpZw8gO36Dy5gz8", alt: "უშგულის სოფელი შემოდგომაზე" },
+  ],
+  legends: [
+    { img: "GnuUxvVGfsjcN7yA", alt: "გერგეტის სამების ეკლესია, ხევი" }, { img: "FrGDd2uxyFH4E7g0", alt: "მუცო, ხევსურეთი" },
+    { img: "fu29FaDzh3624NIW", alt: "მესტია, სვანეთი" }, { img: "I72M3lBSTf9EJVn8", alt: "მარტვილის კანიონი, სამეგრელო" },
+  ],
+  archive: [
+    { img: "udCSb0N7UMcdNPVt", alt: "მცხეთა და სვეტიცხოველი" }, { img: "NdqxwOI6eY0U1C0e", alt: "ვარძიის ღვთისმშობლის ეკლესიის ფრესკები" },
+    { img: "SpPnO6MUAmA5T9o6", alt: "ლამარიას ეკლესია, უშგული" }, { img: "jjOmHfVQPImWIMho", alt: "ძველი თბილისი და ნარიყალა" },
+  ],
+  plan: [
+    { img: "GxpZw8gO36Dy5gz8", alt: "უშგულის სოფელი შემოდგომაზე" }, { img: "HsYlX0J2VDTJfFnX", alt: "სიღნაღი, კახეთი" },
+    { img: "GnuUxvVGfsjcN7yA", alt: "გერგეტის სამების ეკლესია, ხევი" }, { img: "Xd32m9fOP1J74Urx", alt: "ბათუმი, აჭარა" },
+  ],
+}
+const HERO_SLIDE_MS = 6000
+
 const PAGE_HERO: Record<Exclude<View, "home">, { img: string; eyebrow: string; title: string; sub: string }> = {
   regions: { img: "HsYlX0J2VDTJfFnX", eyebrow: "ინტერაქტიული ატლასი", title: "საქართველოს კუთხეები", sub: "12 ისტორიულ-ეთნოგრაფიული მხარე — მთიანეთიდან ზღვისპირეთამდე. აირჩიე კუთხე და გაიცანი მისი ისტორია." },
   history: { img: "fkQYrZB1ZU6oDjUg", eyebrow: "ქრონოლოგია", title: "საქართველოს ისტორია", sub: "კოლხეთიდან დამოუკიდებლობამდე — ათასწლეულების გზა, რომელმაც ქართული კულტურა ჩამოაყალიბა." },
   customs: { img: "6spWZQrYvFFuBNwb", eyebrow: "ცოცხალი მემკვიდრეობა", title: "ადათ-წესები", sub: "სუფრა, სიმღერა, ქვევრი და ჩოხა — ტრადიციები, რომლებიც დღესაც ცოცხლობს ოჯახებსა და სოფლებში." },
   legends: { img: "GnuUxvVGfsjcN7yA", eyebrow: "მითები და თქმულებები", title: "ლეგენდები", sub: "ამირანიდან ოქროს საწმისამდე — ამბები, რომლებიც თაობიდან თაობას გადაეცემა." },
   archive: { img: "udCSb0N7UMcdNPVt", eyebrow: "ციფრული არქივი", title: "ციფრული არქივი", sub: "ფოტოები და ისტორიული მასალა — თითოეულ ექსპონატს აქვს წყარო და ლიცენზია." },
+  plan: { img: "GxpZw8gO36Dy5gz8", eyebrow: "მოგზაურობის დამგეგმავი", title: "დაგეგმე შენი საქართველო", sub: "აირჩიე კუთხეები, დღეები და ინტერესები — მარშრუტს ატლასის ადგილებით, ლეგენდებითა და ტრადიციებით შეგიდგენთ." },
+}
+
+/* ---------- trip planner: builds a day-by-day route out of the atlas's own material ---------- */
+
+type Interest = "history" | "customs" | "legends" | "nature" | "photo"
+const INTERESTS: { id: Interest; icon: string; label: string }[] = [
+  { id: "history", icon: "🏛", label: "ისტორია და ტაძრები" },
+  { id: "customs", icon: "🍷", label: "ადათ-წესები და სუფრა" },
+  { id: "legends", icon: "📜", label: "ლეგენდები" },
+  { id: "nature", icon: "🏔", label: "მთები და ბუნება" },
+  { id: "photo", icon: "📷", label: "ფოტოგრაფია" },
+]
+const PACES = [
+  { label: "მშვიდი", hint: "2 აქტივობა დღეში", slots: ["დილა", "საღამო"] },
+  { label: "ზომიერი", hint: "3 აქტივობა დღეში", slots: ["დილა", "შუადღე", "საღამო"] },
+  { label: "აქტიური", hint: "4 აქტივობა დღეში", slots: ["დილა", "შუადღე", "ნაშუადღევი", "საღამო"] },
+]
+// occupied territory: shown on the map of regions, but no route can go there
+const PLAN_BLOCKED: Kutkhe[] = ["abkhazia"]
+type PlanForm = { regions: Kutkhe[]; from: string; days: number; people: number; interests: Interest[]; pace: number }
+type PlanAct = Spot & { slot: string; kind: string }
+type PlanDay = { k: Kutkhe; name: string; img: string; desc: string; date: string | null; travelFrom?: string; acts: PlanAct[] }
+
+const planRegion = (k: Kutkhe) => {
+  const kk = KUTKHEEBI.find((x) => x.id === k) ?? { id: k, name: "" }
+  const r = REGIONS.find((x) => x.ka === kk.name)
+  return { name: kk.name, img: kutkheImg(kk), desc: r?.desc ?? `${kk.name} — ისტორიული კუთხე, რომლის სოფლები, ტაძრები და ბაზრები ფეხით უკეთ იხსნება.` }
+}
+
+function buildPlan(f: PlanForm): PlanDay[] {
+  const regions = f.regions.slice(0, f.days)
+  if (!regions.length) return []
+  const slots = PACES[f.pace].slots
+  const want = new Set(f.interests)
+  const score = (tags: Interest[]) => tags.filter((x) => want.has(x)).length
+  const start = f.from ? new Date(`${f.from}T00:00`) : null
+  const fmt = new Intl.DateTimeFormat("ka-GE", { weekday: "long", day: "numeric", month: "long" })
+
+  // the region's material, best match for the chosen interests first; country-wide customs and a walk fill the gaps
+  const usedWide = new Set<string>()
+  const poolFor = (k: Kutkhe) => {
+    const r = planRegion(k)
+    const items: { s: number; a: Omit<PlanAct, "slot" | "key"> }[] = [
+      ...ARCHIVE.filter((a) => a.areas.includes(k)).map((a) => ({
+        s: score(a.cat === "temple" || a.cat === "city" ? ["history", "photo"] : ["nature", "photo"]) + 0.5,
+        a: { img: a.img, alt: a.alt, title: a.title, text: a.caption, region: r.name, icon: "📍", kind: "სანახაობა", badge: "სანახაობა" },
+      })),
+      ...LEGENDS.filter((l) => (l.areas as string[]).includes(k)).map((l) => ({
+        s: score(["legends"]),
+        a: { img: l.img, alt: l.title, title: l.title, text: l.text, region: r.name, icon: "📜", kind: l.kind, badge: l.kind },
+      })),
+      ...STORIES.filter((s) => s.areas.includes(k)).map((s) => ({
+        s: score(["legends", "history"]),
+        a: { img: s.img, alt: s.alt, title: s.title, text: s.text, region: r.name, icon: "📖", kind: s.tag, badge: s.tag, regionId: s.regionId },
+      })),
+      ...CUSTOMS.filter((c) => (c.areas as string[]).includes(k)).map((c) => ({
+        s: score(["customs"]) + 0.25,
+        a: { img: c.img, alt: c.alt, title: c.title, text: c.text, region: r.name, icon: c.icon, kind: "ტრადიცია", badge: "ტრადიცია" },
+      })),
+      ...TIMELINE_FULL.filter((t) => (t.areas as string[]).includes(k)).map((t) => ({
+        s: score(["history"]),
+        a: { img: t.img, alt: t.alt, title: t.title, text: t.text, region: r.name, icon: "🏛", kind: t.year, badge: t.year },
+      })),
+    ]
+    items.sort((x, y) => y.s - x.s)
+    const wide = CUSTOMS.filter((c) => !c.areas.length && !usedWide.has(c.title)).map((c) => ({
+      img: c.img, alt: c.alt, title: c.title, text: c.text, region: "მთელი საქართველო", icon: c.icon, kind: "ტრადიცია", badge: "ტრადიცია",
+    }))
+    return { r, list: items.map((x) => x.a), wide }
+  }
+
+  const days: PlanDay[] = []
+  const base = Math.floor(f.days / regions.length)
+  const extra = f.days % regions.length
+  regions.forEach((k, ri) => {
+    const { r, list, wide } = poolFor(k)
+    const n = base + (ri < extra ? 1 : 0)
+    let li = 0
+    let wi = 0
+    let walks = 0
+    for (let d = 0; d < n; d++) {
+      const di = days.length
+      const acts = slots.map((slot, si) => {
+        // evenings prefer a table / song / dance custom; otherwise the region's own material, then fillers
+        const evening = si === slots.length - 1 && slots.length > 1
+        let a: Omit<PlanAct, "slot" | "key"> | undefined
+        if (evening && want.has("customs") && wi < wide.length) a = wide[wi++]
+        if (!a && li < list.length) a = list[li++]
+        if (!a && wi < wide.length) a = wide[wi++]
+        if (!a) {
+          walks++
+          a = walks % 2
+            ? { img: r.img, alt: r.name, title: `${r.name}: ფეხით გასეირნება`, text: r.desc, region: r.name, icon: "🥾", kind: "გასეირნება", badge: "გასეირნება" }
+            : { img: r.img, alt: r.name, title: `${r.name}: ადგილობრივი სამზარეულო`, text: `ოჯახური მარანი ან სასტუმრო სახლი — სცადე კუთხის კერძები და ღვინო. ${r.desc}`, region: r.name, icon: "🍽", kind: "სამზარეულო", badge: "სამზარეულო" }
+        }
+        if (a.region === "მთელი საქართველო") usedWide.add(a.title)
+        return { ...a, slot, key: `${di}-${si}` }
+      })
+      days.push({
+        k, name: r.name, img: r.img, desc: r.desc, acts,
+        date: start ? fmt.format(new Date(start.getFullYear(), start.getMonth(), start.getDate() + di)) : null,
+        travelFrom: d === 0 && ri > 0 ? planRegion(regions[ri - 1]).name : undefined,
+      })
+    }
+  })
+  return days
 }
 
 const T = {
@@ -391,9 +540,8 @@ function GeorgianFlag() {
   )
 }
 
-const delay = (i: number) => (i % 4 ? ` d${i % 4}` : "")
 
-export default function GeorgianHeritagePage({ onBack, onSelectRegion: selectRegion, onPlanTrip, initialView = "home" }: GeorgianHeritagePageProps) {
+export default function GeorgianHeritagePage({ onBack, onSelectRegion: selectRegion, initialView = "home" }: GeorgianHeritagePageProps) {
   const [theme, setTheme] = useState<Theme>(() => (readStored("gh-theme") === "light" ? "light" : "dark"))
   const [lang, setLang] = useState<Lang>(() => (readStored("gh-lang") === "en" ? "en" : "ka"))
   const [view, setView] = useState<View>(initialView)
@@ -403,12 +551,20 @@ export default function GeorgianHeritagePage({ onBack, onSelectRegion: selectReg
   const [archCat, setArchCat] = useState<ArchCat | "all">("all")
   const [kutkhe, setKutkhe] = useState<Kutkhe | "all">("all")
   const [nextOpen, setNextOpen] = useState<View | null>(null)
+  const [heroSlide, setHeroSlide] = useState(0)
+  const [planForm, setPlanForm] = useState<PlanForm>({ regions: ["tbilisi", "kakheti"], from: "", days: 5, people: 2, interests: ["history", "customs"], pace: 1 })
+  const [planStage, setPlanStage] = useState<"form" | "loading" | "result">("form")
+  const [planDays, setPlanDays] = useState<PlanDay[]>([])
+  const planTimer = useRef(0)
+  useEffect(() => () => window.clearTimeout(planTimer.current), [])
   const [showcase, setShowcase] = useState(0)
   const [showcasePaused, setShowcasePaused] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [navHidden, setNavHidden] = useState(false)
   const [lightbox, setLightbox] = useState<{ src: string; caption: string } | null>(null)
+  const [cx, setCx] = useState<{ group: string; list: Spot[]; i: number; prev: number; from: { t: number; r: number; b: number; l: number } | null; closing?: boolean } | null>(null)
+  const cxKeys = useRef<(e: KeyboardEvent) => void>(() => {})
   const [indicator, setIndicator] = useState<{ left: number; width: number; visible: boolean }>({ left: 0, width: 0, visible: false })
   const rootRef = useRef<HTMLDivElement>(null)
   const parallaxRef = useRef<HTMLDivElement>(null)
@@ -459,6 +615,16 @@ export default function GeorgianHeritagePage({ onBack, onSelectRegion: selectReg
     document.body.style.overflow = menuOpen ? "hidden" : ""
     return () => { document.body.style.overflow = "" }
   }, [menuOpen])
+
+  // the viewer takes the keyboard first (capture), so arrows don't also page the full-screen slides behind it
+  const cxIsOpen = cx !== null
+  useEffect(() => {
+    if (!cxIsOpen) return
+    const onKey = (e: KeyboardEvent) => cxKeys.current(e)
+    window.addEventListener("keydown", onKey, true)
+    document.body.style.overflow = "hidden"
+    return () => { window.removeEventListener("keydown", onKey, true); document.body.style.overflow = "" }
+  }, [cxIsOpen])
 
   useEffect(() => {
     if (!lightbox) return
@@ -515,6 +681,13 @@ export default function GeorgianHeritagePage({ onBack, onSelectRegion: selectReg
     root.querySelectorAll(".reveal:not(.in)").forEach((el) => io.observe(el))
     return () => io.disconnect()
   }, [view, archCat, kutkhe])
+  // page header slideshow: restart on page change; a timeout (not an interval) so picking a photo resets the clock
+  useEffect(() => { setHeroSlide(0) }, [view])
+  useEffect(() => {
+    if (view === "home" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    const id = window.setTimeout(() => setHeroSlide((s) => s + 1), HERO_SLIDE_MS)
+    return () => window.clearTimeout(id)
+  }, [view, heroSlide])
 
   // Sliding underline: follows hover, rests on the active page
   const moveIndicator = useCallback((target: HTMLElement | null) => {
@@ -540,7 +713,7 @@ export default function GeorgianHeritagePage({ onBack, onSelectRegion: selectReg
     if (next === view) { fp.goTo(0); return }
     if (prefersReducedMotion()) { setView(next); setKutkhe(k); window.scrollTo({ top: 0 }); return }
     // Panels cover the screen, content swaps underneath while they hold
-    setWipeLabel(navItems.find(([, nv]) => nv === next)?.[0] ?? "")
+    setWipeLabel(navItems.find(([, nv]) => nv === next)?.[0] ?? (next === "plan" ? t.trip : ""))
     setWipeKey((k) => k + 1)
     window.clearTimeout(switchTimer.current)
     switchTimer.current = window.setTimeout(() => {
@@ -560,7 +733,7 @@ export default function GeorgianHeritagePage({ onBack, onSelectRegion: selectReg
     [t.navLegends, "legends"],
     [t.navArchive, "archive"],
   ]
-  const viewLabel = navItems.find(([, v]) => v === view)?.[0] ?? ""
+  const viewLabel = navItems.find(([, v]) => v === view)?.[0] ?? (view === "plan" ? t.trip : "")
 
   /* ---------- reusable blocks ---------- */
 
@@ -613,24 +786,35 @@ export default function GeorgianHeritagePage({ onBack, onSelectRegion: selectReg
     </div>
   )
 
-  const timeline = (items: typeof TIMELINE_FULL) => {
-    const half = Math.ceil(items.length / 2)
-    return (
-      <div className="grid grid-2">
-        {[items.slice(0, half), items.slice(half)].map((col, ci) => (
-          <div className="timeline" key={ci}>
-            {col.map((item, i) => (
-              <div key={item.year + item.title} className={`tl-item reveal ${ci ? "right" : "left"}${delay(i)}`}>
-                <div className="year">{item.year}</div>
-                <h4>{item.title}</h4>
-                <p>{item.text}</p>
+  // history: one spine down the middle, a photo + text pair per event, sides alternating
+  const timeline = (items: typeof TIMELINE_FULL) => (
+    <ol className="htl">
+      {items.map((item, i) => (
+        <li key={item.year + item.title} className={`htl-item reveal${i % 2 ? " flip" : ""}`}>
+          <button
+            className="htl-photo"
+            data-cx={`timeline-${i}`}
+            onClick={(e) => openCx("timeline", timelineSpots(items), i, e.currentTarget)}
+            aria-label={`${item.title} — სრულ ეკრანზე`}
+          >
+            <img src={IMG(item.img, 900)} alt={item.alt} loading="lazy" />
+            <span className="htl-year">{item.year}</span>
+          </button>
+          <span className="htl-dot" aria-hidden="true" />
+          <div className="htl-body">
+            <span className="htl-num">{String(i + 1).padStart(2, "0")}</span>
+            <h4>{item.title}</h4>
+            <p>{item.text}</p>
+            {item.areas.length > 0 && (
+              <div className="htl-tags">
+                {item.areas.map((a) => <span key={a}>{KUTKHEEBI.find((k) => k.id === a)?.name}</span>)}
               </div>
-            ))}
+            )}
           </div>
-        ))}
-      </div>
-    )
-  }
+        </li>
+      ))}
+    </ol>
+  )
 
   // home chronology: era rail on top, a photo card per era below
   const photoTimeline = (items: typeof TIMELINE_SHORT) => (
@@ -657,50 +841,6 @@ export default function GeorgianHeritagePage({ onBack, onSelectRegion: selectReg
           </article>
         ))}
       </div>
-    </div>
-  )
-
-  const stories = (list: typeof STORIES = STORIES) => (
-    <div className="grid stories-grid">
-      {list.map((s, i) => (
-        <div
-          key={s.title}
-          className={`art-card reveal${s.regionId ? " link" : ""}`}
-          style={{ "--i": i } as CSSProperties}
-          onClick={s.regionId ? () => onSelectRegion(s.regionId!) : undefined}
-        >
-          <div className="im"><img src={IMG(s.img, 1200)} alt={s.alt} loading="lazy" /></div>
-          <div className="tx">
-            <span className={`tag ${s.tagClass}`}>{s.tag}</span>
-            <h3>{s.title}</h3>
-            <p>{s.text}</p>
-            <div className="art-meta">
-              {s.meta.map((m, j) => <span key={m}>{j > 0 && "· "}{m}</span>)}
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-
-  const archiveGrid = (list: typeof ARCHIVE) => (
-    <div className="grid grid-4">
-      {list.map((a, i) => (
-        <figure
-          key={a.title}
-          className={`arch-item reveal zoom${delay(i)}`}
-          onClick={() => setLightbox({ src: IMG(a.img, 1800), caption: a.caption })}
-        >
-          <div className="im">
-            <img src={IMG(a.img, 1000)} alt={a.alt} loading="lazy" />
-            <span className="type">ფოტო</span>
-          </div>
-          <div className="tx">
-            <h4>{a.title}</h4>
-            <div className="meta">წყარო: Flickr · <span className="lic">CC ლიცენზია</span></div>
-          </div>
-        </figure>
-      ))}
     </div>
   )
 
@@ -763,19 +903,23 @@ export default function GeorgianHeritagePage({ onBack, onSelectRegion: selectReg
   const kutkheBar = (items: { areas: readonly string[] }[]) => (
     <div className="kutkhe-bar reveal">
       <span className="kutkhe-label">საქართველოს კუთხეები</span>
-      <div className="filters">
-        <button className={`filter-btn${kutkhe === "all" ? " active" : ""}`} onClick={() => setKutkhe("all")}>
-          ყველა <span className="n">{items.length}</span>
+      <div className="kt-strip">
+        <button className={`kt-tile all${kutkhe === "all" ? " active" : ""}`} onClick={() => setKutkhe("all")}>
+          <span className="kt-name">ყველა</span>
+          <span className="kt-n">{items.length}</span>
         </button>
-        {KUTKHEEBI.map((k) => {
+        {KUTKHEEBI.map((k, i) => {
           const n = items.filter((x) => x.areas.includes(k.id)).length
           return (
             <button
               key={k.id}
-              className={`filter-btn${kutkhe === k.id ? " active" : ""}${n ? "" : " empty"}`}
+              className={`kt-tile${kutkhe === k.id ? " active" : ""}${n ? "" : " empty"}`}
+              style={{ "--i": i + 1 } as CSSProperties}
               onClick={() => setKutkhe(k.id)}
             >
-              {k.name} <span className="n">{n}</span>
+              <img src={IMG(kutkheImg(k), 300)} alt="" loading="lazy" />
+              <span className="kt-name">{k.name}</span>
+              <span className="kt-n">{n}</span>
             </button>
           )
         })}
@@ -1042,19 +1186,105 @@ export default function GeorgianHeritagePage({ onBack, onSelectRegion: selectReg
           </p>
           <div className="reveal d3" style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
             <button className="btn btn-gold" onClick={() => go("regions")}>გამოიკვლიე კუთხეები</button>
-            <button className="btn btn-line" onClick={onPlanTrip}>{t.trip}</button>
+            <button className="btn btn-line" onClick={() => go("plan")}>{t.trip}</button>
           </div>
         </div>
       </section>
     </>
   )
 
+  // words wrapped for a staggered entrance (--w is the word's position); spaces stay outside the
+  // inline-block wrappers, where they would collapse
+  const splitWords = (s: string, cls?: string) =>
+    s.split(" ").flatMap((w, i) => [
+      i ? " " : null,
+      <span key={i} className="hw" style={{ "--w": i } as CSSProperties}>
+        <span className={cls}>{w}</span>
+      </span>,
+    ])
+
+  // full-screen viewer: opens out of the clicked card (clip-path from its rect), closes back into it
+  const cardInset = (el: Element | null) => {
+    if (!el) return null
+    const r = el.getBoundingClientRect()
+    if (r.bottom < 0 || r.top > window.innerHeight) return null // off screen: plain fade instead
+    return { t: r.top, r: window.innerWidth - r.right, b: window.innerHeight - r.bottom, l: r.left }
+  }
+  const openCx = (group: string, list: Spot[], i: number, el: Element) => setCx({ group, list, i, prev: -1, from: cardInset(el) })
+  const showCx = (i: number) => setCx((s) => (s && s.i !== i && !s.closing ? { ...s, prev: s.i, i } : s))
+  const stepCx = (d: number) => setCx((s) => (s && !s.closing ? { ...s, prev: s.i, i: (s.i + d + s.list.length) % s.list.length } : s))
+  const closeCx = () => {
+    setCx((s) => (s && !s.closing ? { ...s, closing: true, from: cardInset(document.querySelector(`[data-cx="${s.group}-${s.i}"]`)) } : s))
+    window.setTimeout(() => setCx(null), 650)
+  }
+
+  // photo mosaic: big and wide tiles mixed in; text slides up on hover, the card tilts toward the pointer,
+  // a click opens the viewer
+  const mosaic = (group: string, items: Spot[]) => (
+    <div className="cx-grid">
+      {items.map((c, i) => (
+        <article
+          key={c.key}
+          className="cx-card reveal"
+          style={{ "--i": i } as CSSProperties}
+          data-cx={`${group}-${i}`}
+          role="button"
+          tabIndex={0}
+          aria-label={`${c.title} — სრულ ეკრანზე`}
+          onClick={(e) => openCx(group, items, i, e.currentTarget)}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openCx(group, items, i, e.currentTarget) } }}
+          onPointerMove={(e) => {
+            if (e.pointerType !== "mouse") return
+            const r = e.currentTarget.getBoundingClientRect()
+            e.currentTarget.style.setProperty("--rx", `${((e.clientY - r.top) / r.height - 0.5) * -8}deg`)
+            e.currentTarget.style.setProperty("--ry", `${((e.clientX - r.left) / r.width - 0.5) * 10}deg`)
+          }}
+          onPointerLeave={(e) => { e.currentTarget.style.removeProperty("--rx"); e.currentTarget.style.removeProperty("--ry") }}
+        >
+          <div className="cx-inner">
+            <div className="cx-photo">
+              <img src={IMG(c.img, 1000)} alt={c.alt} loading="lazy" />
+            </div>
+            {c.icon ? <span className="cx-icon" aria-hidden="true">{c.icon}</span> : c.badge && <span className="cx-badge">{c.badge}</span>}
+            <span className="cx-num">{String(i + 1).padStart(2, "0")}</span>
+            <span className="cx-expand" aria-hidden="true">⤢</span>
+            <div className="cx-body">
+              <span className="cx-region">{c.region}</span>
+              <h3>{splitWords(c.title)}</h3>
+              <p>{c.text}</p>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  )
+  const customSpots = (list: typeof CUSTOMS): Spot[] =>
+    list.map((c) => ({ key: c.title, img: c.img, alt: c.alt, title: c.title, text: c.text, region: c.region, icon: c.icon }))
+  const legendSpots = (list: typeof LEGENDS): Spot[] =>
+    list.map((l) => ({ key: l.title, img: l.img, alt: l.title, title: l.title, text: l.text, region: l.region, badge: l.kind }))
+  const storySpots = (list: typeof STORIES): Spot[] =>
+    list.map((s) => ({ key: s.title, img: s.img, alt: s.alt, title: s.title, text: s.text, region: s.meta[0], badge: s.tag, meta: s.meta.slice(1).join(" · "), regionId: s.regionId }))
+  const archiveSpots = (list: typeof ARCHIVE): Spot[] =>
+    list.map((a) => ({ key: a.title, img: a.img, alt: a.alt, title: a.title, text: a.caption, region: areaNames(a.areas), badge: ARCH_CATS.find((c) => c.id === a.cat)?.label, meta: "წყარო: Flickr · CC ლიცენზია" }))
+  const timelineSpots = (list: typeof TIMELINE_FULL): Spot[] =>
+    list.map((t) => ({ key: t.year + t.title, img: t.img, alt: t.alt, title: t.title, text: t.text, region: areaNames(t.areas), badge: t.year }))
+
+  // sub-page header: a crossfading photo slideshow; title and caption animate word by word
   const pageHero = (v: Exclude<View, "home">) => {
     const h = PAGE_HERO[v]
+    const slides = PAGE_SLIDES[v]
+    const cur = heroSlide % slides.length
     return (
-      <section className="page-hero">
-        <div className="hero-bg" ref={parallaxRef}>
-          <img src={IMG(h.img, 2200)} alt="" />
+      <section className="page-hero" key={v} data-no-reveal>
+        <div className="hero-bg ph-slides" ref={parallaxRef}>
+          {slides.map((s, i) => (
+            <img
+              key={s.img}
+              src={IMG(s.img, 2200)}
+              alt=""
+              className={i === cur ? "on" : i === (cur - 1 + slides.length) % slides.length ? "prev" : undefined}
+            />
+          ))}
         </div>
         <div className="hero-veil" />
         <div className="wrap page-hero-inner">
@@ -1063,9 +1293,22 @@ export default function GeorgianHeritagePage({ onBack, onSelectRegion: selectReg
             <span>/</span>
             <b>{viewLabel}</b>
           </div>
-          <span className="eyebrow reveal d1">{h.eyebrow}</span>
-          <h1 className="reveal d2"><span className="grad-text">{h.title}</span></h1>
-          <p className="sub reveal d3">{h.sub}</p>
+          <span className="eyebrow ph-eyebrow">{h.eyebrow}</span>
+          <h1 className="ph-title">{splitWords(h.title, "grad-text")}</h1>
+          <p className="sub ph-sub">{splitWords(h.sub)}</p>
+          <div className="ph-bar">
+            <div className="ph-dots">
+              {slides.map((s, i) => (
+                <button key={s.img} className={i === cur ? "on" : undefined} onClick={() => setHeroSlide(i)} aria-label={s.alt}>
+                  <img src={IMG(s.img, 200)} alt="" />
+                  {i === cur && <i key={heroSlide} style={{ animationDuration: `${HERO_SLIDE_MS}ms` }} />}
+                </button>
+              ))}
+            </div>
+            <span className="ph-caption" key={cur}>
+              <b>{String(cur + 1).padStart(2, "0")}</b> / {String(slides.length).padStart(2, "0")} — {splitWords(slides[cur].alt)}
+            </span>
+          </div>
         </div>
       </section>
     )
@@ -1113,12 +1356,219 @@ export default function GeorgianHeritagePage({ onBack, onSelectRegion: selectReg
     </section>
   )
 
+  // trip planner: form → short "building" beat → the route, day by day, made of atlas material
+  const setPF = (patch: Partial<PlanForm>) => setPlanForm((f) => ({ ...f, ...patch }))
+  const toggleIn = <T,>(list: T[], x: T) => (list.includes(x) ? list.filter((y) => y !== x) : [...list, x])
+  const buildRoute = () => {
+    setPlanDays(buildPlan(planForm))
+    setPlanStage("loading")
+    window.clearTimeout(planTimer.current)
+    planTimer.current = window.setTimeout(() => setPlanStage("result"), prefersReducedMotion() ? 0 : 1700)
+  }
+  const planner = () => {
+    const f = planForm
+    const usable = KUTKHEEBI
+    const stepper = (label: string, value: number, min: number, max: number, set: (n: number) => void, unit: string) => (
+      <div className="tp-stepper">
+        <span className="tp-label">{label}</span>
+        <div className="tp-step-ctrl">
+          <button onClick={() => set(Math.max(min, value - 1))} disabled={value <= min} aria-label={`${label} −`}>−</button>
+          <b key={value}>{value}</b>
+          <button onClick={() => set(Math.min(max, value + 1))} disabled={value >= max} aria-label={`${label} +`}>+</button>
+        </div>
+        <span className="tp-unit">{unit}</span>
+      </div>
+    )
+
+    if (planStage === "loading") {
+      return (
+        <div className="tp-loading" data-no-reveal>
+          <div className="tp-load-photos">
+            {f.regions.slice(0, f.days).map((k, i) => (
+              <img key={k} src={IMG(planRegion(k).img, 300)} alt="" style={{ "--i": i } as CSSProperties} />
+            ))}
+          </div>
+          <h3>{splitWords("მარშრუტს ვადგენთ…")}</h3>
+          <p>ვარჩევთ ადგილებს, ლეგენდებსა და ტრადიციებს შენი ინტერესების მიხედვით</p>
+          <div className="tp-load-bar"><i /></div>
+        </div>
+      )
+    }
+
+    if (planStage === "result") {
+      const all = planDays.flatMap((d) => d.acts)
+      const spots: Spot[] = all.map((a) => ({ ...a, title: `${a.slot} · ${a.title}` }))
+      const regionRuns = planDays.reduce<{ k: Kutkhe; name: string; img: string; from: number; to: number }[]>((runs, d, i) => {
+        const last = runs[runs.length - 1]
+        if (last && last.k === d.k) last.to = i + 1
+        else runs.push({ k: d.k, name: d.name, img: d.img, from: i + 1, to: i + 1 })
+        return runs
+      }, [])
+      let actIndex = 0
+      return (
+        <div className="tp-result" data-no-reveal>
+          <div className="tp-summary">
+            <div>
+              <span className="eyebrow">შენი მარშრუტი</span>
+              <h2>{splitWords(regionRuns.map((r) => r.name).join(" → "))}</h2>
+            </div>
+            <div className="tp-stats">
+              {[[planDays.length, "დღე"], [regionRuns.length, "კუთხე"], [all.length, "აქტივობა"], [f.people, "მოგზაური"]].map(([n, l], i) => (
+                <span key={l} style={{ "--i": i } as CSSProperties}><b>{n}</b>{l}</span>
+              ))}
+            </div>
+            <div className="tp-actions">
+              <button className="btn btn-line" onClick={() => setPlanStage("form")}>← შეცვლა</button>
+              <button className="btn btn-line" onClick={() => window.print()}>ბეჭდვა</button>
+            </div>
+          </div>
+
+          {/* route ribbon: one photo stop per region, joined by a line that draws itself */}
+          <ol className="tp-ribbon">
+            {regionRuns.map((r, i) => (
+              <li key={r.k} style={{ "--i": i } as CSSProperties}>
+                <img src={IMG(r.img, 300)} alt="" />
+                <b>{r.name}</b>
+                <span>{r.from === r.to ? `დღე ${r.from}` : `დღე ${r.from}–${r.to}`}</span>
+              </li>
+            ))}
+          </ol>
+
+          <div className="tp-days">
+            {planDays.map((d, di) => (
+              <article key={di} className={`tp-day${di % 2 ? " flip" : ""}`} style={{ "--i": di } as CSSProperties}>
+                <div className="tp-day-photo">
+                  <img src={IMG(d.img, 1100)} alt={d.name} loading="lazy" />
+                  <span className="tp-day-num"><small>დღე</small>{String(di + 1).padStart(2, "0")}</span>
+                  <span className="tp-day-region">{d.name}</span>
+                </div>
+                <div className="tp-day-body">
+                  <div className="tp-day-head">
+                    {d.date && <span className="tp-date">{d.date}</span>}
+                    {d.travelFrom && <span className="tp-travel">🚗 გზა: {d.travelFrom} → {d.name}</span>}
+                  </div>
+                  <ol className="tp-acts">
+                    {d.acts.map((a, ai) => {
+                      const idx = actIndex++
+                      return (
+                        <li key={a.key} style={{ "--a": ai } as CSSProperties}>
+                          <button data-cx={`plan-${idx}`} onClick={(e) => openCx("plan", spots, idx, e.currentTarget)}>
+                            <span className="tp-slot">{a.slot}</span>
+                            <span className="tp-thumb"><img src={IMG(a.img, 240)} alt="" loading="lazy" /><i aria-hidden="true">{a.icon}</i></span>
+                            <span className="tp-act-tx">
+                              <span className="tp-kind">{a.kind}</span>
+                              <b>{a.title}</b>
+                              <span className="tp-act-p">{a.text}</span>
+                            </span>
+                            <span className="tp-open" aria-hidden="true">⤢</span>
+                          </button>
+                        </li>
+                      )
+                    })}
+                  </ol>
+                </div>
+              </article>
+            ))}
+          </div>
+          <p className="tp-note">მარშრუტი ატლასის მასალიდან დგება — გზის ხანგრძლივობა, ამინდი და მთის უღელტეხილების მდგომარეობა წინასწარ გადაამოწმე.</p>
+        </div>
+      )
+    }
+
+    const fewDays = f.regions.length > f.days
+    return (
+      <div className="tp-form" data-no-reveal>
+        <section className="tp-sec" style={{ "--s": 0 } as CSSProperties}>
+          <header><span className="tp-n">01</span><h3>სად გინდა წასვლა?</h3><span className="tp-hint">აირჩიე ერთი ან მეტი კუთხე — თანმიმდევრობა მარშრუტის რიგი იქნება</span></header>
+          <div className="tp-regions">
+            {usable.map((k, i) => {
+              const r = planRegion(k.id)
+              const order = f.regions.indexOf(k.id)
+              const blocked = PLAN_BLOCKED.includes(k.id)
+              return (
+                <button
+                  key={k.id}
+                  className={`tp-region${order >= 0 ? " on" : ""}${blocked ? " blocked" : ""}`}
+                  style={{ "--i": i } as CSSProperties}
+                  disabled={blocked}
+                  aria-pressed={order >= 0}
+                  onClick={() => setPF({ regions: toggleIn(f.regions, k.id) })}
+                >
+                  <img src={IMG(r.img, 500)} alt="" loading="lazy" />
+                  <span className="tp-region-name">{k.name}</span>
+                  {order >= 0 && <span className="tp-check" key={order}>{order + 1}</span>}
+                  {blocked && <span className="tp-blocked">ოკუპირებული ტერიტორია</span>}
+                </button>
+              )
+            })}
+          </div>
+        </section>
+
+        <section className="tp-sec" style={{ "--s": 1 } as CSSProperties}>
+          <header><span className="tp-n">02</span><h3>როდის და რამდენი ხნით?</h3></header>
+          <div className="tp-when">
+            <label className="tp-date-in">
+              <span className="tp-label">დაწყების თარიღი</span>
+              <input type="date" value={f.from} onChange={(e) => setPF({ from: e.target.value })} />
+            </label>
+            {stepper("ხანგრძლივობა", f.days, 1, 14, (n) => setPF({ days: n }), "დღე")}
+            {stepper("მოგზაურები", f.people, 1, 12, (n) => setPF({ people: n }), "ადამიანი")}
+          </div>
+          {fewDays && <p className="tp-warn">დღეები ნაკლებია კუთხეებზე — მარშრუტში პირველი {f.days} კუთხე მოხვდება.</p>}
+        </section>
+
+        <section className="tp-sec" style={{ "--s": 2 } as CSSProperties}>
+          <header><span className="tp-n">03</span><h3>რა გაინტერესებს?</h3></header>
+          <div className="tp-chips">
+            {INTERESTS.map((x, i) => (
+              <button
+                key={x.id}
+                className={f.interests.includes(x.id) ? "on" : undefined}
+                style={{ "--i": i } as CSSProperties}
+                aria-pressed={f.interests.includes(x.id)}
+                onClick={() => setPF({ interests: toggleIn(f.interests, x.id) })}
+              >
+                <i aria-hidden="true">{x.icon}</i>{x.label}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="tp-sec" style={{ "--s": 3 } as CSSProperties}>
+          <header><span className="tp-n">04</span><h3>რა ტემპით?</h3></header>
+          <div className="tp-paces">
+            {PACES.map((p, i) => (
+              <button key={p.label} className={f.pace === i ? "on" : undefined} aria-pressed={f.pace === i} onClick={() => setPF({ pace: i })}>
+                <span className="tp-pace-dots" aria-hidden="true">{p.slots.map((s) => <i key={s} />)}</span>
+                <b>{p.label}</b>
+                <span>{p.hint}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <div className="tp-cta">
+          <div className="tp-cta-sum">
+            {f.regions.length
+              ? <><b>{Math.min(f.regions.length, f.days)}</b> კუთხე · <b>{f.days}</b> დღე · <b>{f.people}</b> მოგზაური</>
+              : "აირჩიე მინიმუმ ერთი კუთხე"}
+          </div>
+          <button className="tp-go" disabled={!f.regions.length} onClick={buildRoute}>მარშრუტის შექმნა →</button>
+        </div>
+      </div>
+    )
+  }
+
   const subPage = (v: Exclude<View, "home">) => {
     let body: React.ReactNode
     switch (v) {
       case "regions": {
         // the map is the whole page here; no card grid below it
         body = null
+        break
+      }
+      case "plan": {
+        body = <div key={planStage}>{planner()}</div>
         break
       }
       case "history": {
@@ -1138,16 +1588,7 @@ export default function GeorgianHeritagePage({ onBack, onSelectRegion: selectReg
             {kutkheBar(CUSTOMS)}
             <div key={kutkhe}>
               {list.length ? (
-                <div className="grid grid-4">
-                  {list.map((c, i) => (
-                    <div key={c.title} className={`custom-card reveal zoom${delay(i)}`}>
-                      <div className="custom-icon">{c.icon}</div>
-                      <h3>{c.title}</h3>
-                      <div className="custom-region">{c.region}</div>
-                      <p>{c.text}</p>
-                    </div>
-                  ))}
-                </div>
+                mosaic("custom", customSpots(list))
               ) : kutkheEmpty()}
             </div>
           </>
@@ -1162,23 +1603,12 @@ export default function GeorgianHeritagePage({ onBack, onSelectRegion: selectReg
             {kutkheBar([...LEGENDS, ...STORIES])}
             <div key={kutkhe}>
               {list.length ? (
-                <div className="grid grid-3">
-                  {list.map((l, i) => (
-                    <article key={l.title} className={`legend-card reveal zoom${delay(i)}`}>
-                      <div className="im"><img src={IMG(l.img, 1000)} alt={l.title} loading="lazy" /><span className="type">{l.kind}</span></div>
-                      <div className="tx">
-                        <div className="custom-region">{l.region}</div>
-                        <h3>{l.title}</h3>
-                        <p>{l.text}</p>
-                      </div>
-                    </article>
-                  ))}
-                </div>
+                mosaic("legend", legendSpots(list))
               ) : !storyList.length && kutkheEmpty()}
               {storyList.length > 0 && (
                 <div style={{ marginTop: list.length ? 90 : 0 }}>
                   {secHead("სარედაქციო განყოფილება", t.storiesTitle, t.storiesSub)}
-                  {stories(storyList)}
+                  {mosaic("story", storySpots(storyList))}
                 </div>
               )}
             </div>
@@ -1192,7 +1622,7 @@ export default function GeorgianHeritagePage({ onBack, onSelectRegion: selectReg
           <>
             {kutkheBar(ARCHIVE)}
             {filters(ARCH_CATS, archCat, setArchCat)}
-            <div key={`${kutkhe}-${archCat}`}>{list.length ? archiveGrid(list) : kutkheEmpty()}</div>
+            <div key={`${kutkhe}-${archCat}`}>{list.length ? mosaic("archive", archiveSpots(list)) : kutkheEmpty()}</div>
           </>
         )
         break
@@ -1211,63 +1641,67 @@ export default function GeorgianHeritagePage({ onBack, onSelectRegion: selectReg
             <div className="nx-head">
               <span className="eyebrow reveal">გააგრძელე მოგზაურობა</span>
               <h2 className="reveal d1">სად <span className="grad-text">გავაგრძელოთ?</span></h2>
-              <p className="reveal d2">აირჩიე გვერდი — ან გახსენი და პირდაპირ კონკრეტულ კუთხეზე გადადი.</p>
             </div>
-            <ol className="nx-list">
+            <ol className={`nx-grid${nextOpen ? " has-open" : ""}`}>
               {navItems.filter(([, nv]) => nv !== v && nv !== "home").map(([label, nv], i) => {
-                // pages with region-tagged content open their region list right under the row instead of navigating
+                // pages with region-tagged content open a strip of region photos under the grid instead of navigating
                 const items = kutkheItems(nv)
                 const open = nextOpen === nv
                 const hero = PAGE_HERO[nv as Exclude<View, "home">]
                 return (
-                  <li key={nv} className={`nx-row reveal${open ? " open" : ""}${nextOpen && !open ? " dim" : ""}`} style={{ "--i": i } as CSSProperties}>
+                  <li key={nv} className={`nx-card reveal${open ? " open" : ""}`} style={{ "--i": i } as CSSProperties}>
                     <button
                       className="nx-btn"
                       aria-expanded={items ? open : undefined}
                       onClick={() => (items ? setNextOpen(open ? null : nv) : go(nv))}
                     >
+                      <span className="nx-photo">
+                        {PAGE_SLIDES[nv as Exclude<View, "home">].map((s, si) => (
+                          <img key={s.img} src={IMG(s.img, 900)} alt="" loading="lazy" style={{ "--s": si } as CSSProperties} />
+                        ))}
+                      </span>
                       <span className="nx-num">{String(i + 1).padStart(2, "0")}</span>
-                      <span className="nx-photo"><img src={IMG(hero.img, 500)} alt="" loading="lazy" /></span>
+                      {items && <span className="nx-count"><b>{items.length}</b></span>}
                       <span className="nx-text">
                         <span className="nx-eyebrow">{hero.eyebrow}</span>
                         <span className="nx-title"><span>{label}</span></span>
                       </span>
-                      <span className="nx-meta">
-                        {items ? <><b>{items.length}</b> მასალა · <b>{KUTKHEEBI.length}</b> კუთხე</> : "ინტერაქტიული რუკა"}
-                      </span>
-                      <i className="nx-arrow" aria-hidden="true">{items ? "▾" : "→"}</i>
+                      <i className="nx-arrow" aria-hidden="true">{items ? "+" : "→"}</i>
                     </button>
-                    {items && (
-                      <div className="next-regions-wrap" aria-hidden={!open}>
-                        <div className="next-regions-clip">
-                          <div className="next-regions">
-                            <div className="filters">
-                              <button className="filter-btn all" style={{ animationDelay: "0s" }} onClick={() => go(nv)} tabIndex={open ? 0 : -1}>
-                                ყველა <span className="n">{items.length}</span>
-                              </button>
-                              {KUTKHEEBI.map((k, ki) => {
-                                const n = items.filter((x) => x.areas.includes(k.id)).length
-                                return (
-                                  <button
-                                    key={k.id}
-                                    className={`filter-btn${n ? "" : " empty"}`}
-                                    style={{ animationDelay: `${0.03 * (ki + 1)}s` }}
-                                    onClick={() => go(nv, k.id)}
-                                    tabIndex={open ? 0 : -1}
-                                  >
-                                    {k.name} <span className="n">{n}</span>
-                                  </button>
-                                )
-                              })}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </li>
                 )
               })}
             </ol>
+            {nextOpen && (() => {
+              const items = kutkheItems(nextOpen) ?? []
+              const hero = PAGE_HERO[nextOpen as Exclude<View, "home">]
+              return (
+                <div className="nx-panel" key={nextOpen}>
+                  <div className="nx-panel-head">
+                    <h3>{hero.eyebrow}</h3>
+                    <button className="nx-all" onClick={() => go(nextOpen)}>ყველა <b>{items.length}</b> →</button>
+                  </div>
+                  <div className="nx-regions">
+                    {KUTKHEEBI.map((k, ki) => {
+                      const n = items.filter((x) => x.areas.includes(k.id)).length
+                      const img = kutkheImg(k)
+                      return (
+                        <button
+                          key={k.id}
+                          className={`nx-region${n ? "" : " empty"}`}
+                          style={{ "--i": ki } as CSSProperties}
+                          onClick={() => go(nextOpen, k.id)}
+                        >
+                          <img src={IMG(img, 400)} alt="" loading="lazy" />
+                          <span className="nx-region-name">{k.name}</span>
+                          <span className="nx-region-n">{n}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })()}
           </div>
         </section>
       </>
@@ -1312,7 +1746,7 @@ export default function GeorgianHeritagePage({ onBack, onSelectRegion: selectReg
 
         <div className="foot-bottom reveal">
           <div className="foot-actions">
-            <button className="foot-pill" onClick={onPlanTrip}>{t.trip}</button>
+            <button className="foot-pill" onClick={() => go("plan")}>{t.trip}</button>
             <button className="foot-pill" onClick={onBack}>TravelWorld — მთავარი</button>
             <button className="foot-pill up" onClick={() => fp.goTo(0)}>უკან ზემოთ ↑</button>
           </div>
@@ -1386,7 +1820,7 @@ export default function GeorgianHeritagePage({ onBack, onSelectRegion: selectReg
             {label}
           </button>
         ))}
-        <button style={{ transitionDelay: menuOpen ? `${0.08 + navItems.length * 0.05}s` : "0s" }} onClick={onPlanTrip}>{t.trip}</button>
+        <button style={{ transitionDelay: menuOpen ? `${0.08 + navItems.length * 0.05}s` : "0s" }} onClick={() => go("plan")}>{t.trip}</button>
       </div>
 
       {/* each top-level child of <main> is one full-screen slide (see useFullPage) */}
@@ -1411,6 +1845,79 @@ export default function GeorgianHeritagePage({ onBack, onSelectRegion: selectReg
           ))}
         </nav>
       )}
+
+      {/* PHOTO VIEWER (customs, legends, stories, archive, timeline) */}
+      {cx && cx.list[cx.i] && (() => {
+        const c = cx.list[cx.i]
+        const f = cx.from
+        cxKeys.current = (e) => {
+          if (e.key === "Escape") closeCx()
+          else if (e.key === "ArrowRight") stepCx(1)
+          else if (e.key === "ArrowLeft") stepCx(-1)
+          else if (!["ArrowUp", "ArrowDown", "PageUp", "PageDown", " ", "Home", "End"].includes(e.key)) return
+          e.preventDefault()
+          e.stopImmediatePropagation()
+        }
+        let touchX: number | null = null
+        return (
+          <div
+            className={`cxv${cx.closing ? " closing" : ""}${f ? " from-card" : ""}`}
+            role="dialog"
+            aria-modal="true"
+            aria-label={c.title}
+            style={f ? ({ "--ct": `${f.t}px`, "--cr": `${f.r}px`, "--cb": `${f.b}px`, "--cl": `${f.l}px` } as CSSProperties) : undefined}
+            onTouchStart={(e) => { touchX = e.touches[0].clientX }}
+            onTouchEnd={(e) => {
+              if (touchX === null) return
+              const dx = e.changedTouches[0].clientX - touchX
+              touchX = null
+              if (Math.abs(dx) > 50) stepCx(dx < 0 ? 1 : -1)
+            }}
+          >
+            <div className="cxv-photos">
+              {cx.list.map((p, i) => (
+                <img
+                  key={p.key}
+                  src={IMG(p.img, 2000)}
+                  alt={i === cx.i ? p.alt : ""}
+                  className={i === cx.i ? "on" : i === cx.prev ? "prev" : undefined}
+                />
+              ))}
+            </div>
+            <div className="cxv-veil" />
+            <button className="cxv-close" onClick={closeCx} aria-label="დახურვა">×</button>
+            <div className="cxv-content" key={cx.i}>
+              <div className="cxv-top">
+                {c.icon && <span className="cxv-icon" aria-hidden="true">{c.icon}</span>}
+                <span className="cxv-count"><b>{String(cx.i + 1).padStart(2, "0")}</b> / {String(cx.list.length).padStart(2, "0")}</span>
+              </div>
+              {c.badge && <span className="cxv-badge">{c.badge}</span>}
+              <span className="cxv-region">{c.region}</span>
+              <h2>{splitWords(c.title)}</h2>
+              <p>{splitWords(c.text)}</p>
+              {c.meta && <span className="cxv-meta">{c.meta}</span>}
+              {c.regionId && (
+                <button className="cxv-go" onClick={() => { const id = c.regionId!; setCx(null); onSelectRegion(id) }}>კუთხის გვერდი →</button>
+              )}
+              <span className="cxv-cap">{c.alt}</span>
+            </div>
+            {cx.list.length > 1 && (
+              <>
+                <button className="cxv-nav prev" onClick={() => stepCx(-1)} aria-label="წინა">←</button>
+                <button className="cxv-nav next" onClick={() => stepCx(1)} aria-label="შემდეგი">→</button>
+                <div className="cxv-thumbs">
+                  {cx.list.map((p, i) => (
+                    <button key={p.key} className={i === cx.i ? "on" : undefined} onClick={() => showCx(i)} aria-label={p.title}>
+                      <img src={IMG(p.img, 240)} alt="" />
+                      {p.icon && <span aria-hidden="true">{p.icon}</span>}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )
+      })()}
 
       {/* LIGHTBOX */}
       <div className={`lightbox${lightbox ? " open" : ""}`} onClick={() => setLightbox(null)}>
