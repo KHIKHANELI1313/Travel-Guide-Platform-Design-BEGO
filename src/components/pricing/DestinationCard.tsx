@@ -39,7 +39,7 @@ export default function DestinationCard({
           alt={name}
           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A]/90 via-[#0B1F3A]/25 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
         <div className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-[#0B1F3A] backdrop-blur">
           <Star className="h-3 w-3 fill-[#1677FF] text-[#1677FF]" />
           Top pick

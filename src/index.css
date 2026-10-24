@@ -206,6 +206,66 @@
   animation: app-reveal 0.65s ease-out both;
 }
 
+/* Page changes (keyed wrapper in App.tsx) */
+.page-enter {
+  animation: page-enter 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.page-enter-fade {
+  animation: page-enter-fade 0.5s ease both;
+}
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes page-enter-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.route-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 400;
+  pointer-events: none;
+  background: linear-gradient(90deg, #E0313E, #2E7BFF, #1FB86A);
+  transform-origin: left;
+  animation: route-bar 0.9s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes route-bar {
+  0% { transform: scaleX(0); opacity: 1; }
+  60% { transform: scaleX(1); opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-enter { animation-name: page-enter-fade; }
+  .route-bar { display: none; }
+}
+
+/* Auto reveal (lib/autoReveal.ts): headings and text rise out of a blur, photos open out of a
+   rounded frame. Individual translate/scale properties keep the elements own transforms intact;
+   --ar-d staggers elements that appear together. */
+.ar:not(.ar-in) { opacity: 0; }
+.ar-in {
+  animation: ar-text 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+  animation-delay: var(--ar-d, 0ms);
+}
+img.ar-in {
+  animation: ar-photo 1.3s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+  animation-delay: var(--ar-d, 0ms);
+}
+@keyframes ar-text {
+  from { opacity: 0; translate: 0 26px; filter: blur(8px); }
+}
+@keyframes ar-photo {
+  from { opacity: 0; scale: 1.14; clip-path: inset(10% 10% 10% 10% round 28px); filter: blur(10px) saturate(0.6); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ar:not(.ar-in) { opacity: 1; }
+  .ar-in, img.ar-in { animation: none; }
+}
+
 /* Full-screen home globe */
 .home-globe {
   position: absolute;

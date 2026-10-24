@@ -84,7 +84,7 @@ export default function CountryCulture({ country }: CountryCultureProps) {
         <div className="animate-[fadeSlide_0.3s_ease] overflow-hidden rounded-2xl border border-white/60 bg-white shadow-xl shadow-black/5">
           <div className="relative h-48 overflow-hidden sm:h-56">
             <img src={culture.image} alt="" className="h-full w-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A]/90 via-[#0B1F3A]/35 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
             <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/70">
                 Culture

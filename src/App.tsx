@@ -1,22 +1,22 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import {
   Globe, Search, MapPin, Star, Heart, ChevronRight, Menu, X,
-  Users, Plane, Utensils, Bus, Shield, Map,
+  Users, Plane, Utensils, Bus, Shield,
   Mountain, Waves, Trees, Diamond, BookOpen,
   Calendar, DollarSign, Clock, Phone, AlertTriangle, CheckCircle,
   Send, Filter, ArrowRight, Play,
   Compass, Zap,
-  MessageSquare, Eye,
+  Eye,
   BarChart3, Settings, LogOut, Upload,
   Navigation, Train, Car, Bike, Ship, CreditCard,
   Sun, Languages,
-  BadgeCheck, Flag, Globe2
+  BadgeCheck, Flag, Globe2, ChevronDown, Check
 } from "lucide-react"
 import HomeGlobe from "./components/HomeGlobe"
 import CurrencyConverterModal from "./components/CurrencyConverterModal"
 import GeorgiaRegionsMap from "./components/GeorgiaRegionsMap"
 import GeorgiaRegionDetailPage from "./components/GeorgiaRegionDetailPage"
-import GeorgianHeritagePage from "./components/GeorgianHeritagePage"
+import GeorgianHeritagePage, { type View as HeritageView } from "./components/GeorgianHeritagePage"
 import CityPicker from "./components/CityPicker"
 import CatalogCityPicker from "./components/CatalogCityPicker"
 import RegionPicker from "./components/RegionPicker"
@@ -25,6 +25,8 @@ import TripPricingPanel from "./components/pricing/TripPricingPanel"
 import CountryHistory from "./components/CountryHistory"
 import CountryCulture from "./components/CountryCulture"
 import { hasPricingCatalog } from "./data/destinations/catalog"
+import { useAutoReveal } from "./lib/autoReveal"
+import { LANGS, useI18n } from "./lib/i18n"
 import {
   COUNTRIES,
   findCountry,
@@ -131,6 +133,7 @@ function StarRating({ rating, size = "sm" }: { rating: number; size?: "sm" | "md
 }
 
 function Tag({ label }: { label: string }) {
+  const { tx } = useI18n()
   const colors: Record<string, string> = {
     Culture: "bg-purple-100 text-purple-700",
     Food: "bg-orange-100 text-orange-700",
@@ -143,21 +146,78 @@ function Tag({ label }: { label: string }) {
   }
   return (
     <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${colors[label] ?? "bg-gray-100 text-gray-600"}`}>
-      {label}
+      {tx(`tag.${label}`, label)}
     </span>
+  )
+}
+
+/** header language menu: KA / EN / TR / RU, remembered across visits */
+function LanguageSwitcher() {
+  const { lang, setLang, t } = useI18n()
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const current = LANGS.find((l) => l.id === lang) ?? LANGS[0]
+
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: MouseEvent) => { if (!ref.current?.contains(e.target as Node)) setOpen(false) }
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false) }
+    document.addEventListener("mousedown", onDown)
+    document.addEventListener("keydown", onKey)
+    return () => {
+      document.removeEventListener("mousedown", onDown)
+      document.removeEventListener("keydown", onKey)
+    }
+  }, [open])
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={t("nav.language")}
+        className="flex min-h-11 items-center gap-1.5 rounded-xl border border-white/15 px-3 text-sm font-semibold text-white/85 transition-colors hover:border-white/35 hover:bg-white/5 hover:text-white cursor-pointer"
+      >
+        <Languages className="h-4 w-4" />
+        {current.code}
+        <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <ul role="listbox" aria-label={t("nav.language")} className="absolute right-0 top-[calc(100%+8px)] z-50 w-48 overflow-hidden rounded-xl border border-white/10 bg-[#0B1F3A] py-1.5 shadow-2xl shadow-black/40">
+          {LANGS.map((l) => (
+            <li key={l.id}>
+              <button
+                role="option"
+                aria-selected={l.id === lang}
+                onClick={() => { setLang(l.id); setOpen(false) }}
+                className={`flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors cursor-pointer ${
+                  l.id === lang ? "bg-white/10 text-white" : "text-white/75 hover:bg-white/5 hover:text-white"
+                }`}
+              >
+                <span className="w-6 text-xs font-bold text-[#1677FF]">{l.code}</span>
+                <span className="flex-1">{l.name}</span>
+                {l.id === lang && <Check className="h-4 w-4 text-[#1677FF]" />}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   )
 }
 
 function Header({ currentPage, onNavigate }: { currentPage: Page; onNavigate: NavigateFn }) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { t } = useI18n()
 
   const navItems: Array<{ label: string; page: Page }> = [
-    { label: "Home", page: "home" },
-    { label: "Countries", page: "countries" },
-    { label: "Hotels", page: "hotels" },
-    { label: "Transport", page: "transport" },
-    { label: "Culture", page: "culture" },
-    { label: "Safety", page: "safety" },
+    { label: t("nav.home"), page: "home" },
+    { label: t("nav.countries"), page: "countries" },
+    { label: t("nav.hotels"), page: "hotels" },
+    { label: t("nav.transport"), page: "transport" },
+    { label: t("nav.culture"), page: "culture" },
+    { label: t("nav.safety"), page: "safety" },
   ]
 
   return (
@@ -184,41 +244,32 @@ function Header({ currentPage, onNavigate }: { currentPage: Page; onNavigate: Na
           ))}
         </nav>
 
-        <div className="hidden lg:flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <LanguageSwitcher />
+          <div className="hidden lg:flex items-center gap-3">
+            <button
+              onClick={() => onNavigate("profile")}
+              className="px-4 py-2 text-sm font-medium text-white/80 hover:text-white transition-colors cursor-pointer"
+            >
+              {t("nav.login")}
+            </button>
+            <button
+              onClick={() => onNavigate("trip-planner")}
+              className="px-4 py-2 rounded-xl bg-[#1677FF] text-white text-sm font-semibold hover:bg-blue-600 transition-colors cursor-pointer"
+            >
+              {t("nav.start")}
+            </button>
+          </div>
+
           <button
-            onClick={() => onNavigate("map")}
-            className="p-2 text-white/70 hover:text-white transition-colors cursor-pointer"
+            className="lg:hidden inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-white cursor-pointer hover:bg-white/10"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label={mobileOpen ? t("nav.closeMenu") : t("nav.openMenu")}
+            aria-expanded={mobileOpen}
           >
-            <Map className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => onNavigate("ai-assistant")}
-            className="p-2 text-white/70 hover:text-white transition-colors cursor-pointer"
-          >
-            <MessageSquare className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => onNavigate("profile")}
-            className="px-4 py-2 text-sm font-medium text-white/80 hover:text-white transition-colors cursor-pointer"
-          >
-            Login
-          </button>
-          <button
-            onClick={() => onNavigate("trip-planner")}
-            className="px-4 py-2 rounded-xl bg-[#1677FF] text-white text-sm font-semibold hover:bg-blue-600 transition-colors cursor-pointer"
-          >
-            Start Exploring
+            {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
-
-        <button
-          className="lg:hidden inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-white cursor-pointer hover:bg-white/10"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label={mobileOpen ? "Close menu" : "Open menu"}
-          aria-expanded={mobileOpen}
-        >
-          {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
       </div>
 
       {mobileOpen && (
@@ -236,28 +287,16 @@ function Header({ currentPage, onNavigate }: { currentPage: Page; onNavigate: Na
           ))}
           <div className="my-2 border-t border-white/10" />
           <button
-            onClick={() => { onNavigate("map"); setMobileOpen(false) }}
-            className="flex items-center gap-3 text-left px-4 py-3 rounded-lg text-white/80 hover:text-white hover:bg-white/10 text-sm font-medium cursor-pointer"
-          >
-            <Map className="w-5 h-5 shrink-0" /> Map
-          </button>
-          <button
-            onClick={() => { onNavigate("ai-assistant"); setMobileOpen(false) }}
-            className="flex items-center gap-3 text-left px-4 py-3 rounded-lg text-white/80 hover:text-white hover:bg-white/10 text-sm font-medium cursor-pointer"
-          >
-            <MessageSquare className="w-5 h-5 shrink-0" /> AI Assistant
-          </button>
-          <button
             onClick={() => { onNavigate("profile"); setMobileOpen(false) }}
             className="text-left px-4 py-3 rounded-lg text-white/80 hover:text-white hover:bg-white/10 text-sm font-medium cursor-pointer"
           >
-            Login
+            {t("nav.login")}
           </button>
           <button
             onClick={() => { onNavigate("trip-planner"); setMobileOpen(false) }}
             className="mt-1 px-4 py-3 rounded-xl bg-[#1677FF] text-white text-sm font-semibold hover:bg-blue-600 cursor-pointer"
           >
-            Start Exploring
+            {t("nav.start")}
           </button>
         </div>
       )}
@@ -266,6 +305,7 @@ function Header({ currentPage, onNavigate }: { currentPage: Page; onNavigate: Na
 }
 
 function Footer({ onNavigate }: { onNavigate: NavigateFn }) {
+  const { t, tx } = useI18n()
   return (
     <footer className="bg-[#0B1F3A] text-white">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-16">
@@ -278,25 +318,25 @@ function Footer({ onNavigate }: { onNavigate: NavigateFn }) {
               <span className="font-bold text-xl">TravelWorld</span>
             </div>
             <p className="text-white/50 text-sm leading-relaxed">
-              One platform for the whole world. Discover, plan and experience every destination.
+              {t("footer.tagline")}
             </p>
           </div>
           <div>
-            <h4 className="font-semibold mb-4 text-white/90">Explore</h4>
+            <h4 className="font-semibold mb-4 text-white/90">{t("footer.explore")}</h4>
             <ul className="space-y-2.5">
               {(["countries", "hotels", "restaurants", "map"] as Page[]).map((p) => (
                 <li key={p}>
                   <button onClick={() => onNavigate(p)} className="text-white/50 hover:text-white text-sm transition-colors capitalize cursor-pointer">
-                    {p.replace("-", " ")}
+                    {tx(`footer.${p}`, p)}
                   </button>
                 </li>
               ))}
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold mb-4 text-white/90">Support</h4>
+            <h4 className="font-semibold mb-4 text-white/90">{t("footer.support")}</h4>
             <ul className="space-y-2.5">
-              {["Help Center", "Contact Us", "Safety Tips", "Privacy Policy"].map((item) => (
+              {[t("footer.help"), t("footer.contact"), t("footer.safetyTips"), t("footer.privacy")].map((item) => (
                 <li key={item}>
                   <a href="#" className="text-white/50 hover:text-white text-sm transition-colors">{item}</a>
                 </li>
@@ -304,7 +344,7 @@ function Footer({ onNavigate }: { onNavigate: NavigateFn }) {
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold mb-4 text-white/90">Follow Us</h4>
+            <h4 className="font-semibold mb-4 text-white/90">{t("footer.follow")}</h4>
             <div className="flex gap-3">
               {[Instagram, Facebook, Youtube, Twitter].map((Icon, i) => (
                 <a key={i} href="#" className="w-9 h-9 rounded-lg bg-white/10 hover:bg-[#1677FF] flex items-center justify-center transition-colors">
@@ -315,10 +355,10 @@ function Footer({ onNavigate }: { onNavigate: NavigateFn }) {
           </div>
         </div>
         <div className="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-white/40 text-sm">© 2026 TravelWorld. All rights reserved.</p>
+          <p className="text-white/40 text-sm">{t("footer.rights")}</p>
           <div className="flex gap-6 text-sm text-white/40">
-            <a href="#" className="hover:text-white/80 transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-white/80 transition-colors">Terms of Service</a>
+            <a href="#" className="hover:text-white/80 transition-colors">{t("footer.privacy")}</a>
+            <a href="#" className="hover:text-white/80 transition-colors">{t("footer.terms")}</a>
           </div>
         </div>
       </div>
@@ -341,6 +381,9 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
   const [activeSuggestion, setActiveSuggestion] = useState(0)
   const [showCurrencyConverter, setShowCurrencyConverter] = useState(false)
   const searchWrapRef = useRef<HTMLDivElement>(null)
+  const { lang, t, tx } = useI18n()
+  // Georgian shows Georgian country names; the other languages use the catalogue's English names
+  const countryLabel = (name: string) => (lang === "ka" ? findCountry(name)?.nameKa ?? name : name)
 
   const usePricingFlow = Boolean(
     selectedCountry && hasPricingCatalog(selectedCountry.name),
@@ -422,7 +465,7 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
         <div className="mx-auto flex max-w-6xl flex-col gap-4">
           <div className="rounded-2xl border border-white/50 bg-white/80 p-5 shadow-xl shadow-black/10 backdrop-blur-xl sm:p-6">
             <p className="mb-4 text-sm font-semibold uppercase tracking-wider text-[#94A3B8]">
-              Where do you want to go?
+              {t("search.where")}
             </p>
             <div className="flex flex-col gap-4 md:flex-row">
               <div ref={searchWrapRef} className="relative flex-1">
@@ -463,7 +506,7 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
                         setSearchOpen(false)
                       }
                     }}
-                    placeholder="Type a country… e.g. Japan, საქართველო"
+                    placeholder={t("search.placeholder")}
                     autoComplete="off"
                     role="combobox"
                     aria-expanded={searchOpen && suggestions.length > 0}
@@ -476,9 +519,9 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
                 {selectedCountry && (
                   <p className="mt-2 flex flex-wrap items-center gap-2 text-xs font-medium text-[#1677FF]">
                     <span className="text-base leading-none">{selectedCountry.flag}</span>
-                    Selected: {selectedCountry.name}
-                    {selectedRegion ? ` · ${selectedRegion}` : usePricingFlow ? " · pick a region" : ""}
-                    {selectedCity ? ` · ${selectedCity}` : selectedRegion || !usePricingFlow ? " · pick a city" : ""}
+                    {t("search.selected")} {countryLabel(selectedCountry.name)}
+                    {selectedRegion ? ` · ${selectedRegion}` : usePricingFlow ? ` · ${t("search.pickRegion")}` : ""}
+                    {selectedCity ? ` · ${selectedCity}` : selectedRegion || !usePricingFlow ? ` · ${t("search.pickCity")}` : ""}
                   </p>
                 )}
 
@@ -489,7 +532,7 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
                     className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-40 max-h-72 overflow-y-auto rounded-xl border border-gray-100 bg-white py-1.5 shadow-xl shadow-black/10"
                   >
                     {suggestions.length === 0 ? (
-                      <li className="px-4 py-3 text-sm text-[#94A3B8]">No countries found</li>
+                      <li className="px-4 py-3 text-sm text-[#94A3B8]">{t("search.none")}</li>
                     ) : (
                       suggestions.map((country, index) => (
                         <li key={country.iso2} role="option" aria-selected={index === activeSuggestion}>
@@ -529,8 +572,8 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
                   onChange={(e) => setTravelType(e.target.value)}
                   className="w-full cursor-pointer bg-transparent text-sm text-gray-700 outline-none"
                 >
-                  {["Adventure", "Culture", "Relax", "Luxury", "Family"].map((t) => (
-                    <option key={t}>{t}</option>
+                  {["Adventure", "Culture", "Relax", "Luxury", "Family"].map((type) => (
+                    <option key={type} value={type}>{tx(`tag.${type}`, type)}</option>
                   ))}
                 </select>
               </div>
@@ -539,7 +582,7 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
                 disabled={!selectedCountry}
                 className="flex w-full cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-[#1677FF] px-6 sm:px-8 py-3 font-semibold text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-[#1677FF] md:w-auto"
               >
-                <Search className="h-4 w-4" /> Open country
+                <Search className="h-4 w-4" /> {t("search.open")}
               </button>
             </div>
           </div>
@@ -593,12 +636,12 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-12 sm:py-20">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-8 sm:mb-10">
           <div>
-            <p className="text-[#1677FF] text-sm font-semibold uppercase tracking-wider mb-2">Popular Countries</p>
-            <h2 className="text-2xl sm:text-4xl font-bold text-[#111827]">Explore Popular Countries</h2>
-            <p className="text-[#94A3B8] mt-2 text-sm sm:text-base">Discover amazing places around the world</p>
+            <p className="text-[#1677FF] text-sm font-semibold uppercase tracking-wider mb-2">{t("popular.eyebrow")}</p>
+            <h2 className="text-2xl sm:text-4xl font-bold text-[#111827]">{t("popular.title")}</h2>
+            <p className="text-[#94A3B8] mt-2 text-sm sm:text-base">{t("popular.sub")}</p>
           </div>
           <button onClick={() => onNavigate("countries")} className="flex items-center gap-2 text-[#1677FF] font-semibold hover:gap-3 transition-all cursor-pointer shrink-0">
-            View All <ArrowRight className="w-4 h-4" />
+            {t("common.viewAll")} <ArrowRight className="w-4 h-4" />
           </button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -621,7 +664,7 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <span className="text-2xl">{c.flag}</span>
-                    <h3 className="font-bold text-[#111827] text-lg">{c.name}</h3>
+                    <h3 className="font-bold text-[#111827] text-lg">{countryLabel(c.name)}</h3>
                   </div>
                   <div className="flex items-center gap-1">
                     <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
@@ -634,27 +677,27 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
                 </div>
                 <div className="grid grid-cols-3 gap-2 mb-4 text-xs">
                   <div>
-                    <p className="text-[#94A3B8]">Language</p>
+                    <p className="text-[#94A3B8]">{t("common.language")}</p>
                     <p className="font-medium text-[#111827] truncate">{c.language}</p>
                   </div>
                   <div>
-                    <p className="text-[#94A3B8]">Currency</p>
+                    <p className="text-[#94A3B8]">{t("common.currency")}</p>
                     <p className="font-medium text-[#111827]">{c.currency}</p>
                   </div>
                   <div>
-                    <p className="text-[#94A3B8]">Population</p>
+                    <p className="text-[#94A3B8]">{t("common.population")}</p>
                     <p className="font-medium text-[#111827]">{c.population}</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
                   <button className="flex-1 min-w-0 py-2.5 px-2 bg-[#0B1F3A] text-white text-sm font-semibold rounded-xl hover:bg-[#1677FF] transition-colors cursor-pointer truncate">
-                    Explore {c.name} →
+                    {t("popular.explore")} {countryLabel(c.name)} →
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); onNavigate("trip-planner") }}
                     className="shrink-0 py-2.5 px-3 border border-[#1677FF] text-[#1677FF] text-sm font-semibold rounded-xl hover:bg-[#1677FF] hover:text-white transition-colors cursor-pointer"
                   >
-                    მოგზაურობა
+                    {t("popular.trip")}
                   </button>
                 </div>
               </div>
@@ -667,8 +710,8 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
       <section className="bg-white py-12 sm:py-20">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
           <div className="text-center mb-8 sm:mb-12">
-            <p className="text-[#1677FF] text-sm font-semibold uppercase tracking-wider mb-2">Travel Styles</p>
-            <h2 className="text-2xl sm:text-4xl font-bold text-[#111827]">Find Your Perfect Experience</h2>
+            <p className="text-[#1677FF] text-sm font-semibold uppercase tracking-wider mb-2">{t("styles.eyebrow")}</p>
+            <h2 className="text-2xl sm:text-4xl font-bold text-[#111827]">{t("styles.title")}</h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
             {categories.map(({ label, icon: Icon, color, action }) => (
@@ -686,7 +729,7 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
                 <div className={`w-14 h-14 ${color} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
                   <Icon className="w-7 h-7 text-white" />
                 </div>
-                <span className="font-semibold text-[#111827] text-sm">{label}</span>
+                <span className="font-semibold text-[#111827] text-sm">{tx(`tag.${label}`, label)}</span>
               </button>
             ))}
           </div>
@@ -702,11 +745,11 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-12 sm:py-20">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-8 sm:mb-10">
           <div>
-            <p className="text-[#1677FF] text-sm font-semibold uppercase tracking-wider mb-2">Must Visit</p>
-            <h2 className="text-2xl sm:text-4xl font-bold text-[#111827]">Most Visited Places</h2>
+            <p className="text-[#1677FF] text-sm font-semibold uppercase tracking-wider mb-2">{t("visit.eyebrow")}</p>
+            <h2 className="text-2xl sm:text-4xl font-bold text-[#111827]">{t("visit.title")}</h2>
           </div>
           <button onClick={() => onNavigate("countries")} className="flex items-center gap-2 text-[#1677FF] font-semibold hover:gap-3 transition-all cursor-pointer shrink-0">
-            View All <ArrowRight className="w-4 h-4" />
+            {t("common.viewAll")} <ArrowRight className="w-4 h-4" />
           </button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -721,16 +764,16 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-5">
                 <div className="flex items-center justify-between mb-1.5">
-                  <h3 className="text-white font-bold text-xl">{d.name}</h3>
+                  <h3 className="text-white font-bold text-xl">{tx(`dest.${d.name}`, d.name)}</h3>
                   <div className="flex items-center gap-1 bg-white/20 backdrop-blur-sm rounded-full px-2.5 py-1">
                     <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                     <span className="text-white text-xs font-semibold">{d.rating}</span>
                   </div>
                 </div>
                 <p className="text-white/70 text-sm flex items-center gap-1">
-                  <MapPin className="w-3 h-3" /> {d.country}
+                  <MapPin className="w-3 h-3" /> {countryLabel(d.country)}
                 </p>
-                {i === 0 && <p className="text-white/60 text-sm mt-2">{d.desc}</p>}
+                {i === 0 && <p className="text-white/60 text-sm mt-2">{tx(`dest.${d.name}.desc`, d.desc)}</p>}
               </div>
             </div>
           ))}
@@ -741,15 +784,15 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
       <section className="bg-[#0B1F3A] py-20">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
           <div className="text-center mb-12">
-            <p className="text-[#1677FF] text-sm font-semibold uppercase tracking-wider mb-2">Why TravelWorld</p>
-            <h2 className="text-2xl sm:text-4xl font-bold text-white">Everything You Need For Travel</h2>
+            <p className="text-[#1677FF] text-sm font-semibold uppercase tracking-wider mb-2">{t("why.eyebrow")}</p>
+            <h2 className="text-2xl sm:text-4xl font-bold text-white">{t("why.title")}</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: Globe, title: "Complete Information", desc: "Comprehensive country guides, culture, local rules and insider tips." },
-              { icon: Shield, title: "Safe Travel", desc: "Real-time safety scores, emergency contacts and health alerts." },
-              { icon: Calendar, title: "Smart Planning", desc: "AI-powered itinerary builder to craft your perfect trip." },
-              { icon: Compass, title: "Local Experience", desc: "Discover authentic places beyond tourist hotspots." },
+              { icon: Globe, title: t("why.1.title"), desc: t("why.1.desc") },
+              { icon: Shield, title: t("why.2.title"), desc: t("why.2.desc") },
+              { icon: Calendar, title: t("why.3.title"), desc: t("why.3.desc") },
+              { icon: Compass, title: t("why.4.title"), desc: t("why.4.desc") },
             ].map(({ icon: Icon, title, desc }, i) => (
               <div key={title} className="group p-7 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#1677FF]/30 transition-all">
                 <div className="w-12 h-12 rounded-xl bg-[#1677FF]/10 flex items-center justify-center mb-5 group-hover:bg-[#1677FF]/20 transition-colors">
@@ -768,12 +811,12 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
-            <p className="text-[#1677FF] text-sm font-semibold uppercase tracking-wider mb-3">AI Powered</p>
-            <h2 className="text-2xl sm:text-4xl font-bold text-[#111827] mb-4">Your Personal Travel Assistant</h2>
-            <p className="text-[#94A3B8] text-lg mb-8 leading-relaxed">Ask anything about destinations, hotels, local food, transport or safety. Get instant expert answers 24/7.</p>
+            <p className="text-[#1677FF] text-sm font-semibold uppercase tracking-wider mb-3">{t("ai.eyebrow")}</p>
+            <h2 className="text-2xl sm:text-4xl font-bold text-[#111827] mb-4">{t("ai.title")}</h2>
+            <p className="text-[#94A3B8] text-lg mb-8 leading-relaxed">{t("ai.desc")}</p>
             <div className="flex gap-3">
               <button onClick={() => onNavigate("ai-assistant")} className="flex items-center gap-2 px-6 py-3.5 bg-[#1677FF] text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors cursor-pointer">
-                Try Assistant <ChevronRight className="w-4 h-4" />
+                {t("ai.try")} <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -784,14 +827,14 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
               </div>
               <div>
                 <p className="text-white font-semibold text-sm">TravelWorld AI</p>
-                <p className="text-white/50 text-xs">Always available</p>
+                <p className="text-white/50 text-xs">{t("ai.online")}</p>
               </div>
               <div className="ml-auto w-2 h-2 rounded-full bg-[#22C55E]" />
             </div>
             <div className="p-5 space-y-4 min-h-[280px]">
               <div className="flex justify-end">
                 <div className="bg-[#1677FF] text-white text-sm rounded-2xl rounded-tr-sm px-4 py-2.5 max-w-[80%]">
-                  Best places to visit in Tokyo?
+                  {t("ai.question")}
                 </div>
               </div>
               <div className="flex gap-3">
@@ -799,17 +842,17 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
                   <Zap className="w-3.5 h-3.5 text-[#1677FF]" />
                 </div>
                 <div className="bg-gray-50 border border-gray-100 text-sm rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[85%] text-[#111827] leading-relaxed">
-                  Tokyo has incredible diversity! Here are my top picks:<br /><br />
-                  <strong>🏯 Senso-ji Temple</strong> — Asakusa's iconic Buddhist temple<br />
-                  <strong>🌸 Shinjuku Gyoen</strong> — Stunning gardens & cherry blossoms<br />
-                  <strong>🗼 Tokyo Skytree</strong> — Panoramic city views at 634m<br />
-                  <strong>🍣 Tsukiji Outer Market</strong> — Freshest sushi breakfasts
+                  {t("ai.answer")}<br /><br />
+                  <strong>🏯 Senso-ji</strong> — {t("ai.a1")}<br />
+                  <strong>🌸 Shinjuku Gyoen</strong> — {t("ai.a2")}<br />
+                  <strong>🗼 Tokyo Skytree</strong> — {t("ai.a3")}<br />
+                  <strong>🍣 Tsukiji</strong> — {t("ai.a4")}
                 </div>
               </div>
             </div>
             <div className="p-4 border-t border-gray-100">
               <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-2.5">
-                <input className="flex-1 text-sm outline-none bg-transparent text-gray-500" placeholder="Ask about any destination..." readOnly />
+                <input className="flex-1 text-sm outline-none bg-transparent text-gray-500" placeholder={t("ai.placeholder")} readOnly />
                 <button onClick={() => onNavigate("ai-assistant")} className="w-7 h-7 bg-[#1677FF] rounded-lg flex items-center justify-center cursor-pointer">
                   <Send className="w-3.5 h-3.5 text-white" />
                 </button>
@@ -824,12 +867,12 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
           <div className="mb-8 sm:mb-10">
             <div>
-              <p className="text-[#1677FF] text-sm font-semibold uppercase tracking-wider mb-2">Travel Stories</p>
-              <h2 className="text-2xl sm:text-4xl font-bold text-[#111827]">Latest Travel Stories</h2>
+              <p className="text-[#1677FF] text-sm font-semibold uppercase tracking-wider mb-2">{t("blog.eyebrow")}</p>
+              <h2 className="text-2xl sm:text-4xl font-bold text-[#111827]">{t("blog.title")}</h2>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {BLOG_POSTS.map((post) => (
+            {BLOG_POSTS.map((post, i) => (
               <div key={post.title} className="group bg-[#F5F7FA] rounded-2xl overflow-hidden hover:shadow-md transition-all cursor-pointer">
                 <div className="relative h-52 overflow-hidden bg-gray-200">
                   <img src={post.image} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -838,14 +881,14 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
                   </div>
                 </div>
                 <div className="p-5">
-                  <h3 className="font-bold text-[#111827] text-lg mb-3 leading-snug group-hover:text-[#1677FF] transition-colors">{post.title}</h3>
+                  <h3 className="font-bold text-[#111827] text-lg mb-3 leading-snug group-hover:text-[#1677FF] transition-colors">{tx(`blog.${i + 1}`, post.title)}</h3>
                   <div className="flex items-center gap-3">
                     <div className="w-7 h-7 rounded-full bg-[#1677FF] flex items-center justify-center text-white text-xs font-bold">{post.author[0]}</div>
                     <div>
                       <p className="text-xs font-medium text-[#111827]">{post.author}</p>
                       <p className="text-xs text-[#94A3B8]">{post.date}</p>
                     </div>
-                    <button className="ml-auto text-[#1677FF] text-xs font-semibold hover:underline cursor-pointer">Read More</button>
+                    <button className="ml-auto text-[#1677FF] text-xs font-semibold hover:underline cursor-pointer">{t("blog.readMore")}</button>
                   </div>
                 </div>
               </div>
@@ -857,8 +900,8 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
       {/* Reviews */}
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-20">
         <div className="text-center mb-12">
-          <p className="text-[#1677FF] text-sm font-semibold uppercase tracking-wider mb-2">Testimonials</p>
-          <h2 className="text-2xl sm:text-4xl font-bold text-[#111827]">What Travelers Say</h2>
+          <p className="text-[#1677FF] text-sm font-semibold uppercase tracking-wider mb-2">{t("reviews.eyebrow")}</p>
+          <h2 className="text-2xl sm:text-4xl font-bold text-[#111827]">{t("reviews.title")}</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {REVIEWS.map((r, i) => (
@@ -866,12 +909,12 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
               <div className="flex items-center gap-1 mb-4">
                 {[...Array(r.rating)].map((_, j) => <Star key={j} className="w-4 h-4 fill-amber-400 text-amber-400" />)}
               </div>
-              <p className={`text-sm leading-relaxed mb-6 ${i === activeReview ? "text-white/80" : "text-[#94A3B8]"}`}>"{r.comment}"</p>
+              <p className={`text-sm leading-relaxed mb-6 ${i === activeReview ? "text-white/80" : "text-[#94A3B8]"}`}>"{tx(`reviews.${i + 1}`, r.comment)}"</p>
               <div className="flex items-center gap-3">
                 <img src={r.avatar} alt={r.name} className="w-10 h-10 rounded-full object-cover bg-gray-200" />
                 <div>
                   <p className={`font-semibold text-sm ${i === activeReview ? "text-white" : "text-[#111827]"}`}>{r.name}</p>
-                  <p className={`text-xs ${i === activeReview ? "text-white/50" : "text-[#94A3B8]"}`}>{r.country} · {r.trips} trips</p>
+                  <p className={`text-xs ${i === activeReview ? "text-white/50" : "text-[#94A3B8]"}`}>{countryLabel(r.country)} · {r.trips} {t("reviews.trips")}</p>
                 </div>
               </div>
             </div>
@@ -883,16 +926,16 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
       <section className="bg-[#1677FF] py-16">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 flex flex-col md:flex-row items-center justify-between gap-8">
           <div>
-            <h2 className="text-3xl font-bold text-white mb-2">Get Travel Inspiration</h2>
-            <p className="text-white/70">Weekly destination guides, deals, and travel tips straight to your inbox.</p>
+            <h2 className="text-3xl font-bold text-white mb-2">{t("news.title")}</h2>
+            <p className="text-white/70">{t("news.sub")}</p>
           </div>
           <div className="flex gap-3 w-full md:w-auto">
             <input
-              placeholder="Enter your email"
+              placeholder={t("news.placeholder")}
               className="flex-1 md:w-72 px-4 py-3 rounded-xl text-sm outline-none text-[#111827] placeholder-gray-400"
             />
             <button className="px-6 py-3 bg-[#0B1F3A] text-white rounded-xl font-semibold hover:bg-[#111827] transition-colors whitespace-nowrap cursor-pointer">
-              Subscribe
+              {t("news.subscribe")}
             </button>
           </div>
         </div>
@@ -930,7 +973,7 @@ function CountriesPage({ onNavigate, initialCategory = null }: { onNavigate: Nav
       {/* Hero */}
       <section className="relative h-64 flex items-end overflow-hidden">
         <img src={HERO_IMAGES.countries} alt="World map" className="absolute inset-0 w-full h-full object-cover bg-gray-800" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A] via-[#0B1F3A]/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent" />
         <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-10 pt-24 w-full">
           <h1 className="text-5xl font-extrabold text-white mb-2">
             {category ? `${category} Destinations` : "Explore Countries"}
@@ -1071,7 +1114,7 @@ function FoodPage({ onNavigate }: { onNavigate: NavigateFn }) {
       {/* Hero */}
       <section className="relative h-64 flex items-end overflow-hidden">
         <img src={HERO_IMAGES.restaurants} alt="Food around the world" className="absolute inset-0 w-full h-full object-cover bg-gray-800" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A] via-[#0B1F3A]/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent" />
         <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-10 pt-24 w-full">
           <h1 className="text-5xl font-extrabold text-white mb-2">Food & Cuisine</h1>
           <p className="text-white/60">Famous dishes from {withFood.length} countries — pick a country to see its signature food</p>
@@ -1367,7 +1410,7 @@ function CountryDetailPage({
     <div className="min-h-screen bg-[#F5F7FA]">
       <section className="relative h-[50svh] min-h-[280px] sm:min-h-[400px] sm:h-[65vh] flex items-end overflow-hidden">
         <img src={country.image} alt={country.name} className="absolute inset-0 w-full h-full object-cover bg-gray-800" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A] via-[#0B1F3A]/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
         <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-8 sm:pb-10 pt-20 sm:pt-24 w-full">
           <div className="flex items-end justify-between flex-wrap gap-4 sm:gap-6">
             <div className="min-w-0 max-w-full">
@@ -1476,7 +1519,7 @@ function HotelsPage({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }) {
       {/* Hero */}
       <section className="relative h-80 flex items-end overflow-hidden">
         <img src={HERO_IMAGES.hotels} alt="Luxury hotel" className="absolute inset-0 w-full h-full object-cover bg-gray-800" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A] to-[#0B1F3A]/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 to-black/30" />
         <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 w-full pb-8">
           <h1 className="text-5xl font-extrabold text-white mb-2">Find Your Perfect Stay</h1>
           <p className="text-white/60 mb-8">Compare hotels, apartments and resorts around the world</p>
@@ -1592,7 +1635,7 @@ function TransportPage() {
     <div className="min-h-screen bg-[#F5F7FA]">
       <section className="relative h-64 flex items-end overflow-hidden">
         <img src={HERO_IMAGES.transport} alt="Transport" className="absolute inset-0 w-full h-full object-cover bg-gray-800" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A] to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 to-transparent" />
         <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-10 pt-24 w-full">
           <h1 className="text-5xl font-extrabold text-white mb-2">Move Around Easily</h1>
           <p className="text-white/60">Find the best transport options in any country</p>
@@ -1698,7 +1741,7 @@ function CulturePage() {
     <div className="min-h-screen bg-[#F5F7FA]">
       <section className="relative h-64 flex items-end overflow-hidden">
         <img src={HERO_IMAGES.culture} alt="Culture" className="absolute inset-0 w-full h-full object-cover bg-gray-800" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A] to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 to-transparent" />
         <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-10 pt-24 w-full">
           <h1 className="text-5xl font-extrabold text-white mb-2">Discover Local Culture</h1>
           <p className="text-white/60">Understand traditions, people and lifestyle before your journey</p>
@@ -1781,7 +1824,7 @@ function SafetyPage() {
     <div className="min-h-screen bg-[#F5F7FA]">
       <section className="relative h-64 flex items-end overflow-hidden">
         <img src={HERO_IMAGES.safety} alt="Safety" className="absolute inset-0 w-full h-full object-cover bg-gray-800" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A] to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 to-transparent" />
         <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-10 pt-24 w-full">
           <h1 className="text-5xl font-extrabold text-white mb-2">Travel Safe Anywhere</h1>
           <p className="text-white/60">Important safety information before and during your trip</p>
@@ -2331,7 +2374,7 @@ function GalleryPage() {
     <div className="min-h-screen bg-[#F5F7FA]">
       <section className="relative h-64 flex items-end overflow-hidden">
         <img src={HERO_IMAGES.gallery} alt="Gallery" className="absolute inset-0 w-full h-full object-cover bg-gray-800" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A] to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 to-transparent" />
         <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-10 pt-24 w-full">
           <h1 className="text-5xl font-extrabold text-white mb-2">Explore The World Through Photos</h1>
           <p className="text-white/60">Discover amazing places captured by travelers</p>
@@ -2738,6 +2781,7 @@ function AdminPage({ onNavigate }: { onNavigate: NavigateFn }) {
 // ——————————————————————————————————————————————————
 
 function IntroSplash({ onDone }: { onDone: () => void }) {
+  const { t } = useI18n()
   useEffect(() => {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
     const done = window.setTimeout(onDone, reduceMotion ? 0 : 3200)
@@ -2755,7 +2799,7 @@ function IntroSplash({ onDone }: { onDone: () => void }) {
       </div>
       <div className="intro-splash__glow" />
       <p className="intro-splash__brand">TravelWorld</p>
-      <h1 className="intro-splash__text">Discover the Whole World</h1>
+      <h1 className="intro-splash__text">{t("intro.text")}</h1>
     </div>
   )
 }
@@ -2764,6 +2808,9 @@ export default function App() {
   const [page, setPage] = useState<Page>("home")
   const [selectedCountry, setSelectedCountry] = useState("Japan")
   const [selectedRegionId, setSelectedRegionId] = useState("svaneti")
+  // which Georgia heritage view a region page was opened from, so its back button returns there
+  const [regionFrom, setRegionFrom] = useState<HeritageView>("home")
+  const [heritageView, setHeritageView] = useState<HeritageView>("home")
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
   const [countryDetailTab, setCountryDetailTab] = useState<string | null>(null)
   const [showIntro, setShowIntro] = useState(
@@ -2775,6 +2822,8 @@ export default function App() {
     else if (param && p === "region-detail") setSelectedRegionId(param)
     else if (param) setSelectedCountry(param)
     if (p === "country-detail") setCountryDetailTab(tab ?? null)
+    if (p !== "region-detail") setRegionFrom("home")
+    setHeritageView("home")
     setPage(p)
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
@@ -2784,6 +2833,15 @@ export default function App() {
   const showHeader = page !== "admin" && !isGeorgiaHeritage
   const showFooter = !["admin", "ai-assistant", "map"].includes(page) && !isGeorgiaHeritage
   const contentPad = showHeader && page !== "home"
+  const pageKey = isGeorgiaHeritage
+    ? "georgia-heritage"
+    : page === "region-detail" ? `${page}-${selectedRegionId}`
+    : page === "country-detail" ? `${page}-${selectedCountry}`
+    : page
+
+  // headings, text and photos of every page animate in as they appear
+  const pageRef = useRef<HTMLDivElement>(null)
+  useAutoReveal(pageRef, pageKey, !showIntro)
 
   return (
     <div className="font-sans">
@@ -2792,14 +2850,21 @@ export default function App() {
       <div className={showIntro ? "invisible" : "animate-app-reveal"}>
         {showHeader && <Header currentPage={page} onNavigate={navigate} />}
 
-        <div className={contentPad ? "pt-20" : ""}>
+        {/* page-change animation: a bar sweeps across the top and the new page fades/rises in.
+            The Georgia atlas only fades here — it has its own fixed nav and panel transition. */}
+        <div key={`bar-${pageKey}`} className="route-bar" aria-hidden="true" />
+        <div key={pageKey} ref={pageRef} className={`${contentPad ? "pt-20 " : ""}${isGeorgiaHeritage ? "page-enter-fade" : "page-enter"}`}>
           {page === "home" && <HomePage onNavigate={navigate} />}
           {page === "countries" && <CountriesPage onNavigate={navigate} initialCategory={categoryFilter} />}
           {isGeorgiaHeritage && (
             <GeorgianHeritagePage
               onBack={() => navigate("home")}
-              onSelectRegion={(id) => navigate("region-detail", id)}
+              onSelectRegion={(id, fromView) => {
+                navigate("region-detail", id)
+                setRegionFrom(fromView)
+              }}
               onPlanTrip={() => navigate("trip-planner")}
+              initialView={heritageView}
             />
           )}
           {page === "country-detail" && !isGeorgiaHeritage && (
@@ -2811,6 +2876,10 @@ export default function App() {
               onNavigateHome={() => navigate("home")}
               onNavigateCountry={() => navigate("country-detail", "Georgia")}
               onSelectRegion={(id) => navigate("region-detail", id)}
+              onBack={() => {
+                navigate("country-detail", "Georgia")
+                setHeritageView(regionFrom)
+              }}
             />
           )}
           {page === "hotels" && <HotelsPage onNavigate={navigate} />}

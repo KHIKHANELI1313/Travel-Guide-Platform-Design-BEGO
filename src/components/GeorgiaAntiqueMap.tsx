@@ -1,5 +1,10 @@
-import { useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { ChevronDown, MapPin, Minus, Plus, RotateCcw } from "lucide-react"
 import "./antique-map.css"
+import { AREAS, COAST_XY, INNER_BORDERS_D, MOUNTAIN_XY, OUTLINE_D, type MapAreaId } from "./georgiaMapGeo"
+import { serviceCategoryIcon } from "./serviceCategoryIcons"
+import { SERVICE_DIRECTORY, serviceItemLabel } from "@/data/regionServices"
+import { ADJARA_MUNICIPAL_BORDERS_D, ADJARA_MUNICIPALITIES } from "@/data/adjaraVillages"
 
 export type MonumentIcon = "church" | "tower" | "fortress" | "cave"
 
@@ -26,28 +31,79 @@ const W = 1200
 const H = 720
 const px = (lon: number) => 60 + (lon - 39.75) * 150
 const py = (lat: number) => 110 + (43.75 - lat) * 205
-const pts = (list: [number, number][]) => list.map(([lo, la]) => `${px(lo).toFixed(1)},${py(la).toFixed(1)}`).join(" ")
-const line = (list: [number, number][]) => "M" + pts(list).replace(/ /g, " L")
+const xy = (list: [number, number][]) => list.map(([x, y]) => `${x},${y}`).join(" ")
+const line = (list: [number, number][]) => "M" + xy(list).replace(/ /g, " L")
+const MAX_ZOOM = 24
+// keep the zoomed map covering the whole frame
+const clampPan = (k: number, tx: number, ty: number) => ({
+  k,
+  tx: Math.min(0, Math.max(W - W * k, tx)),
+  ty: Math.min(0, Math.max(H - H * k, ty)),
+})
+const geo = (list: [number, number][]) => list.map(([lo, la]) => [+px(lo).toFixed(1), +py(la).toFixed(1)] as [number, number])
 
-// Simplified outline of Georgia: north ridge west→east, south border east→west, coast south→north
-const NORTH: [number, number][] = [
-  [40.0, 43.38], [40.25, 43.58], [40.6, 43.56], [41.0, 43.42], [41.45, 43.32], [41.9, 43.22], [42.3, 43.2],
-  [42.7, 43.18], [43.0, 43.08], [43.4, 42.92], [43.8, 42.78], [44.2, 42.73], [44.6, 42.75], [44.95, 42.7],
-  [45.25, 42.62], [45.6, 42.55], [45.85, 42.3], [46.1, 42.05], [46.45, 41.95], [46.72, 41.83],
-]
-const SOUTH: [number, number][] = [
-  [46.45, 41.58], [46.62, 41.32], [46.35, 41.15], [45.95, 41.18], [45.6, 41.33], [45.35, 41.45], [45.1, 41.32],
-  [44.85, 41.22], [44.55, 41.2], [44.2, 41.2], [43.85, 41.12], [43.47, 41.12], [43.2, 41.27], [42.85, 41.5],
-  [42.6, 41.58], [42.3, 41.5], [41.95, 41.52], [41.55, 41.52],
-]
-const COAST: [number, number][] = [
-  [41.55, 41.52], [41.63, 41.65], [41.76, 41.85], [41.67, 42.15], [41.55, 42.4], [41.4, 42.62], [41.15, 42.85],
-  [40.95, 43.02], [40.65, 43.1], [40.4, 43.17], [40.25, 43.3], [40.0, 43.38],
-]
-const OUTLINE = [...NORTH, ...SOUTH, ...COAST.slice(1)]
+// the real outline, coast, region shapes and mountain positions live in georgiaMapGeo.ts
 const SEA: [number, number][] = [
-  [38.4, 44.4], [39.3, 43.95], [39.7, 43.6], ...COAST.slice().reverse(), [41.2, 41.35], [40.6, 41.12], [39.6, 41.05], [38.4, 41.0],
+  ...geo([[38.4, 44.4], [39.3, 43.95], [39.7, 43.6]]),
+  ...COAST_XY.slice().reverse(),
+  ...geo([[41.2, 41.35], [40.6, 41.12], [39.6, 41.05], [38.4, 41.0]]),
 ]
+
+// hand-coloured atlas tints — neighbouring regions never share a wash
+const WASH = { sand: "#E2CF9C", sage: "#C8D3A8", peach: "#EBC7A4", rose: "#DDBDB8", slate: "#BFCCCB" }
+// `label` is drawn on the map only for regions without a monument marker; `name` heads the services panel
+const AREA_STYLE: Record<MapAreaId, { tint: string; name: string; label?: boolean; at?: [number, number] }> = {
+  abkhazia: { tint: WASH.sand, name: "აფხაზეთი" },
+  svaneti: { tint: WASH.sage, name: "სვანეთი" },
+  samegrelo: { tint: WASH.peach, name: "სამეგრელო" },
+  racha: { tint: WASH.rose, name: "რაჭა-ლეჩხუმი" },
+  imereti: { tint: WASH.slate, name: "იმერეთი" },
+  guria: { tint: WASH.sage, name: "გურია", label: true, at: [415, 478] },
+  adjara: { tint: WASH.rose, name: "აჭარა" },
+  samtskhe: { tint: WASH.sand, name: "სამცხე-ჯავახეთი" },
+  kartli: { tint: WASH.peach, name: "შიდა ქართლი", label: true, at: [690, 432] },
+  kvemo: { tint: WASH.sage, name: "ქვემო ქართლი", label: true, at: [700, 560] },
+  tbilisi: { tint: WASH.rose, name: "თბილისი" },
+  mtiuleti: { tint: WASH.sand, name: "მთიულეთი", label: true, at: [852, 420] },
+  khevi: { tint: WASH.sage, name: "ხევი" },
+  khevsureti: { tint: WASH.rose, name: "ხევსურეთი" },
+  tusheti: { tint: WASH.sage, name: "თუშეთი" },
+  kakheti: { tint: WASH.slate, name: "კახეთი" },
+}
+
+// regions with village data; the map shows these villages once zoomed in
+const VILLAGES: Partial<Record<MapAreaId, typeof ADJARA_MUNICIPALITIES>> = { adjara: ADJARA_MUNICIPALITIES }
+const VILLAGES_FROM_ZOOM = 1.8
+const VILLAGE_LABELS_FROM_ZOOM = 3
+const VILLAGE_FONT = 10.5 * 0.9 // .amap-village text font-size × the village marker's extra scale
+
+/** ids of villages whose names fit on screen without overlapping — focused first, then in list order */
+function placeVillageLabels(zoom: { k: number; tx: number; ty: number }, focused: string | null, municipalities: typeof ADJARA_MUNICIPALITIES) {
+  const fs = VILLAGE_FONT * Math.pow(zoom.k, 0.25) // on-screen size in viewBox units
+  const all = municipalities.flatMap((m) => m.villages.map(([name, lon, lat]) => ({ id: `${m.id}:${name}`, name, lon, lat })))
+  const ordered = focused ? [...all.filter((v) => v.id === focused), ...all.filter((v) => v.id !== focused)] : all
+  const boxes: [number, number, number, number][] = []
+  const shown = new Set<string>()
+  for (const v of ordered) {
+    const x = px(v.lon) * zoom.k + zoom.tx
+    const y = py(v.lat) * zoom.k + zoom.ty
+    if (x < 0 || x > W || y < 0 || y > H) continue
+    const w = v.name.length * fs * 0.7
+    // label box above the dot, plus the dot itself
+    const box: [number, number, number, number] = [x - w / 2 - 2, y - fs * 1.9, x + w / 2 + 2, y + 4]
+    if (boxes.some((b) => box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1])) continue
+    boxes.push(box)
+    shown.add(v.id)
+  }
+  return shown
+}
+const SUBCATEGORY_TOTAL =SERVICE_DIRECTORY.reduce((n, c) => n + c.items.length, 0)
+// marker key (English name) → the region it sits in
+const MARKER_AREA: Record<string, MapAreaId> = {
+  Svaneti: "svaneti", Kakheti: "kakheti", Tbilisi: "tbilisi", Adjara: "adjara", Samegrelo: "samegrelo",
+  Imereti: "imereti", Tusheti: "tusheti", Khevsureti: "khevsureti", Khevi: "khevi",
+  "Samtskhe-Javakheti": "samtskhe", "Racha-Lechkhumi": "racha", Abkhazia: "abkhazia",
+}
 
 const RIVERS: [number, number][][] = [
   // Mtkvari
@@ -73,19 +129,10 @@ const DECOR: { lon: number; lat: number; icon: MonumentIcon; label: string }[] =
   { lon: 44.58, lat: 41.86, icon: "church", label: "მცხეთა" },
 ]
 
-const PEAKS: { lon: number; lat: number; label: string }[] = [
-  { lon: 44.45, lat: 42.76, label: "მყინვარწვერი" },
+// labelY: where the name sits relative to the peak glyph (above when a marker sits just below)
+const PEAKS: { lon: number; lat: number; label: string; labelY?: number }[] = [
+  { lon: 44.52, lat: 42.7, label: "მყინვარწვერი", labelY: -18 },
   { lon: 43.11, lat: 43.06, label: "შხარა" },
-]
-
-// mountain hatch along the Greater Caucasus (slightly inside the north border) and the Lesser Caucasus
-const MOUNTAINS: [number, number][] = [
-  ...NORTH.slice(1, -2).flatMap(([lo, la], i, arr) => {
-    const next = arr[i + 1]
-    const a: [number, number] = [lo, la - 0.14]
-    return next ? [a, [(lo + next[0]) / 2, (la + next[1]) / 2 - 0.24] as [number, number]] : [a]
-  }),
-  [42.15, 41.72], [42.45, 41.75], [42.75, 41.78], [43.7, 41.55], [44.0, 41.5], [43.9, 41.32],
 ]
 
 const NEIGHBOURS = [
@@ -142,7 +189,161 @@ export default function GeorgiaAntiqueMap({ regions, medallions, onOpen }: Georg
   const [pinned, setPinned] = useState<string | null>(null)
   const activeKey = hovered ?? pinned
   const active = regions.find((r) => r.key === activeKey)
+  const activeArea = activeKey ? MARKER_AREA[activeKey] : undefined
+  const markerOf = (area: MapAreaId) => regions.find((r) => MARKER_AREA[r.key] === area)
+  // the services panel follows the last region touched, so it stays put while the reader scrolls it
+  const [panelArea, setPanelArea] = useState<MapAreaId>("adjara")
+  const [openCategory, setOpenCategory] = useState<string | null>(null)
+  useEffect(() => {
+    if (activeArea) setPanelArea(activeArea)
+  }, [activeArea])
   const half = Math.ceil(medallions.length / 2)
+
+  /* ---------- zoom & pan: the map content is one group under translate(tx ty) scale(k) ---------- */
+  const svgRef = useRef<SVGSVGElement>(null)
+  const [zoom, setZoom] = useState({ k: 1, tx: 0, ty: 0 })
+  const [dragging, setDragging] = useState(false)
+  const drag = useRef<{ x: number; y: number; tx: number; ty: number; moved: boolean } | null>(null)
+  const suppressClick = useRef(false)
+  // markers and labels grow only gently with the map (k^0.25), so they stay readable without crowding
+  const s = Math.pow(zoom.k, -0.75)
+  const at = (x: number, y: number, extra = 1) => `translate(${x} ${y}) scale(${+(s * extra).toFixed(4)})`
+
+  const toSvg = (clientX: number, clientY: number) => {
+    const r = svgRef.current!.getBoundingClientRect()
+    return { x: ((clientX - r.left) / r.width) * W, y: ((clientY - r.top) / r.height) * H, unit: W / r.width }
+  }
+  const zoomAt = (factor: number, cx = W / 2, cy = H / 2) =>
+    setZoom((z) => {
+      const k = Math.min(MAX_ZOOM, Math.max(1, z.k * factor))
+      return clampPan(k, cx - (cx - z.tx) * (k / z.k), cy - (cy - z.ty) * (k / z.k))
+    })
+
+  const zoomRef = useRef(1)
+  zoomRef.current = zoom.k
+  useEffect(() => {
+    const svg = svgRef.current
+    if (!svg) return
+    // native listener: React's wheel handler is passive and cannot stop the page from scrolling
+    const onWheel = (e: WheelEvent) => {
+      const zoomingOut = e.deltaY > 0
+      if (zoomingOut && zoomRef.current <= 1) return // let the page scroll when there is nothing to zoom out of
+      e.preventDefault()
+      const p = toSvg(e.clientX, e.clientY)
+      zoomAt(zoomingOut ? 1 / 1.25 : 1.25, p.x, p.y)
+    }
+    svg.addEventListener("wheel", onWheel, { passive: false })
+    return () => svg.removeEventListener("wheel", onWheel)
+  }, [])
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    if (e.button !== 0 || zoom.k <= 1) return
+    drag.current = { x: e.clientX, y: e.clientY, tx: zoom.tx, ty: zoom.ty, moved: false }
+  }
+  const onPointerMove = (e: React.PointerEvent) => {
+    const d = drag.current
+    if (!d) return
+    const unit = toSvg(0, 0).unit
+    const dx = (e.clientX - d.x) * unit
+    const dy = (e.clientY - d.y) * unit
+    if (!d.moved && Math.hypot(dx, dy) < 5 * unit) return
+    if (!d.moved) {
+      d.moved = true
+      setDragging(true)
+      svgRef.current?.setPointerCapture(e.pointerId)
+    }
+    setZoom((z) => clampPan(z.k, d.tx + dx, d.ty + dy))
+  }
+  const onPointerUp = () => {
+    if (drag.current?.moved) suppressClick.current = true
+    drag.current = null
+    setDragging(false)
+  }
+
+  const [panelTab, setPanelTab] = useState<"services" | "villages">("services")
+  const [focusedVillage, setFocusedVillage] = useState<string | null>(null)
+  const panelVillages = VILLAGES[panelArea]
+  const focusOn = (lon: number, lat: number, k = 10) => setZoom(clampPan(k, W / 2 - px(lon) * k, H / 2 - py(lat) * k))
+  const showVillages = zoom.k >= VILLAGES_FROM_ZOOM
+  const labelled = useMemo(
+    () => (zoom.k >= VILLAGE_LABELS_FROM_ZOOM ? placeVillageLabels(zoom, focusedVillage, ADJARA_MUNICIPALITIES) : new Set<string>()),
+    [zoom, focusedVillage],
+  )
+
+  const screen = (x: number, y: number) => ({ x: x * zoom.k + zoom.tx, y: y * zoom.k + zoom.ty })
+  const tipAt = active ? screen(px(active.lon), py(active.lat)) : null
+  const tipVisible = tipAt && tipAt.x >= 0 && tipAt.x <= W && tipAt.y >= 0 && tipAt.y <= H
+
+  const servicesPanel = (
+    <aside className="amap-services" aria-label="კუთხის სერვისები">
+      <header>
+        <span className="eyebrow"><MapPin size={13} /> კუთხე</span>
+        <h3 key={panelArea}>{AREA_STYLE[panelArea].name}</h3>
+        <p>{SERVICE_DIRECTORY.length} კატეგორია · {SUBCATEGORY_TOTAL} ქვეკატეგორია</p>
+        {panelVillages && (
+          <div className="tabs" role="tablist">
+            <button role="tab" aria-selected={panelTab === "services"} onClick={() => setPanelTab("services")}>სერვისები</button>
+            <button role="tab" aria-selected={panelTab === "villages"} onClick={() => setPanelTab("villages")}>
+              სოფლები <span>{panelVillages.reduce((n, m) => n + m.villages.length, 0)}</span>
+            </button>
+          </div>
+        )}
+      </header>
+      {panelVillages && panelTab === "villages" ? (
+        <div className="villages">
+          {panelVillages.map((m) => (
+            <section key={m.id}>
+              <button className="muni" onClick={() => focusOn(m.lon, m.lat, 3)}>
+                {m.name} <span>{m.villages.length}</span>
+              </button>
+              <ol>
+                {m.villages.map(([name, lon, lat], i) => {
+                  const id = `${m.id}:${name}`
+                  return (
+                    <li key={id}>
+                      <button
+                        className={focusedVillage === id ? "on" : undefined}
+                        onClick={() => {
+                          setFocusedVillage(id)
+                          focusOn(lon, lat)
+                        }}
+                      >
+                        <span className="num">{i + 1}</span>
+                        {name}
+                      </button>
+                    </li>
+                  )
+                })}
+              </ol>
+            </section>
+          ))}
+        </div>
+      ) : (
+      <ol>
+        {SERVICE_DIRECTORY.map((c, i) => {
+          const Icon = serviceCategoryIcon(c.id)
+          const open = openCategory === c.id
+          return (
+            <li key={c.id} className={open ? "open" : undefined}>
+              <button onClick={() => setOpenCategory(open ? null : c.id)} aria-expanded={open}>
+                <span className="num">{i + 1}</span>
+                <Icon size={16} strokeWidth={1.8} />
+                <span className="title">{c.title}</span>
+                <span className="count">{c.items.length}</span>
+                <ChevronDown size={15} className="chev" />
+              </button>
+              {open && (
+                <ul>
+                  {c.items.map((item) => <li key={item}>{serviceItemLabel(item, panelArea)}</li>)}
+                </ul>
+              )}
+            </li>
+          )
+        })}
+      </ol>
+      )}
+    </aside>
+  )
 
   const medallionColumn = (list: typeof medallions, side: "left" | "right") => (
     <div className={`amap-col ${side}`}>
@@ -157,10 +358,26 @@ export default function GeorgiaAntiqueMap({ regions, medallions, onOpen }: Georg
   return (
     <div className="amap-frame">
       <div className="amap-paper">
-        {medallionColumn(medallions.slice(0, half), "left")}
+        {servicesPanel}
 
         <div className="amap-stage" onMouseLeave={() => setHovered(null)}>
-          <svg viewBox={`0 0 ${W} ${H}`} className="amap-svg" role="img" aria-label="ქართული ხუროთმოძღვრების ძეგლების რუკა">
+          <svg
+            ref={svgRef}
+            viewBox={`0 0 ${W} ${H}`}
+            className={`amap-svg${zoom.k > 1 ? " zoomed" : ""}${dragging ? " dragging" : ""}`}
+            role="img"
+            aria-label="ქართული ხუროთმოძღვრების ძეგლების რუკა"
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
+            onClickCapture={(e) => {
+              if (suppressClick.current) {
+                suppressClick.current = false
+                e.stopPropagation()
+              }
+            }}
+          >
             <defs>
               <filter id="amap-ink">
                 <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="7" />
@@ -175,6 +392,7 @@ export default function GeorgiaAntiqueMap({ regions, medallions, onOpen }: Georg
               </radialGradient>
             </defs>
 
+            <g className="amap-zoom" style={{ transform: `translate(${zoom.tx}px, ${zoom.ty}px) scale(${zoom.k})` }}>
             {/* graticule */}
             <g className="amap-grid">
               {[40, 41, 42, 43, 44, 45, 46].map((lo) => <line key={lo} x1={px(lo)} y1={0} x2={px(lo)} y2={H} />)}
@@ -182,14 +400,14 @@ export default function GeorgiaAntiqueMap({ regions, medallions, onOpen }: Georg
             </g>
 
             {/* sea with coastal ripples */}
-            <polygon points={pts(SEA)} className="amap-sea" />
+            <polygon points={xy(SEA)} className="amap-sea" />
             {[10, 20, 31, 44].map((d, i) => (
-              <path key={d} d={line(COAST)} className="amap-ripple" transform={`translate(${-d} ${d * 0.25})`} style={{ opacity: 0.55 - i * 0.12 }} />
+              <path key={d} d={line(COAST_XY)} className="amap-ripple" transform={`translate(${-d} ${d * 0.25})`} style={{ opacity: 0.55 - i * 0.12 }} />
             ))}
             <text x={px(40.15)} y={py(42.05)} className="amap-sea-label" transform={`rotate(-62 ${px(40.15)} ${py(42.05)})`}>შ ა ვ ი &nbsp; ზ ღ ვ ა</text>
 
             {/* ship */}
-            <g className="amap-ship" transform={`translate(${px(40.55)} ${py(41.55)})`}>
+            <g className="amap-ship" transform={at(px(40.55), py(41.55))}>
               <g>
                 <path d="M-16 0H16L10 7H-10Z" />
                 <path d="M-1 0V-26" />
@@ -199,37 +417,54 @@ export default function GeorgiaAntiqueMap({ regions, medallions, onOpen }: Georg
               </g>
             </g>
 
-            {/* compass rose */}
-            <g className="amap-compass" transform={`translate(${px(40.5)} ${py(42.55)})`}>
-              <g className="spin">
-                <circle r="34" className="ring" />
-                <circle r="27" className="ring thin" />
-                <path d="M0-44L6-6 0 0-6-6ZM0 44L6 6 0 0-6 6ZM-44 0L-6-6 0 0-6 6ZM44 0L6-6 0 0 6 6Z" className="star" />
-                <path d="M-22-22L-3-3M22 22L3 3M22-22L3-3M-22 22L-3 3" className="thin" />
+            {/* land, split into historical regions; the ink wobble is dropped up close, where it would look smeared */}
+            <g filter={zoom.k < 2.5 ? "url(#amap-ink)" : undefined}>
+              <path d={OUTLINE_D} className="amap-land" />
+              <g className={`amap-areas${activeArea ? " has-active" : ""}`}>
+                {AREAS.map((a, i) => {
+                  const marker = markerOf(a.id)
+                  return (
+                    <path
+                      key={a.id}
+                      d={a.d}
+                      fill={AREA_STYLE[a.id].tint}
+                      className={`amap-area${activeArea === a.id || (!activeArea && panelArea === a.id) ? " active" : ""}`}
+                      style={{ animationDelay: `${0.9 + i * 0.05}s` }}
+                      onMouseEnter={marker ? () => setHovered(marker.key) : undefined}
+                      onClick={() => {
+                        setPanelArea(a.id)
+                        if (!marker) setPinned(null)
+                        else if (pinned === marker.key) onOpen(marker.key)
+                        else setPinned(marker.key)
+                      }}
+                    />
+                  )
+                })}
               </g>
-              <text y="-50" className="amap-n">N</text>
+              <path d={OUTLINE_D} fill="url(#amap-land)" pointerEvents="none" />
+              <path d={INNER_BORDERS_D} className="amap-borders" />
+              <path d={OUTLINE_D} className="amap-outline" pathLength={1} />
             </g>
 
-            {/* land */}
-            <g filter="url(#amap-ink)">
-              <polygon points={pts(OUTLINE)} className="amap-land" />
-              <polygon points={pts(OUTLINE)} fill="url(#amap-land)" />
-              <polygon points={pts(OUTLINE)} className="amap-outline" pathLength={1} />
-            </g>
+            {/* names of regions that have no monument marker */}
+            {AREAS.filter((a) => AREA_STYLE[a.id].label).map((a) => {
+              const [x, y] = AREA_STYLE[a.id].at ?? [a.cx, a.cy]
+              return <g key={a.id} transform={at(x, y)}><text className="amap-area-label">{AREA_STYLE[a.id].name}</text></g>
+            })}
 
             {/* mountains */}
             <g className="amap-mountains">
-              {MOUNTAINS.map(([lo, la], i) => (
-                <g key={i} transform={`translate(${px(lo)} ${py(la)}) scale(${0.8 + ((i * 37) % 5) / 10})`} style={{ animationDelay: `${1 + i * 0.03}s` }}>
+              {MOUNTAIN_XY.map(([x, y], i) => (
+                <g key={i} transform={at(x, y, 0.8 + ((i * 37) % 5) / 10)} style={{ animationDelay: `${1 + i * 0.03}s` }}>
                   <path d="M-11 6L-3-7 1-1 4-5 11 6" />
                   <path d="M-3-7L-1 6M4-5L5 6" className="thin" />
                 </g>
               ))}
               {PEAKS.map((p) => (
-                <g key={p.label} transform={`translate(${px(p.lon)} ${py(p.lat)})`}>
+                <g key={p.label} transform={at(px(p.lon), py(p.lat))}>
                   <path d="M-14 8L0-12 14 8" />
                   <path d="M-5-5L0-1 5-5" className="thin" />
-                  <text y="22" className="amap-peak">{p.label}</text>
+                  <text y={p.labelY ?? 22} className="amap-peak">{p.label}</text>
                 </g>
               ))}
             </g>
@@ -239,14 +474,45 @@ export default function GeorgiaAntiqueMap({ regions, medallions, onOpen }: Georg
               <path key={i} d={line(r)} className="amap-river" pathLength={1} style={{ animationDelay: `${1.4 + i * 0.15}s` }} />
             ))}
 
+            {/* villages + municipal borders, only once zoomed in */}
+            {showVillages && (
+              <g className="amap-villages">
+                <path d={ADJARA_MUNICIPAL_BORDERS_D} className="amap-muni-borders" />
+                {ADJARA_MUNICIPALITIES.map((m) => (
+                  <g key={m.id}>
+                    {m.villages.map(([name, lon, lat]) => {
+                      const id = `${m.id}:${name}`
+                      return (
+                        <g
+                          key={id}
+                          className={`amap-village${focusedVillage === id ? " on" : ""}`}
+                          transform={at(px(lon), py(lat), 0.9)}
+                          onClick={() => setFocusedVillage(id)}
+                        >
+                          <circle r="3.2" />
+                          <text
+                            y="-6"
+                            className={labelled.has(id) || focusedVillage === id ? "show" : undefined}
+                          >
+                            {name}
+                          </text>
+                        </g>
+                      )
+                    })}
+                    <g transform={at(px(m.lon), py(m.lat), 1.1)}><text className="amap-muni-label">{m.name}</text></g>
+                  </g>
+                ))}
+              </g>
+            )}
+
             {/* neighbours */}
             {NEIGHBOURS.map((n) => (
-              <text key={n.label} x={px(n.lon)} y={py(n.lat)} className="amap-neighbour">{n.label}</text>
+              <g key={n.label} transform={at(px(n.lon), py(n.lat))}><text className="amap-neighbour">{n.label}</text></g>
             ))}
 
             {/* decorative monuments */}
             {DECOR.map((d, i) => (
-              <g key={d.label} className="amap-decor" transform={`translate(${px(d.lon)} ${py(d.lat)})`}>
+              <g key={d.label} className="amap-decor" transform={at(px(d.lon), py(d.lat))}>
                 <g className="pop" style={{ animationDelay: `${1.8 + i * 0.07}s` }}>
                   <g transform="scale(.9)"><Icon type={d.icon} /></g>
                   <text y="22" className="amap-decor-label">{d.label}</text>
@@ -261,7 +527,7 @@ export default function GeorgiaAntiqueMap({ regions, medallions, onOpen }: Georg
                 <g
                   key={r.key}
                   className={`amap-marker${isActive ? " active" : ""}`}
-                  transform={`translate(${px(r.lon)} ${py(r.lat)})`}
+                  transform={at(px(r.lon), py(r.lat))}
                   onMouseEnter={() => setHovered(r.key)}
                   onClick={() => (pinned === r.key ? onOpen(r.key) : setPinned(r.key))}
                   role="button"
@@ -280,9 +546,23 @@ export default function GeorgiaAntiqueMap({ regions, medallions, onOpen }: Georg
                 </g>
               )
             })}
+            </g>
+
+            {/* compass rose — map furniture, stays put while the map zooms */}
+            <g className="amap-compass" transform={`translate(${px(40.5)} ${py(42.55)})`}>
+              <g className="spin">
+                <circle r="34" className="ring" />
+                <circle r="27" className="ring thin" />
+                <path d="M0-44L6-6 0 0-6-6ZM0 44L6 6 0 0-6 6ZM-44 0L-6-6 0 0-6 6ZM44 0L6-6 0 0 6 6Z" className="star" />
+                <path d="M-22-22L-3-3M22 22L3 3M22-22L3-3M-22 22L-3 3" className="thin" />
+              </g>
+              <text y="-50" className="amap-n">N</text>
+            </g>
 
             {/* title cartouche */}
-            <g className="amap-title" transform={`translate(${W / 2} 52)`}>
+            {/* the unroll animation sets `transform`, so it must live on an inner group or it wipes the translate */}
+            <g transform={`translate(${W / 2} 52)`}>
+            <g className="amap-title">
               <path d="M-330-30H330Q350-30 350-10V10Q350 30 330 30H-330Q-350 30-350 10V-10Q-350-30-330-30Z" className="banner" />
               <path d="M-350-10Q-372-24-382-6Q-372 4-350 6M350-10Q372-24 382-6Q372 4 350 6" className="curl" />
               <circle cx="-312" r="17" className="seal" />
@@ -291,12 +571,20 @@ export default function GeorgiaAntiqueMap({ regions, medallions, onOpen }: Georg
               <text y="11" className="amap-title-text">ქართული ხუროთმოძღვრების ძეგლები</text>
               <text y="48" className="amap-title-sub">MONUMENTS OF GEORGIAN ARCHITECTURE</text>
             </g>
+            </g>
           </svg>
 
-          {active && (
+          <div className="amap-zoom-ctl">
+            <button onClick={() => zoomAt(1.6)} disabled={zoom.k >= MAX_ZOOM} aria-label="გადიდება"><Plus size={18} /></button>
+            <button onClick={() => zoomAt(1 / 1.6)} disabled={zoom.k <= 1} aria-label="დაპატარავება"><Minus size={18} /></button>
+            <button onClick={() => setZoom({ k: 1, tx: 0, ty: 0 })} disabled={zoom.k <= 1} aria-label="საწყისი ხედი"><RotateCcw size={16} /></button>
+          </div>
+
+          {/* the region card would cover the villages, so it only appears at overview zoom */}
+          {active && tipAt && tipVisible && !showVillages && (
             <div
-              className={`amap-tip${px(active.lon) > W * 0.62 ? " flip" : ""}${py(active.lat) < H * 0.4 ? " below" : ""}`}
-              style={{ left: `${(px(active.lon) / W) * 100}%`, top: `${(py(active.lat) / H) * 100}%` }}
+              className={`amap-tip${tipAt.x > W * 0.62 ? " flip" : ""}${tipAt.y < H * 0.4 ? " below" : ""}`}
+              style={{ left: `${(tipAt.x / W) * 100}%`, top: `${(tipAt.y / H) * 100}%` }}
               key={active.key}
             >
               <img src={active.img} alt={active.name} />
@@ -304,23 +592,13 @@ export default function GeorgiaAntiqueMap({ regions, medallions, onOpen }: Georg
                 <b>{active.name}</b>
                 <span className="sub">{active.sub}</span>
                 <p>{active.desc}</p>
-                <button onClick={() => onOpen(active.key)}>{active.linked ? "კუთხის გვერდი →" : "ბარათის ნახვა ↓"}</button>
+                {active.linked && <button onClick={() => onOpen(active.key)}>კუთხის გვერდი →</button>}
               </div>
             </div>
           )}
         </div>
 
-        {medallionColumn(medallions.slice(half), "right")}
-      </div>
-
-      <div className="amap-legend">
-        {(["church", "tower", "fortress", "cave"] as const).map((t) => (
-          <span key={t}>
-            <svg viewBox="-16 -28 32 40"><g className="amap-legend-icon"><Icon type={t} /></g></svg>
-            {{ church: "ტაძარი", tower: "კოშკი", fortress: "ციხე-სიმაგრე", cave: "კლდის ქალაქი" }[t]}
-          </span>
-        ))}
-        <em>დააჭირეთ ძეგლს — ორჯერ დაჭერით კუთხე გაიხსნება</em>
+        {medallionColumn(medallions.slice(0, half), "right")}
       </div>
     </div>
   )

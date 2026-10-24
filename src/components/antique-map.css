@@ -17,7 +17,7 @@
 @keyframes amap-in{from{opacity:0;transform:translateY(30px) scale(.98)}to{opacity:1;transform:none}}
 
 .gh .amap-paper{
-  position:relative;display:grid;grid-template-columns:110px 1fr 110px;gap:14px;padding:16px;
+  position:relative;display:grid;grid-template-columns:320px 1fr 110px;gap:14px;padding:16px;
   background:
     radial-gradient(120% 90% at 50% 45%,var(--paper) 55%,var(--paper-2) 100%),
     var(--paper);
@@ -49,13 +49,97 @@
   box-shadow:0 0 0 4px var(--paper),0 0 0 5.5px var(--ink-soft);
   opacity:0;animation:amap-medal .8s cubic-bezier(.3,1.4,.5,1) forwards;
 }
-.gh .amap-medallion img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) sepia(.65) contrast(1.15) brightness(.95);transition:filter .5s,transform .8s}
-.gh .amap-medallion:hover img{filter:none;transform:scale(1.12)}
+.gh .amap-medallion img{width:100%;height:100%;object-fit:cover;transition:transform .8s}
+.gh .amap-medallion:hover img{transform:scale(1.12)}
 @keyframes amap-medal{from{opacity:0;transform:scale(.6) rotate(-20deg)}to{opacity:1;transform:none}}
+
+/* services panel (left column) — `contain:size` lets the map alone set the row height; the list scrolls */
+.gh .amap-services{
+  position:relative;z-index:1;contain:size;display:flex;flex-direction:column;min-height:0;
+  border:1.5px solid var(--ink);border-radius:4px;
+  background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(120,85,35,.08));
+  box-shadow:inset 0 0 0 4px var(--paper),inset 0 0 0 5px var(--ink-soft);
+}
+.gh .amap-services header{padding:16px 16px 12px;border-bottom:1px dashed var(--ink-soft)}
+.gh .amap-services .eyebrow{display:inline-flex;align-items:center;gap:4px;font-size:11px;letter-spacing:.2em;color:#C8102E;text-transform:uppercase}
+.gh .amap-services h3{
+  font-family:'Noto Serif Georgian',serif;font-weight:700;font-size:24px;line-height:1.2;margin:4px 0 2px;color:var(--ink);
+  animation:amap-tip .35s ease both;
+}
+.gh .amap-services header p{font-size:12px;color:#6B5434;margin:0}
+.gh .amap-services ol{list-style:none;margin:0;padding:6px 8px 10px;overflow-y:auto;flex:1;min-height:0;scrollbar-width:thin;scrollbar-color:var(--ink-soft) transparent}
+.gh .amap-services ol > li{border-bottom:1px solid rgba(59,42,23,.12)}
+.gh .amap-services ol > li > button{
+  display:flex;align-items:center;gap:8px;width:100%;padding:8px 6px;border-radius:6px;
+  background:none;border:0;color:var(--ink);text-align:left;cursor:pointer;font-size:13px;line-height:1.3;transition:background .2s;
+}
+.gh .amap-services ol > li > button:hover{background:rgba(120,85,35,.1)}
+.gh .amap-services .num{flex:none;width:20px;font-family:'Noto Serif Georgian',serif;font-weight:700;font-size:12px;color:#C8102E;text-align:right}
+.gh .amap-services .title{flex:1;font-weight:600}
+.gh .amap-services .count{flex:none;font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid var(--ink-soft);color:#6B5434}
+.gh .amap-services .chev{flex:none;opacity:.55;transition:transform .25s}
+.gh .amap-services li.open .chev{transform:rotate(180deg)}
+.gh .amap-services li.open > button{background:rgba(200,16,46,.07)}
+.gh .amap-services ul{list-style:none;margin:2px 0 8px 34px;padding:0 0 0 10px;border-left:1.5px solid rgba(200,16,46,.35);animation:amap-tip .3s ease both}
+.gh .amap-services ul li{font-size:12.5px;line-height:1.35;padding:4px 0;color:#4A3820}
+
+.gh .amap-services .tabs{display:flex;gap:4px;margin-top:10px;padding:3px;border-radius:999px;background:rgba(120,85,35,.12)}
+.gh .amap-services .tabs button{
+  flex:1;border:0;border-radius:999px;padding:5px 10px;background:none;color:var(--ink);font-size:12.5px;font-weight:600;cursor:pointer;
+}
+.gh .amap-services .tabs button[aria-selected="true"]{background:var(--ink);color:#FBF4E2}
+.gh .amap-services .tabs span{opacity:.7;font-weight:500}
+.gh .amap-services .villages{overflow-y:auto;flex:1;min-height:0;padding:6px 8px 12px;scrollbar-width:thin;scrollbar-color:var(--ink-soft) transparent}
+.gh .amap-services .villages section{margin-bottom:6px}
+.gh .amap-services .villages .muni{
+  position:sticky;top:-6px;z-index:1;display:flex;justify-content:space-between;width:100%;margin:0;padding:8px 8px 6px;
+  border:0;border-bottom:1px solid var(--ink-soft);background:#EFE3C4;color:var(--ink);cursor:pointer;
+  font-family:'Noto Serif Georgian',serif;font-weight:700;font-size:14px;text-align:left;
+}
+.gh .amap-services .villages .muni span{font-family:inherit;font-weight:500;font-size:11px;color:#6B5434}
+.gh .amap-services .villages ol{padding:4px 0 0;overflow:visible}
+.gh .amap-services .villages li{border:0}
+.gh .amap-services .villages li button{
+  display:flex;align-items:baseline;gap:8px;width:100%;padding:4px 6px;border:0;border-radius:5px;background:none;
+  color:#4A3820;font-size:12.5px;text-align:left;cursor:pointer;
+}
+.gh .amap-services .villages li button:hover{background:rgba(120,85,35,.1)}
+.gh .amap-services .villages li button.on{background:#C8102E;color:#FBF4E2}
+.gh .amap-services .villages li button.on .num{color:#FBF4E2}
+
+/* villages (visible once zoomed) */
+.gh .amap-villages{animation:amap-fade .35s ease both}
+.gh .amap-muni-borders{fill:none;stroke:var(--ink);stroke-opacity:.45;stroke-width:1;stroke-dasharray:2 3;pointer-events:none}
+.gh .amap-muni-label{
+  font-family:'Noto Serif Georgian',serif;font-weight:700;font-size:13px;letter-spacing:.18em;text-anchor:middle;
+  fill:#7A2E1C;fill-opacity:.55;pointer-events:none;text-transform:uppercase;
+}
+.gh .amap-village{cursor:pointer}
+.gh .amap-village circle{fill:#FBF4E2;stroke:var(--ink);stroke-width:1.2;transition:fill .2s}
+.gh .amap-village text{
+  display:none;font-family:'Noto Serif Georgian',serif;font-size:10.5px;fill:var(--ink);text-anchor:middle;
+  paint-order:stroke;stroke:var(--paper);stroke-width:3px;stroke-linejoin:round;pointer-events:none;
+}
+.gh .amap-village text.show,.gh .amap-village:hover text{display:block}
+.gh .amap-village:hover circle{fill:var(--ink)}
+.gh .amap-village.on circle{fill:#C8102E;stroke:#C8102E}
+.gh .amap-village.on text{fill:#C8102E;font-weight:700;font-size:12px}
 
 /* map stage */
 .gh .amap-stage{position:relative;z-index:1;min-width:0}
-.gh .amap-svg{display:block;width:100%;height:auto;overflow:visible}
+.gh .amap-svg{display:block;width:100%;height:auto;overflow:hidden}
+.gh .amap-zoom{transform-origin:0 0;transition:transform .28s cubic-bezier(.2,.7,.2,1)}
+.gh .amap-svg.zoomed{cursor:grab;touch-action:none}
+.gh .amap-svg.dragging{cursor:grabbing}
+.gh .amap-svg.dragging .amap-zoom{transition:none}
+.gh .amap-zoom-ctl{position:absolute;right:10px;bottom:10px;z-index:4;display:flex;flex-direction:column;gap:6px}
+.gh .amap-zoom-ctl button{
+  display:grid;place-items:center;width:36px;height:36px;border-radius:8px;cursor:pointer;
+  background:#FBF4E2;color:var(--ink);border:1.5px solid var(--ink);box-shadow:0 4px 12px rgba(40,25,10,.25);
+  transition:background .2s,color .2s,opacity .2s;
+}
+.gh .amap-zoom-ctl button:hover:not(:disabled){background:var(--ink);color:#FBF4E2}
+.gh .amap-zoom-ctl button:disabled{opacity:.4;cursor:default}
 .gh .amap-svg path,.gh .amap-svg polygon,.gh .amap-svg circle,.gh .amap-svg line{vector-effect:non-scaling-stroke}
 
 .gh .amap-grid line{stroke:var(--ink);stroke-opacity:.12;stroke-width:.8;stroke-dasharray:2 5}
@@ -69,6 +153,28 @@
   stroke-dasharray:1;stroke-dashoffset:1;animation:amap-draw 2.6s cubic-bezier(.45,0,.2,1) .3s forwards;
 }
 @keyframes amap-draw{to{stroke-dashoffset:0}}
+
+/* historical regions: watercolour washes + dotted ink borders */
+.gh .amap-area{
+  fill-opacity:.5;stroke:none;opacity:0;
+  animation:amap-wash .9s ease forwards;transition:fill-opacity .35s,filter .35s;
+}
+@keyframes amap-wash{to{opacity:1}}
+.gh .amap-area{cursor:pointer}
+.gh .amap-area:hover,.gh .amap-area.active{fill-opacity:.82}
+.gh .amap-areas.has-active .amap-area{fill-opacity:.32}
+.gh .amap-areas.has-active .amap-area.active{fill-opacity:.95;filter:saturate(1.5) brightness(1.03)}
+.gh .amap-borders{
+  fill:none;stroke:var(--ink);stroke-opacity:.6;stroke-width:1.3;stroke-dasharray:5 3 1.5 3;
+  stroke-linejoin:round;stroke-linecap:round;pointer-events:none;
+  opacity:0;animation:amap-fade .8s ease 1.4s forwards;
+}
+.gh .amap-area-label{
+  font-family:'Noto Serif Georgian',serif;font-style:italic;font-size:12.5px;letter-spacing:.12em;
+  fill:var(--ink);fill-opacity:.62;text-anchor:middle;pointer-events:none;
+  paint-order:stroke;stroke:var(--paper);stroke-opacity:.6;stroke-width:3px;
+  opacity:0;animation:amap-fade .8s ease 2s forwards;
+}
 
 .gh .amap-river{
   fill:none;stroke:#2F5C8A;stroke-opacity:.75;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;
@@ -129,7 +235,7 @@
 .gh .amap-title .curl{fill:#E7D7AE;stroke:var(--ink);stroke-width:1.6}
 .gh .amap-title .seal{fill:#F6ECD2;stroke:var(--ink);stroke-width:1.6}
 .gh .amap-title .seal-cross{stroke:#C8102E;stroke-width:3}
-.gh .amap-title-text{font-family:'Noto Serif Georgian',serif;font-weight:700;font-size:30px;fill:var(--ink);text-anchor:middle;letter-spacing:.04em}
+.gh .amap-title-text{font-family:'Noto Serif Georgian',serif;font-weight:700;font-size:26px;fill:var(--ink);text-anchor:middle;letter-spacing:.04em}
 .gh .amap-title-sub{font-size:11px;letter-spacing:.32em;fill:var(--ink);fill-opacity:.7;text-anchor:middle}
 
 /* tooltip card */
@@ -142,7 +248,7 @@
 .gh .amap-tip.below{transform:translate(22px,-12%)}
 .gh .amap-tip.flip.below{transform:translate(calc(-100% - 22px),-12%)}
 @keyframes amap-tip{from{opacity:0;margin-top:8px}to{opacity:1;margin-top:0}}
-.gh .amap-tip img{width:100%;height:120px;object-fit:cover;filter:sepia(.25)}
+.gh .amap-tip img{width:100%;height:120px;object-fit:cover}
 .gh .amap-tip-body{padding:12px 14px 14px}
 .gh .amap-tip-body b{font-family:'Noto Serif Georgian',serif;font-size:17px;display:block}
 .gh .amap-tip-body .sub{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#C8102E}
@@ -153,17 +259,10 @@
 }
 .gh .amap-tip-body button:hover{background:#C8102E;border-color:#C8102E}
 
-/* legend */
-.gh .amap-legend{
-  display:flex;flex-wrap:wrap;align-items:center;gap:8px 22px;margin-top:14px;padding:10px 16px;border-radius:4px;
-  background:rgba(239,227,196,.95);color:#3B2A17;font-size:13px;
-}
-.gh .amap-legend span{display:flex;align-items:center;gap:6px}
-.gh .amap-legend svg{width:22px;height:28px}
-.gh .amap-legend em{margin-left:auto;font-size:12px;opacity:.75}
-
 /* the page section around the map */
 .gh .amap-section{position:relative;padding:120px 0 60px;background:var(--bg)}
+/* the atlas gets more room than the rest of the page */
+.gh .amap-section .wrap{max-width:1560px}
 .gh .amap-section .crumbs{color:var(--muted)}
 .gh .amap-section .crumbs b{color:var(--text)}
 .gh .amap-section .crumbs button:hover{color:var(--blue-bright)}
@@ -177,6 +276,7 @@
 @media(max-width:1080px){
   .gh .amap-paper{grid-template-columns:1fr;padding:10px}
   .gh .amap-col{display:none}
+  .gh .amap-services{contain:none;max-height:380px}
   .gh .amap-tip{width:210px}
   .gh .amap-tip img{height:90px}
 }
@@ -186,9 +286,9 @@
   .gh .amap-decor-label,.gh .amap-peak,.gh .amap-neighbour{display:none}
   .gh .amap-tip{position:static;width:auto;transform:none !important;margin-top:10px;display:grid;grid-template-columns:110px 1fr}
   .gh .amap-tip img{height:100%}
-  .gh .amap-legend em{margin-left:0}
 }
 @media(prefers-reduced-motion:reduce){
   .gh .amap-outline,.gh .amap-river{stroke-dashoffset:0;animation:none}
-  .gh .amap-svg .pop,.gh .amap-mountains > g,.gh .amap-title,.gh .amap-medallion{opacity:1;animation:none}
+  .gh .amap-svg .pop,.gh .amap-mountains > g,.gh .amap-title,.gh .amap-medallion,
+  .gh .amap-area,.gh .amap-borders,.gh .amap-area-label{opacity:1;animation:none}
 }

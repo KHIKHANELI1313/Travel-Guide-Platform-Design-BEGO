@@ -39,34 +39,43 @@
 .gh .mobile-menu.open button{opacity:1;transform:none}
 .gh .mobile-menu button.active{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 
-/* page transition: the Georgian flag sweeps across, waving, + content fade-up */
+/* page transition: three panels sweep up and hold while the content swaps (at 880ms, see go()),
+   the destination's name shows in the middle, then the new page settles in */
 .gh .wipe{position:fixed;inset:0;z-index:300;pointer-events:none;overflow:hidden}
-.gh .wipe-flag{
-  position:absolute;inset:-4% -6%;transform:translateX(-112%);
-  box-shadow:0 0 80px rgba(0,0,0,.45);
-  animation:gh-flag-sweep 1.8s cubic-bezier(.77,0,.18,1) forwards;
+.gh .wipe-panel{
+  position:absolute;inset:0;transform:translateY(100%);
+  animation:gh-wipe-panel 1.6s cubic-bezier(.76,0,.24,1) forwards;
 }
-.gh .wipe-flag svg{width:100%;height:100%;display:block;animation:gh-flag-wave 1.8s ease-in-out forwards}
-.gh .wipe-shine{
-  position:absolute;inset:0;
-  background:repeating-linear-gradient(100deg,rgba(0,0,0,.10) 0,rgba(255,255,255,.14) 9%,rgba(0,0,0,.10) 18%);
-  background-size:200% 100%;mix-blend-mode:multiply;
-  animation:gh-flag-ripple 1.8s linear forwards;
+.gh .wipe-panel.p1{background:var(--red)}
+.gh .wipe-panel.p2{background:var(--blue);animation-delay:.05s}
+.gh .wipe-panel.p3{background:#0A1430;animation-delay:.1s}
+@keyframes gh-wipe-panel{
+  0%{transform:translateY(100%)}
+  45%,58%{transform:translateY(0)}
+  100%{transform:translateY(-100%)}
 }
-@keyframes gh-flag-sweep{
-  0%{transform:translateX(-112%) skewX(-6deg)}
-  42%,58%{transform:translateX(0) skewX(0)}
-  100%{transform:translateX(112%) skewX(6deg)}
+.gh .wipe-label{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  opacity:0;animation:gh-wipe-label 1.6s ease forwards;
 }
-@keyframes gh-flag-wave{
-  0%,100%{transform:scaleY(1)}
-  25%{transform:scaleY(1.03) skewY(1deg)}
-  50%{transform:scaleY(.98) skewY(-1deg)}
-  75%{transform:scaleY(1.02) skewY(.6deg)}
+.gh .wipe-label b{
+  font-family:'Noto Serif Georgian',serif;font-size:clamp(30px,5vw,58px);font-weight:700;color:#fff;letter-spacing:.02em;
 }
-@keyframes gh-flag-ripple{from{background-position:0 0}to{background-position:-200% 0}}
-.gh .page{animation:gh-page-in .7s cubic-bezier(.2,.7,.2,1) both}
-@keyframes gh-page-in{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.gh .wipe-flag-badge{width:54px;height:36px;border-radius:4px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.4)}
+.gh .wipe-flag-badge svg{width:100%;height:100%;display:block}
+@keyframes gh-wipe-label{
+  0%,32%{opacity:0;transform:translateY(24px)}
+  44%,60%{opacity:1;transform:none}
+  74%,100%{opacity:0;transform:translateY(-24px)}
+}
+.gh .page{animation:gh-page-in .8s cubic-bezier(.2,.7,.2,1) both}
+@keyframes gh-page-in{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+/* page headers settle in after the swap: photo zooms back, title rises */
+.gh .page-hero .hero-bg img{animation:gh-hero-settle 1.6s cubic-bezier(.2,.7,.2,1) both,gh-kenburns 26s ease-in-out 1.6s infinite alternate}
+@keyframes gh-hero-settle{from{transform:scale(1.18)}to{transform:scale(1)}}
+.gh .page-hero h1{animation:gh-rise .9s cubic-bezier(.2,.7,.2,1) .15s both}
+.gh .page-hero p.sub{animation:gh-rise .9s cubic-bezier(.2,.7,.2,1) .3s both}
+@keyframes gh-rise{from{opacity:0;transform:translateY(34px)}to{opacity:1;transform:none}}
 
 /* sub-page hero */
 .gh .page-hero{position:relative;min-height:62vh;display:flex;align-items:flex-end;overflow:hidden}
@@ -92,6 +101,16 @@
 }
 .gh .filter-btn:hover{color:var(--text);border-color:var(--blue);transform:translateY(-2px)}
 .gh .filter-btn.active{background:var(--grad);border-color:transparent;color:#fff;box-shadow:0 8px 22px rgba(46,123,255,.3)}
+
+/* region list on history / customs / legends / archive / voice */
+.gh .kutkhe-bar{margin-bottom:34px;padding:18px 20px 6px;border:1px solid var(--border);border-radius:18px}
+.gh .kutkhe-label{display:block;margin-bottom:12px;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.gh .kutkhe-bar .filters{gap:8px;margin-bottom:12px}
+.gh .kutkhe-bar .filter-btn{padding:7px 14px;font-size:13px}
+.gh .kutkhe-bar .filter-btn .n{margin-left:4px;font-size:11px;opacity:.6}
+.gh .kutkhe-bar .filter-btn.empty:not(.active){opacity:.45}
+.gh .kutkhe-empty{padding:50px 20px;text-align:center;border:1px dashed var(--border);border-radius:18px;color:var(--muted)}
+.gh .kutkhe-empty p{margin:0 0 18px;font-size:15px}
 
 /* region card "more" label */
 .gh .card-more{display:inline-block;margin-top:12px;font-size:12.5px;font-weight:600;color:#fff;opacity:0;transform:translateX(-8px);transition:all .45s ease}
@@ -129,20 +148,101 @@
 .gh .legend-card h3{font-size:19px;margin-bottom:8px}
 .gh .legend-card p{font-size:14px;color:var(--muted)}
 
-/* "continue" links at the bottom of sub-pages */
-.gh .next-pages{padding:70px 0}
-.gh .next-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:22px}
-.gh .next-card{
-  display:flex;justify-content:space-between;align-items:center;gap:12px;padding:20px 22px;border-radius:var(--radius);
-  background:var(--card);border:1px solid var(--border-soft);color:var(--text);cursor:pointer;font-size:15px;font-weight:600;text-align:left;
-  transition:transform .35s ease,border-color .35s,box-shadow .35s;
+/* "continue" index at the bottom of every page: one editorial row per page (number, photo, title,
+   counts); rows with region-tagged content open their region list right beneath themselves.
+   On arrival the rule lines draw in, photos open and titles rise out of their row (--i staggers). */
+.gh .next-pages{padding:80px 0}
+.gh .nx-head{display:grid;grid-template-columns:auto 1fr;align-items:end;column-gap:48px;margin-bottom:26px}
+.gh .nx-head .eyebrow{grid-column:1/-1}
+.gh .nx-head h2{margin:12px 0 0;font-size:clamp(32px,4.4vw,58px);line-height:1.05}
+.gh .nx-head p{margin:0 0 6px;max-width:44ch;justify-self:end;text-align:right;color:var(--muted);font-size:15px}
+.gh .nx-list{margin:0;padding:0;list-style:none;counter-reset:nx}
+.gh .nx-row{position:relative}
+.gh .nx-row::before,.gh .nx-row:last-child::after{
+  content:"";position:absolute;left:0;right:0;height:1px;background:var(--border);
+  transform:scaleX(0);transform-origin:left;transition:transform 1.1s cubic-bezier(.65,0,.25,1);transition-delay:calc(var(--i,0) * .12s);
 }
-.gh .next-card i{font-style:normal;color:var(--red);transition:transform .35s ease,color .35s}
-.gh .next-card:hover{transform:translateY(-4px);border-color:var(--blue);box-shadow:0 14px 30px rgba(46,123,255,.18)}
-.gh .next-card:hover i{transform:translateX(6px);color:var(--green)}
+.gh .nx-row::before{top:0}
+.gh .nx-row:last-child::after{bottom:0;transition-delay:calc(var(--i,0) * .12s + .2s)}
+.gh .nx-row.in::before,.gh .nx-row.in:last-child::after{transform:none}
+/* rows animate their children, not themselves */
+.gh .nx-row.reveal{opacity:1;transform:none;filter:none;transition:none}
 
-/* audio card playing state */
-.gh .audio-card.on{border-color:var(--green);box-shadow:0 0 0 1px var(--green),0 14px 34px rgba(31,184,106,.18)}
+.gh .nx-btn{
+  position:relative;display:grid;grid-template-columns:56px 132px 1fr auto 52px;align-items:center;gap:26px;
+  width:100%;padding:18px 8px;border:0;background:none;color:var(--text);text-align:left;cursor:pointer;
+}
+/* hover wash sweeps in from the left */
+.gh .nx-btn::before{
+  content:"";position:absolute;inset:0;border-radius:18px;background:linear-gradient(90deg,rgba(46,123,255,.14),rgba(224,49,62,.06) 70%,transparent);
+  transform:scaleX(0);transform-origin:left;transition:transform .6s cubic-bezier(.2,.7,.2,1);z-index:-1;
+}
+.gh .nx-btn:hover::before,.gh .nx-row.open .nx-btn::before{transform:none}
+.gh .nx-num{font-family:'Noto Serif Georgian',serif;font-size:15px;color:var(--muted);letter-spacing:.08em;transition:color .3s}
+.gh .nx-photo{position:relative;display:block;height:84px;border-radius:14px;overflow:hidden;background:#111}
+.gh .nx-photo img{width:100%;height:100%;object-fit:cover;transition:transform 1s cubic-bezier(.2,.7,.2,1)}
+.gh .nx-text{display:flex;flex-direction:column;gap:4px;min-width:0}
+.gh .nx-eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--red-bright)}
+.gh .nx-title{display:block;overflow:hidden;padding-bottom:4px}
+.gh .nx-title span{display:inline-block;font-family:'Noto Serif Georgian',serif;font-size:clamp(22px,2.4vw,32px);font-weight:700;line-height:1.2;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.gh .nx-meta{font-size:13px;color:var(--muted);white-space:nowrap}
+.gh .nx-meta b{font-family:'Noto Serif Georgian',serif;font-size:17px;color:var(--text)}
+.gh .nx-arrow{
+  display:grid;place-items:center;width:52px;height:52px;border-radius:50%;border:1px solid var(--border);
+  font-style:normal;font-size:17px;transition:transform .45s cubic-bezier(.3,1.5,.5,1),background .3s,border-color .3s,color .3s;
+}
+.gh .nx-btn:hover .nx-num,.gh .nx-row.open .nx-num{color:var(--red-bright)}
+.gh .nx-btn:hover .nx-photo img,.gh .nx-row.open .nx-photo img{transform:scale(1.15)}
+.gh .nx-btn:hover .nx-title span{transform:translateX(8px)}
+.gh .nx-btn:hover .nx-arrow{background:var(--grad);border-color:transparent;color:#fff;transform:translateX(4px)}
+.gh .nx-btn[aria-expanded]:hover .nx-arrow{transform:translateY(3px)}
+.gh .nx-row.open .nx-arrow{background:var(--blue);border-color:transparent;color:#fff;transform:rotate(180deg)}
+.gh .nx-row.dim .nx-btn:not(:hover){opacity:.5}
+.gh .nx-btn{transition:opacity .4s}
+
+/* arrival: number + meta fade, photo opens left→right, title rises out of its mask, arrow pops */
+.gh .nx-row.in .nx-num,.gh .nx-row.in .nx-meta,.gh .nx-row.in .nx-eyebrow{animation:nx-fade .8s cubic-bezier(.2,.7,.2,1) backwards;animation-delay:calc(var(--i,0) * .12s + .3s)}
+.gh .nx-row.in .nx-photo{animation:nx-photo 1.1s cubic-bezier(.77,0,.18,1) backwards;animation-delay:calc(var(--i,0) * .12s + .15s)}
+.gh .nx-row.in .nx-photo img{animation:nx-zoom 1.6s cubic-bezier(.2,.7,.2,1) backwards;animation-delay:calc(var(--i,0) * .12s + .15s)}
+.gh .nx-row.in .nx-title span{animation:nx-rise .9s cubic-bezier(.2,.7,.2,1) backwards;animation-delay:calc(var(--i,0) * .12s + .35s)}
+.gh .nx-row.in .nx-arrow{animation:nx-pop .6s cubic-bezier(.3,1.6,.5,1) backwards;animation-delay:calc(var(--i,0) * .12s + .6s)}
+@keyframes nx-fade{from{opacity:0;translate:-14px 0}}
+@keyframes nx-photo{from{clip-path:inset(0 100% 0 0 round 14px)}to{clip-path:inset(0 0 0 0 round 14px)}}
+@keyframes nx-zoom{from{scale:1.4}}
+@keyframes nx-rise{from{translate:0 110%}}
+@keyframes nx-pop{from{opacity:0;scale:.4}}
+
+/* region list: grid-rows 0fr → 1fr animates the height both ways; chips pop in one by one */
+.gh .next-regions-wrap{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .55s cubic-bezier(.65,0,.25,1),opacity .4s ease}
+.gh .nx-row.open .next-regions-wrap{grid-template-rows:1fr;opacity:1}
+.gh .next-regions-clip{min-height:0;overflow:hidden}
+.gh .next-regions{padding:4px 8px 20px 82px}
+.gh .next-regions .filters{gap:8px;margin:0}
+.gh .next-regions .filter-btn{padding:7px 14px;font-size:13px}
+.gh .next-regions .filter-btn.all{background:var(--grad);border-color:transparent;color:#fff}
+.gh .nx-row.open .filter-btn{animation:next-chip .45s cubic-bezier(.3,1.5,.5,1) both}
+@keyframes next-chip{from{opacity:0;transform:translateY(10px) scale(.85)}to{opacity:1;transform:none}}
+.gh .next-regions .filter-btn .n{margin-left:4px;font-size:11px;opacity:.6}
+.gh .next-regions .filter-btn.empty{opacity:.45}
+.gh .nx-row.open .filter-btn.empty{animation-name:next-chip-dim}
+@keyframes next-chip-dim{from{opacity:0;transform:translateY(10px) scale(.85)}to{opacity:.45;transform:none}}
+
+@media(max-width:860px){
+  .gh .nx-head{grid-template-columns:1fr}
+  .gh .nx-head p{justify-self:start;text-align:left;margin-top:10px}
+  .gh .nx-btn{grid-template-columns:84px 1fr 40px;gap:14px;padding:14px 4px}
+  .gh .nx-num,.gh .nx-meta{display:none}
+  .gh .nx-photo{height:64px}
+  .gh .nx-arrow{width:40px;height:40px}
+  .gh .next-regions{padding:4px 4px 16px}
+}
+@media(prefers-reduced-motion:reduce){
+  .gh .next-regions-wrap{transition:none}
+  .gh .nx-row::before,.gh .nx-row:last-child::after{transform:none;transition:none}
+  .gh .nx-row.open .filter-btn,.gh .nx-row.in .nx-num,.gh .nx-row.in .nx-meta,.gh .nx-row.in .nx-eyebrow,
+  .gh .nx-row.in .nx-photo,.gh .nx-row.in .nx-photo img,.gh .nx-row.in .nx-title span,.gh .nx-row.in .nx-arrow{animation:none}
+}
+
 
 @media(max-width:860px){
   .gh .page-hero{min-height:52vh}
@@ -154,4 +254,112 @@
   .gh .nav-links button.active{opacity:1}
   .gh .mobile-menu button{opacity:1;transform:none}
   .gh .wipe{display:none}
+}
+
+/* ============================================================
+   FULL-SCREEN SLIDES (useFullPage) — no page scroll; each top-level
+   section is a screen. Each slide has its own entrance (data-fx) and the
+   slide before it leaves to match (data-out); going back reverses it.
+   ============================================================ */
+.gh .fp{position:fixed;inset:0;z-index:1;overflow:hidden;background:var(--bg)}
+.gh .fp > *{
+  position:absolute;inset:0;margin:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;
+  background:var(--bg);will-change:transform;
+  transition:transform 1s cubic-bezier(.77,0,.18,1),filter 1s cubic-bezier(.77,0,.18,1),opacity 1s cubic-bezier(.77,0,.18,1),
+    clip-path 1s cubic-bezier(.77,0,.18,1),border-radius 1s;
+}
+.gh .fp > *::-webkit-scrollbar{display:none}
+.gh .fp > .sec-alt{background:var(--bg-2)}
+.gh .fp > footer{background:var(--bg-3)}
+.gh .fp > [data-fp="next"]{z-index:3}
+.gh .fp > [data-fp="active"]{transform:none;z-index:2;border-radius:0}
+.gh .fp > [data-fp="prev"]{z-index:1;filter:brightness(.3)}
+/* slides further back stay hidden, so they never peek out behind a shrinking one */
+.gh .fp > [data-fp="prev"]:has(+ [data-fp="prev"]){visibility:hidden}
+/* rise: comes up from below with rounded top; the old one sinks back */
+.gh .fp > [data-fx="rise"][data-fp="next"]{transform:translateY(100%);border-radius:36px 36px 0 0}
+.gh .fp > [data-out="rise"][data-fp="prev"]{transform:translateY(-22%) scale(.9);border-radius:36px}
+/* slide: pushes in from the right; the old one drifts left */
+.gh .fp > [data-fx="slide"][data-fp="next"]{transform:translateX(100%);border-radius:36px 0 0 36px}
+.gh .fp > [data-out="slide"][data-fp="prev"]{transform:translateX(-30%) scale(.94);border-radius:36px}
+/* zoom: grows out of a blur; the old one falls away into it */
+.gh .fp > [data-fx="zoom"][data-fp="next"]{transform:scale(1.18);opacity:0;filter:blur(14px)}
+.gh .fp > [data-out="zoom"][data-fp="prev"]{transform:scale(.82);filter:blur(10px) brightness(.35)}
+/* circle: opens as a growing circle from the centre */
+.gh .fp > [data-fx="circle"][data-fp="next"]{clip-path:circle(0% at 50% 55%);transform:scale(1.08)}
+.gh .fp > [data-fx="circle"][data-fp="active"]{clip-path:circle(150% at 50% 55%)}
+.gh .fp > [data-out="circle"][data-fp="prev"]{transform:scale(.9)}
+/* diagonal: a slanted edge sweeps across from the right */
+.gh .fp > [data-fx="diagonal"][data-fp="next"]{clip-path:polygon(100% 0,100% 0,140% 100%,140% 100%)}
+.gh .fp > [data-fx="diagonal"][data-fp="active"]{clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}
+.gh .fp > [data-out="diagonal"][data-fp="prev"]{transform:translateX(-14%)}
+/* drop: unrolls down from the top like a curtain */
+.gh .fp > [data-fx="drop"][data-fp="next"]{clip-path:inset(0 0 100% 0 round 0 0 48px 48px);transform:translateY(-6%)}
+.gh .fp > [data-fx="drop"][data-fp="active"]{clip-path:inset(0 0 0 0 round 0)}
+.gh .fp > [data-out="drop"][data-fp="prev"]{transform:translateY(16%) scale(.92);border-radius:36px}
+/* flip: swings down around its top edge, like turning a page */
+.gh .fp > [data-fx="flip"]{transform-origin:50% 0}
+.gh .fp > [data-fx="flip"][data-fp="next"]{transform:perspective(2200px) rotateX(-80deg);opacity:0}
+.gh .fp > [data-fx="flip"][data-fp="active"]{transform:perspective(2200px) rotateX(0)}
+.gh .fp > [data-out="flip"][data-fp="prev"]{transform:translateY(8%) scale(.88);border-radius:36px}
+/* content sits vertically centred on its screen; tall content simply runs past and scrolls inside */
+.gh .fp > .sec,.gh .fp > footer{display:flex;flex-direction:column}
+.gh .fp > .sec > .wrap,.gh .fp > footer > .wrap{width:100%;margin-block:auto}
+.gh .fp > .hero,.gh .fp > .page-hero,.gh .fp > .amap-section{min-height:100%}
+.gh .fp > footer{margin-top:0}
+
+/* side dots: one per screen, label on hover, counter on top */
+.gh .fp-dots{
+  position:fixed;right:22px;top:50%;z-index:120;transform:translateY(-50%);
+  display:flex;flex-direction:column;align-items:flex-end;gap:12px;
+}
+.gh .fp-count{margin-bottom:6px;font-family:'Noto Serif Georgian',serif;font-size:13px;font-weight:700;color:var(--text)}
+.gh .fp-count i{font-style:normal;font-weight:400;color:var(--muted)}
+.gh .fp-dots button{
+  position:relative;width:10px;height:10px;padding:0;border-radius:999px;cursor:pointer;
+  background:transparent;border:1.5px solid var(--muted);transition:height .45s cubic-bezier(.3,1.4,.5,1),background .3s,border-color .3s;
+}
+.gh .fp-dots button:hover{border-color:var(--text)}
+.gh .fp-dots button.on{height:30px;background:var(--grad);border-color:transparent}
+.gh .fp-dots button span{
+  position:absolute;right:22px;top:50%;transform:translate(8px,-50%);white-space:nowrap;pointer-events:none;
+  padding:5px 11px;border-radius:999px;font-size:12px;color:#fff;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);
+  opacity:0;transition:opacity .25s,transform .25s;
+}
+.gh .fp-dots button:hover span,.gh .fp-dots button:focus-visible span{opacity:1;transform:translate(0,-50%)}
+
+@media(max-width:760px){
+  .gh .fp-dots{right:8px;gap:9px}
+  .gh .fp-dots button{width:7px;height:7px}
+  .gh .fp-dots button.on{height:20px}
+  .gh .fp-count,.gh .fp-dots button span{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .gh .fp > *{transition:opacity .35s ease}
+  .gh .fp > [data-fp]{transform:none!important;filter:none!important;clip-path:none!important;border-radius:0!important}
+  .gh .fp > [data-fp="next"],.gh .fp > [data-fp="prev"]{opacity:0}
+  .gh .fp > [data-fp="active"]{opacity:1}
+}
+/* compact sizing on screens: padding clears the fixed nav, tall blocks follow the screen height */
+.gh .fp > .sec{padding:96px 0 44px}
+.gh .fp > footer{padding:96px 0 34px}
+.gh .fp > .hero .hero-grid{padding:96px 28px 70px}
+.gh .fp > .hero h1{font-size:clamp(36px,min(5.4vw,8vh),78px);margin:14px 0 18px}
+.gh .fp > .hero .hero-arches{height:clamp(300px,58vh,600px)}
+.gh .fp > .hero .hero-stats{margin-top:30px}
+.gh .fp .kx-strip{height:clamp(300px,52vh,540px)}
+.gh .fp .spot-photo img{height:clamp(280px,58vh,560px)}
+.gh .fp > .amap-section{padding:96px 0 30px}
+.gh .fp .sec-head-row{margin-bottom:30px}
+@media(max-width:980px){.gh .fp > .hero .hero-grid{padding:90px 16px 70px}}
+/* no scroll parallax on screens, so header photos sit exactly in their frame */
+.gh .fp .hero-bg{inset:0;transform:none!important}
+.gh .stories-grid{grid-template-columns:1fr}
+/* on screens the editorial stories sit side by side (photo on top) so the section fits one screen */
+@media(min-width:981px){
+  .gh .fp .stories-grid{grid-template-columns:repeat(3,1fr);gap:20px}
+  .gh .fp .stories-grid .art-card{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .gh .fp .stories-grid .art-card .im{min-height:170px}
+  .gh .fp .stories-grid .art-card .tx{padding:20px 22px}
+  .gh .fp .stories-grid .art-card h3{font-size:18px}
 }
