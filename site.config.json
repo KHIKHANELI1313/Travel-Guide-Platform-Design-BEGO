@@ -1,0 +1,8 @@
+{
+  "title": "BEGO Travel Guide",
+  "description": "Travel Guide Platform — discover countries, plan trips, and explore local culture.",
+  "language": "en",
+  "robots": {
+    "index": true
+  }
+}
