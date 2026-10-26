@@ -9,11 +9,6 @@ export const HERO_IMAGE = {
   alt: "The eastern slopes of Mount Kazbek in the Greater Caucasus, Georgia",
 }
 
-export const PANORAMA_IMAGE = {
-  src: wm("c/c2", "Panorama_of_Battlements_-_Sighnaghi_-_Georgia_%2818312892865%29.jpg", 1920),
-  alt: "Panorama of the Sighnaghi town walls above the Alazani Valley, Kakheti",
-}
-
 // ——————————————————————————————————————————————————
 // DESTINATIONS
 // ——————————————————————————————————————————————————
@@ -150,19 +145,6 @@ export const CATEGORIES: Category[] = [
   { id: "events", name: "Events & activities", metrics: ["activity"],
     image: { src: wm("4/45", "Supra.jpg"), alt: "A traditional Georgian supra" } },
   { id: "emergency", name: "Emergency & assistance", metrics: [] },
-]
-
-// ——————————————————————————————————————————————————
-// EXPERIENCES (no prices — "Price on request" until a provider publishes one)
-// ——————————————————————————————————————————————————
-
-export const EXPERIENCES = [
-  { title: "Truso Valley", kind: "Hiking", region: "kazbegi", image: wm("f/fc", "Truso_Valley_views_33.jpg"), alt: "Truso Valley, Kazbegi" },
-  { title: "Prometheus Cave", kind: "Nature", region: "imereti", image: wm("6/6c", "Prometheus_Cave_2017.jpg"), alt: "Prometheus Cave near Kutaisi" },
-  { title: "Svetitskhoveli", kind: "Heritage", region: "mtskheta-mtianeti", image: wm("5/59", "Mtskheta_and_Svetitskhoveli_Cathedral_3x2.jpg"), alt: "Mtskheta and Svetitskhoveli Cathedral" },
-  { title: "Khinkali in the mountains", kind: "Food", region: "kazbegi", image: wm("c/c3", "Kazbegi%2C_Khinkali%2C_Georgia.jpg"), alt: "Khinkali served in Kazbegi" },
-  { title: "Svaneti range from Mestia", kind: "Mountains", region: "svaneti", image: wm("3/3f", "Svaneti_Range_%28view_from_Mestia%29.jpg"), alt: "Svaneti range seen from Mestia" },
-  { title: "Martvili waterfalls", kind: "Nature", region: "samegrelo", image: wm("2/21", "Martvili_Canyon_Waterfalls.jpg", 960), alt: "Waterfalls in Martvili Canyon" },
 ]
 
 // ——————————————————————————————————————————————————

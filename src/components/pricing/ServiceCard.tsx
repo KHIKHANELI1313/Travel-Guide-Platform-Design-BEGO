@@ -26,13 +26,15 @@ export default function ServiceCard({
       type="button"
       whileHover={{ y: -2 }}
       onClick={onToggle}
-      className={`flex w-full overflow-hidden rounded-2xl border text-left backdrop-blur transition cursor-pointer ${
+      className={`group flex w-full overflow-hidden rounded-2xl border text-left backdrop-blur transition cursor-pointer ${
         selected
           ? "border-[#1677FF] bg-[#1677FF]/08 shadow-md shadow-[#1677FF]/15"
           : "border-white/60 bg-white/70 shadow-sm hover:border-[#1677FF]/35"
       }`}
     >
-      <img src={image} alt="" className="h-28 w-28 shrink-0 object-cover sm:h-32 sm:w-32" />
+      <span className="h-28 w-28 shrink-0 overflow-hidden sm:h-32 sm:w-32">
+        <img src={image} alt="" className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110" />
+      </span>
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 p-3 sm:p-4">
         <div className="flex items-start justify-between gap-2">
           <p className="text-sm font-bold text-[#111827] sm:text-base">{name}</p>

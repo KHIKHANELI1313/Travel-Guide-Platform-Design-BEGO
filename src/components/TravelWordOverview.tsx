@@ -292,179 +292,216 @@ export default function TravelWordOverview() {
   const activeRegion = REGIONS.find(r => r.name === region) ?? REGIONS[0]
 
   return (
-    <div className="space-y-16 mt-16">
+    // each section is one screen in the trip planner's slide deck (TripPlannerPage)
+    <>
       {/* Intro */}
-      <section className="rounded-3xl bg-gradient-to-br from-[#0B1F3A] to-[#1677FF] text-white p-8 sm:p-12">
-        <p className="text-white/70 text-sm font-semibold uppercase tracking-wider mb-3">TravelWord</p>
-        <h2 className="text-3xl sm:text-5xl font-extrabold leading-tight max-w-3xl">საქართველოს ტურისტული სერვისების სრული პლატფორმა</h2>
-        <p className="text-white/80 text-lg mt-4 max-w-3xl">
-          ყველა რეგიონის ტურისტული მომსახურება ერთ სივრცეში — იპოვეთ საჭირო სერვისი, შეადარეთ ფასები, შეამოწმეთ მდებარეობა, გაეცანით პირობებს და დაუკავშირდით მიმწოდებელს.
-        </p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8">
-          {[
-            [String(REGIONS.length), "რეგიონი"],
-            [String(REGIONS.reduce((n, r) => n + r.places.length, 0)) + "+", "მუნიციპალიტეტი და ადგილი"],
-            [String(SERVICES.length), "სერვისის მიმართულება"],
-            ["2 → 6", "ენა"],
-          ].map(([n, l]) => (
-            <div key={l} className="bg-white/10 rounded-2xl p-4">
-              <p className="text-2xl font-extrabold">{n}</p>
-              <p className="text-white/70 text-sm">{l}</p>
+      <div className="tw-slide tw-ov">
+        <div className="tw-ov__inner">
+          <section className="rounded-3xl bg-gradient-to-br from-[#0B1F3A] to-[#1677FF] text-white p-8 sm:p-12">
+            <p className="text-white/70 text-sm font-semibold uppercase tracking-wider mb-3">TravelWord</p>
+            <h2 className="text-3xl sm:text-5xl font-extrabold leading-tight max-w-3xl">საქართველოს ტურისტული სერვისების სრული პლატფორმა</h2>
+            <p className="text-white/80 text-lg mt-4 max-w-3xl">
+              ყველა რეგიონის ტურისტული მომსახურება ერთ სივრცეში — იპოვეთ საჭირო სერვისი, შეადარეთ ფასები, შეამოწმეთ მდებარეობა, გაეცანით პირობებს და დაუკავშირდით მიმწოდებელს.
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8">
+              {[
+                [String(REGIONS.length), "რეგიონი"],
+                [String(REGIONS.reduce((n, r) => n + r.places.length, 0)) + "+", "მუნიციპალიტეტი და ადგილი"],
+                [String(SERVICES.length), "სერვისის მიმართულება"],
+                ["2 → 6", "ენა"],
+              ].map(([n, l]) => (
+                <div key={l} className="bg-white/10 rounded-2xl p-4">
+                  <p className="text-2xl font-extrabold">{n}</p>
+                  <p className="text-white/70 text-sm">{l}</p>
+                </div>
+              ))}
             </div>
-          ))}
+          </section>
         </div>
-      </section>
+      </div>
 
       {/* Audience */}
-      <section>
-        <SectionHead eyebrow="ვისთვისაა" title="პლატფორმის მომხმარებლები" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {AUDIENCE.map(a => (
-            <div key={a} className="flex items-center gap-3 bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-              <Users className="w-4 h-4 text-[#1677FF] shrink-0" />
-              <span className="text-sm text-[#111827]">{a}</span>
+      <div className="tw-slide tw-ov">
+        <div className="tw-ov__inner">
+          <section>
+            <SectionHead eyebrow="ვისთვისაა" title="პლატფორმის მომხმარებლები" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {AUDIENCE.map(a => (
+                <div key={a} className="flex items-center gap-3 bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                  <Users className="w-4 h-4 text-[#1677FF] shrink-0" />
+                  <span className="text-sm text-[#111827]">{a}</span>
+                </div>
+              ))}
             </div>
-          ))}
+          </section>
         </div>
-      </section>
+      </div>
 
       {/* Regions */}
-      <section>
-        <SectionHead eyebrow="მიმართულებები" title="საქართველოს რეგიონები" text="ჩამონათვალი ივსება ოფიციალური ადმინისტრაციული დაყოფის მიხედვით — თითოეულ რეგიონს დაემატება სოფლები, კურორტები, დასახლებები და ტურისტული ადგილები." />
-        <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
-          {REGIONS.map(r => (
-            <button
-              key={r.name} onClick={() => setRegion(r.name)}
-              className={`shrink-0 px-4 py-2 rounded-xl text-sm font-medium border cursor-pointer transition-colors ${region === r.name ? "bg-[#1677FF] text-white border-[#1677FF]" : "bg-white border-gray-200 text-[#64748B] hover:text-[#111827]"}`}
-            >{r.name}</button>
-          ))}
-        </div>
-        <div className="mt-4 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <p className="font-bold text-[#111827] mb-4">{activeRegion.name} <span className="text-[#94A3B8] font-normal text-sm">· {activeRegion.places.length} ადგილი</span></p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-            {activeRegion.places.map(p => (
-              <div key={p} className="flex items-center gap-2 text-sm text-[#334155] bg-[#F5F7FA] rounded-lg px-3 py-2">
-                <MapPin className="w-3.5 h-3.5 text-[#1677FF] shrink-0" />{p}
+      <div className="tw-slide tw-ov">
+        <div className="tw-ov__inner">
+          <section>
+            <SectionHead eyebrow="მიმართულებები" title="საქართველოს რეგიონები" text="ჩამონათვალი ივსება ოფიციალური ადმინისტრაციული დაყოფის მიხედვით — თითოეულ რეგიონს დაემატება სოფლები, კურორტები, დასახლებები და ტურისტული ადგილები." />
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
+              {REGIONS.map(r => (
+                <button
+                  key={r.name} onClick={() => setRegion(r.name)}
+                  className={`shrink-0 px-4 py-2 rounded-xl text-sm font-medium border cursor-pointer transition-colors ${region === r.name ? "bg-[#1677FF] text-white border-[#1677FF]" : "bg-white border-gray-200 text-[#64748B] hover:text-[#111827]"}`}
+                >{r.name}</button>
+              ))}
+            </div>
+            <div className="mt-4 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <p className="font-bold text-[#111827] mb-4">{activeRegion.name} <span className="text-[#94A3B8] font-normal text-sm">· {activeRegion.places.length} ადგილი</span></p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                {activeRegion.places.map(p => (
+                  <div key={p} className="flex items-center gap-2 text-sm text-[#334155] bg-[#F5F7FA] rounded-lg px-3 py-2">
+                    <MapPin className="w-3.5 h-3.5 text-[#1677FF] shrink-0" />{p}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          </section>
         </div>
-      </section>
+      </div>
 
       {/* Services */}
-      <section>
-        <SectionHead eyebrow="კატალოგი" title="მომსახურებების კატეგორიები" text="თითოეულ კატეგორიას აქვს საკუთარი გვერდი, ძიება, ფილტრაცია და დეტალური ინფორმაცია." />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
-          {SERVICES.map(s => (
-            <ServiceCard key={s.id} service={s} open={openService === s.id} onToggle={() => setOpenService(o => (o === s.id ? null : s.id))} />
-          ))}
+      <div className="tw-slide tw-ov">
+        <div className="tw-ov__inner">
+          <section>
+            <SectionHead eyebrow="კატალოგი" title="მომსახურებების კატეგორიები" text="თითოეულ კატეგორიას აქვს საკუთარი გვერდი, ძიება, ფილტრაცია და დეტალური ინფორმაცია." />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+              {SERVICES.map(s => (
+                <ServiceCard key={s.id} service={s} open={openService === s.id} onToggle={() => setOpenService(o => (o === s.id ? null : s.id))} />
+              ))}
+            </div>
+          </section>
         </div>
-      </section>
+      </div>
 
       {/* Features */}
-      <section>
-        <SectionHead eyebrow="ფუნქციები" title="პლატფორმის შესაძლებლობები" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {FEATURES.map(({ icon: Icon, title, items, note }) => (
-            <div key={title} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col">
-              <div className="w-11 h-11 rounded-xl bg-[#1677FF]/10 flex items-center justify-center mb-4">
-                <Icon className="w-5 h-5 text-[#1677FF]" />
-              </div>
-              <h3 className="font-bold text-[#111827] mb-3">{title}</h3>
-              <ul className="space-y-1.5 flex-1">
-                {items.map(i => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-[#475569]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#1677FF] mt-2 shrink-0" />{i}
-                  </li>
-                ))}
-              </ul>
-              {note && <p className="text-xs text-[#64748B] mt-4 pt-4 border-t border-gray-100">{note}</p>}
+      <div className="tw-slide tw-ov">
+        <div className="tw-ov__inner">
+          <section>
+            <SectionHead eyebrow="ფუნქციები" title="პლატფორმის შესაძლებლობები" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {FEATURES.map(({ icon: Icon, title, items, note }) => (
+                <div key={title} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col">
+                  <div className="w-11 h-11 rounded-xl bg-[#1677FF]/10 flex items-center justify-center mb-4">
+                    <Icon className="w-5 h-5 text-[#1677FF]" />
+                  </div>
+                  <h3 className="font-bold text-[#111827] mb-3">{title}</h3>
+                  <ul className="space-y-1.5 flex-1">
+                    {items.map(i => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-[#475569]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#1677FF] mt-2 shrink-0" />{i}
+                      </li>
+                    ))}
+                  </ul>
+                  {note && <p className="text-xs text-[#64748B] mt-4 pt-4 border-t border-gray-100">{note}</p>}
+                </div>
+              ))}
             </div>
-          ))}
+          </section>
         </div>
-      </section>
+      </div>
 
       {/* Budget calculator */}
-      <section>
-        <div className="flex items-center gap-3 mb-2">
-          <Calculator className="w-5 h-5 text-[#1677FF]" />
-          <p className="text-[#1677FF] text-sm font-semibold uppercase tracking-wider">ბიუჯეტი</p>
+      <div className="tw-slide tw-ov">
+        <div className="tw-ov__inner">
+          <section>
+            <div className="flex items-center gap-3 mb-2">
+              <Calculator className="w-5 h-5 text-[#1677FF]" />
+              <p className="text-[#1677FF] text-sm font-semibold uppercase tracking-wider">ბიუჯეტი</p>
+            </div>
+            <SectionHead eyebrow="" title="მოგზაურობის ბიუჯეტის კალკულატორი" text="დაითვალეთ საცხოვრებლის, კვების, ტრანსპორტისა და აქტივობების ჯამური და ერთ ადამიანზე სავარაუდო ხარჯი." />
+            <BudgetCalculator />
+          </section>
         </div>
-        <SectionHead eyebrow="" title="მოგზაურობის ბიუჯეტის კალკულატორი" text="დაითვალეთ საცხოვრებლის, კვების, ტრანსპორტისა და აქტივობების ჯამური და ერთ ადამიანზე სავარაუდო ხარჯი." />
-        <BudgetCalculator />
-      </section>
+      </div>
 
       {/* Price trust */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100">
-          <div className="flex items-center gap-3 mb-4">
-            <BadgeCheck className="w-6 h-6 text-[#16A34A]" />
-            <h3 className="text-xl font-bold text-[#111827]">ფასების სანდოობა</h3>
-          </div>
-          <p className="text-sm text-[#64748B] mb-4">ყველა ფასს ახლავს ინფორმაცია:</p>
-          <div className="flex flex-wrap gap-2 mb-6">
-            {["ვინ გამოაქვეყნა", "როდის განახლდა", "რა მომსახურებას ეხება", "რა ვალუტაშია", "შედის თუ არა გადასახადები", "სეზონური შეზღუდვები"].map(i => <Chip key={i} label={i} />)}
-          </div>
-          <p className="text-sm text-[#64748B] mb-2">ფასის წყარო:</p>
-          <ul className="space-y-1.5 text-sm text-[#475569]">
-            {["ბიზნესის მფლობელი", "ოფიციალური ფასების სია", "ოფიციალური დაჯავშნის სისტემა", "მომსახურების პროვაიდერის API"].map(i => (
-              <li key={i} className="flex items-center gap-2"><ListChecks className="w-4 h-4 text-[#16A34A]" />{i}</li>
-            ))}
-          </ul>
-          <div className="mt-6 flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 shrink-0">ფასი დასაზუსტებელია</span>
-            <span className="text-sm text-amber-900">ასე ჩანს ფასი, რომელიც ვერ დასტურდება.</span>
-          </div>
-        </div>
-        <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100">
-          <div className="flex items-center gap-3 mb-4">
-            <Languages className="w-6 h-6 text-[#1677FF]" />
-            <h3 className="text-xl font-bold text-[#111827]">ენები</h3>
-          </div>
-          <p className="text-sm text-[#64748B] mb-2">საწყისი ეტაპი</p>
-          <div className="flex flex-wrap gap-2 mb-5">
-            {["ქართული", "ინგლისური"].map(l => <span key={l} className="text-sm px-3 py-1.5 rounded-full bg-[#1677FF] text-white">{l}</span>)}
-          </div>
-          <p className="text-sm text-[#64748B] mb-2">შემდეგი ეტაპი</p>
-          <div className="flex flex-wrap gap-2 mb-5">
-            {["რუსული", "თურქული", "არაბული", "გერმანული"].map(l => <Chip key={l} label={l} />)}
-          </div>
-          <p className="text-sm text-[#475569]">ენის შეცვლისას ინტერფეისი ითარგმნება, ხოლო ფასები, მისამართები და ბიზნესის სახელები უცვლელი რჩება.</p>
-        </div>
-      </section>
-
-      {/* Roadmap */}
-      <section>
-        <SectionHead eyebrow="გეგმა" title="შექმნის პრიორიტეტები" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {PHASES.map((p, i) => (
-            <div key={p.label} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+      <div className="tw-slide tw-ov">
+        <div className="tw-ov__inner">
+          <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100">
               <div className="flex items-center gap-3 mb-4">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white ${i === 0 ? "bg-[#1677FF]" : i === 1 ? "bg-[#0B1F3A]" : "bg-[#94A3B8]"}`}>{i + 1}</div>
-                <p className="font-bold text-[#111827]">{p.label}</p>
+                <BadgeCheck className="w-6 h-6 text-[#16A34A]" />
+                <h3 className="text-xl font-bold text-[#111827]">ფასების სანდოობა</h3>
               </div>
-              <ul className="space-y-1.5">
-                {p.items.map(it => (
-                  <li key={it} className="flex items-start gap-2 text-sm text-[#475569]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#1677FF] mt-2 shrink-0" />{it}
-                  </li>
+              <p className="text-sm text-[#64748B] mb-4">ყველა ფასს ახლავს ინფორმაცია:</p>
+              <div className="flex flex-wrap gap-2 mb-6">
+                {["ვინ გამოაქვეყნა", "როდის განახლდა", "რა მომსახურებას ეხება", "რა ვალუტაშია", "შედის თუ არა გადასახადები", "სეზონური შეზღუდვები"].map(i => <Chip key={i} label={i} />)}
+              </div>
+              <p className="text-sm text-[#64748B] mb-2">ფასის წყარო:</p>
+              <ul className="space-y-1.5 text-sm text-[#475569]">
+                {["ბიზნესის მფლობელი", "ოფიციალური ფასების სია", "ოფიციალური დაჯავშნის სისტემა", "მომსახურების პროვაიდერის API"].map(i => (
+                  <li key={i} className="flex items-center gap-2"><ListChecks className="w-4 h-4 text-[#16A34A]" />{i}</li>
                 ))}
               </ul>
+              <div className="mt-6 flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 shrink-0">ფასი დასაზუსტებელია</span>
+                <span className="text-sm text-amber-900">ასე ჩანს ფასი, რომელიც ვერ დასტურდება.</span>
+              </div>
             </div>
-          ))}
+            <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100">
+              <div className="flex items-center gap-3 mb-4">
+                <Languages className="w-6 h-6 text-[#1677FF]" />
+                <h3 className="text-xl font-bold text-[#111827]">ენები</h3>
+              </div>
+              <p className="text-sm text-[#64748B] mb-2">საწყისი ეტაპი</p>
+              <div className="flex flex-wrap gap-2 mb-5">
+                {["ქართული", "ინგლისური"].map(l => <span key={l} className="text-sm px-3 py-1.5 rounded-full bg-[#1677FF] text-white">{l}</span>)}
+              </div>
+              <p className="text-sm text-[#64748B] mb-2">შემდეგი ეტაპი</p>
+              <div className="flex flex-wrap gap-2 mb-5">
+                {["რუსული", "თურქული", "არაბული", "გერმანული"].map(l => <Chip key={l} label={l} />)}
+              </div>
+              <p className="text-sm text-[#475569]">ენის შეცვლისას ინტერფეისი ითარგმნება, ხოლო ფასები, მისამართები და ბიზნესის სახელები უცვლელი რჩება.</p>
+            </div>
+          </section>
         </div>
-      </section>
+      </div>
+
+      {/* Roadmap */}
+      <div className="tw-slide tw-ov">
+        <div className="tw-ov__inner">
+          <section>
+            <SectionHead eyebrow="გეგმა" title="შექმნის პრიორიტეტები" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {PHASES.map((p, i) => (
+                <div key={p.label} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white ${i === 0 ? "bg-[#1677FF]" : i === 1 ? "bg-[#0B1F3A]" : "bg-[#94A3B8]"}`}>{i + 1}</div>
+                    <p className="font-bold text-[#111827]">{p.label}</p>
+                  </div>
+                  <ul className="space-y-1.5">
+                    {p.items.map(it => (
+                      <li key={it} className="flex items-start gap-2 text-sm text-[#475569]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#1677FF] mt-2 shrink-0" />{it}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      </div>
 
       {/* Goal */}
-      <section className="bg-white rounded-3xl p-8 sm:p-10 shadow-sm border border-gray-100">
-        <div className="flex items-center gap-3 mb-4">
-          <Target className="w-6 h-6 text-[#1677FF]" />
-          <h3 className="text-xl sm:text-2xl font-bold text-[#111827]">მთავარი პრინციპი</h3>
+      <div className="tw-slide tw-ov">
+        <div className="tw-ov__inner">
+          <section className="bg-white rounded-3xl p-8 sm:p-10 shadow-sm border border-gray-100">
+            <div className="flex items-center gap-3 mb-4">
+              <Target className="w-6 h-6 text-[#1677FF]" />
+              <h3 className="text-xl sm:text-2xl font-bold text-[#111827]">მთავარი პრინციპი</h3>
+            </div>
+            <p className="text-[#475569] max-w-4xl">
+              მომხმარებელს უნდა შეეძლოს საქართველოს სხვადასხვა რეგიონში რეალური მომსახურებებისა და ფასების მოძიება და შედარება. პლატფორმა არ იყენებს გამოგონილ ბიზნესებს, ყალბ შეფასებებს ან არარეალურ ფასებს — დემო მონაცემები ყოველთვის ცალკეა მონიშნული.
+            </p>
+          </section>
         </div>
-        <p className="text-[#475569] max-w-4xl">
-          მომხმარებელს უნდა შეეძლოს საქართველოს სხვადასხვა რეგიონში რეალური მომსახურებებისა და ფასების მოძიება და შედარება. პლატფორმა არ იყენებს გამოგონილ ბიზნესებს, ყალბ შეფასებებს ან არარეალურ ფასებს — დემო მონაცემები ყოველთვის ცალკეა მონიშნული.
-        </p>
-      </section>
-    </div>
+      </div>
+    </>
   )
 }

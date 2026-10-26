@@ -71,7 +71,6 @@
 .tw-badge--ok { background: #e6f8f5; color: #0e7c6b; }
 .tw-badge--est { background: #fff6e5; color: #9a5b00; }
 .tw-badge--none { background: #f1f5f9; color: var(--tw-muted); }
-.tw-badge--glass { background: rgba(255, 255, 255, 0.18); color: #fff; backdrop-filter: blur(6px); }
 
 /* price cards */
 .tw-price-card {
@@ -166,22 +165,83 @@
   scrollbar-width: none;
 }
 .tw-dest-grid::-webkit-scrollbar { display: none; }
-@media (min-width: 768px) {
-  .tw-dest-grid {
-    grid-auto-flow: dense;
-    grid-template-columns: repeat(4, 1fr);
-    grid-auto-rows: 260px;
-    grid-auto-columns: auto;
-    overflow: visible;
-    margin: 0;
-    padding: 0;
-    gap: 1.1rem;
-  }
-  .tw-dest--hero { grid-column: span 2; grid-row: span 2; }
-  .tw-dest--wide { grid-column: span 2; }
+/* destinations — desktop full-bleed photo stage */
+.tw-atlas { position: relative; overflow: hidden; background: var(--tw-navy); }
+.tw-atlas__shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to right, rgba(16, 27, 53, 0.82), rgba(16, 27, 53, 0.35) 45%, rgba(16, 27, 53, 0.75)),
+    linear-gradient(to top, rgba(16, 27, 53, 0.6), transparent 40%);
 }
-.tw-dest,
-.tw-exp {
+.tw-atlas__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  padding: 0.8rem 1.4rem;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--tw-navy);
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition: background 0.3s, color 0.3s, transform 0.4s var(--tw-ease);
+}
+.tw-atlas__cta:hover { background: var(--tw-blue); color: #fff; transform: translateX(4px); }
+.tw-atlas-list { border-top: 1px solid rgba(255, 255, 255, 0.18); }
+.tw-atlas-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  text-align: left;
+  cursor: pointer;
+  transition: padding 0.5s var(--tw-ease);
+}
+.tw-atlas-row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  height: 2px;
+  width: 0;
+  background: #fff;
+  transition: width 0.6s var(--tw-ease);
+}
+.tw-atlas-row__num { font-size: 0.75rem; font-weight: 700; color: rgba(255, 255, 255, 0.45); font-variant-numeric: tabular-nums; width: 1.5rem; transition: color 0.3s; }
+.tw-atlas-row__ka {
+  display: block;
+  font-size: clamp(1.15rem, 1.6vw, 1.5rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.5);
+  transition: color 0.4s var(--tw-ease);
+}
+.tw-atlas-row__en { display: block; font-size: 0.75rem; color: rgba(255, 255, 255, 0.55); margin-top: 0.1rem; }
+.tw-atlas-row__arrow {
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 999px;
+  color: var(--tw-navy);
+  background: #fff;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 0.4s, transform 0.5s var(--tw-ease), background 0.3s, color 0.3s;
+}
+.tw-atlas-row--on { padding-left: 1.25rem; }
+.tw-atlas-row--on::before { width: 100%; }
+.tw-atlas-row--on .tw-atlas-row__num { color: #fff; }
+.tw-atlas-row--on .tw-atlas-row__ka { color: #fff; }
+.tw-atlas-row--on .tw-atlas-row__arrow { opacity: 1; transform: none; }
+.tw-atlas-row:hover .tw-atlas-row__arrow { background: var(--tw-blue); color: #fff; }
+.tw-atlas-row:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.tw-dest {
   position: relative;
   overflow: hidden;
   border-radius: 1.5rem;
@@ -192,7 +252,6 @@
   aspect-ratio: 4 / 5;
 }
 @media (min-width: 768px) { .tw-dest { aspect-ratio: auto; } }
-.tw-exp { flex: 0 0 min(80vw, 380px); aspect-ratio: 3 / 4; cursor: default; }
 .tw-dest__img {
   position: absolute;
   inset: 0;
@@ -210,7 +269,6 @@
   letter-spacing: -0.02em;
   transition: transform 0.6s var(--tw-ease);
 }
-.tw-dest--hero .tw-dest__title { font-size: clamp(1.75rem, 3vw, 2.75rem); }
 .tw-dest__more {
   font-size: 0.8125rem;
   color: rgba(255, 255, 255, 0.75);
@@ -310,6 +368,84 @@
 }
 .tw-pop__actions a { font-size: 0.75rem; font-weight: 600; color: var(--tw-blue); }
 
+/* map — full-bleed dark stage */
+.tw-mapx { position: relative; background: #0b1428; }
+.tw .tw-mapx .leaflet-container { background: #0b1428; }
+.tw-mapx__panel {
+  position: absolute;
+  z-index: 500;
+  top: 1.5rem;
+  bottom: 1.5rem;
+  left: max(1.5rem, calc((100% - 1440px) / 2 + 2.5rem));
+  width: 380px;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.75rem;
+  border-radius: 1.75rem;
+  background: rgba(11, 20, 40, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.6);
+}
+.tw-mapx__list { flex: 1; min-height: 0; overflow-y: auto; margin: 0 -0.5rem; }
+.tw-mapx__row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.85rem;
+  text-align: left;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: background 0.25s, color 0.25s;
+}
+.tw-mapx__row:hover { background: rgba(255, 255, 255, 0.06); color: #fff; }
+.tw-mapx__row--on { background: var(--tw-blue); color: #fff; }
+.tw-mapx__row--on:hover { background: var(--tw-blue); }
+.tw-mapx__row:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+.tw-mapx__en { display: block; font-size: 0.6875rem; font-weight: 500; opacity: 0.6; }
+.tw-mapx__count {
+  min-width: 1.6rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  font-variant-numeric: tabular-nums;
+}
+.tw-pin {
+  position: relative;
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--tw-teal);
+  box-shadow: 0 0 0 2px #fff, 0 0 14px 2px rgba(54, 201, 180, 0.7);
+}
+.tw-pin--priced { width: 14px; height: 14px; background: var(--tw-blue); box-shadow: 0 0 0 2px #fff, 0 0 18px 4px rgba(23, 105, 255, 0.8); }
+.tw-pin::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  animation: tw-ping 2.4s var(--tw-ease) infinite;
+}
+.tw-pin--static { display: inline-block; width: 10px; height: 10px; }
+.tw-pin--static::after { display: none; }
+.leaflet-marker-icon:hover .tw-pin { transform: scale(1.3); }
+@keyframes tw-ping { from { transform: scale(1); opacity: 0.6; } to { transform: scale(3); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .tw-pin::after { animation: none; display: none; } }
+.tw .tw-mapx .leaflet-control-zoom a { background: rgba(11, 20, 40, 0.85); color: #fff; border-color: rgba(255, 255, 255, 0.1); }
+.tw .tw-mapx .leaflet-control-zoom a:hover { background: var(--tw-blue); }
+.tw .tw-mapx .leaflet-control-attribution { background: rgba(11, 20, 40, 0.6); color: rgba(255, 255, 255, 0.5); }
+.tw .tw-mapx .leaflet-control-attribution a { color: rgba(255, 255, 255, 0.7); }
+.tw .tw-mapx .leaflet-tooltip { background: #0b1428; color: #fff; border: 0; border-radius: 0.5rem; font-weight: 600; }
+.tw .tw-mapx .leaflet-tooltip-top::before { border-top-color: #0b1428; }
+
 /* budget panel glow */
 .tw-glow {
   position: absolute;
@@ -326,4 +462,279 @@
 
 @media (prefers-reduced-motion: reduce) {
   .tw *, .tw *::before, .tw *::after { transition-duration: 0.01ms !important; animation: none !important; }
+}
+
+/* ============================================================
+   Trip planner slide deck (TripPlannerPage + useFullPage): every
+   section is a screen below the fixed header. Each slide has its
+   own entrance (data-fx) and the slide before it leaves to match
+   (data-out); going back reverses it.
+   ============================================================ */
+.tw-fp { position: fixed; inset: 4rem 0 0 0; z-index: 1; overflow: hidden; background: #f5f8fc; }
+@media (min-width: 640px) { .tw-fp { top: 5rem; } }
+/* full-screen deck for a page whose own nav floats over the slides (TravelWordPlatform; more below the effects) */
+.tw-fp.tw-fp--full { inset: 0; }
+.tw-fp > * {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  background: #f5f8fc;
+  will-change: transform;
+  transition: transform 1s cubic-bezier(0.77, 0, 0.18, 1), filter 1s cubic-bezier(0.77, 0, 0.18, 1),
+    opacity 1s cubic-bezier(0.77, 0, 0.18, 1), clip-path 1s cubic-bezier(0.77, 0, 0.18, 1), border-radius 1s;
+}
+.tw-fp > *::-webkit-scrollbar { display: none; }
+.tw-fp > [data-fp="next"] { z-index: 3; }
+.tw-fp > [data-fp="active"] { transform: none; z-index: 2; border-radius: 0; }
+.tw-fp > [data-fp="prev"] { z-index: 1; filter: brightness(0.3); }
+/* slides further back stay hidden, so they never peek out behind a shrinking one */
+.tw-fp > [data-fp="prev"]:has(+ [data-fp="prev"]) { visibility: hidden; }
+/* rise: comes up from below with rounded top; the old one sinks back */
+.tw-fp > [data-fx="rise"][data-fp="next"] { transform: translateY(100%); border-radius: 36px 36px 0 0; }
+.tw-fp > [data-out="rise"][data-fp="prev"] { transform: translateY(-22%) scale(0.9); border-radius: 36px; }
+/* slide: pushes in from the right; the old one drifts left */
+.tw-fp > [data-fx="slide"][data-fp="next"] { transform: translateX(100%); border-radius: 36px 0 0 36px; }
+.tw-fp > [data-out="slide"][data-fp="prev"] { transform: translateX(-30%) scale(0.94); border-radius: 36px; }
+/* zoom: grows out of a blur; the old one falls away into it */
+.tw-fp > [data-fx="zoom"][data-fp="next"] { transform: scale(1.18); opacity: 0; filter: blur(14px); }
+.tw-fp > [data-out="zoom"][data-fp="prev"] { transform: scale(0.82); filter: blur(10px) brightness(0.35); }
+/* circle: opens as a growing circle from the centre */
+.tw-fp > [data-fx="circle"][data-fp="next"] { clip-path: circle(0% at 50% 55%); transform: scale(1.08); }
+.tw-fp > [data-fx="circle"][data-fp="active"] { clip-path: circle(150% at 50% 55%); }
+.tw-fp > [data-out="circle"][data-fp="prev"] { transform: scale(0.9); }
+/* diagonal: a slanted edge sweeps across from the right */
+.tw-fp > [data-fx="diagonal"][data-fp="next"] { clip-path: polygon(100% 0, 100% 0, 140% 100%, 140% 100%); }
+.tw-fp > [data-fx="diagonal"][data-fp="active"] { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+.tw-fp > [data-out="diagonal"][data-fp="prev"] { transform: translateX(-14%); }
+/* drop: unrolls down from the top like a curtain */
+.tw-fp > [data-fx="drop"][data-fp="next"] { clip-path: inset(0 0 100% 0 round 0 0 48px 48px); transform: translateY(-6%); }
+.tw-fp > [data-fx="drop"][data-fp="active"] { clip-path: inset(0 0 0 0 round 0); }
+.tw-fp > [data-out="drop"][data-fp="prev"] { transform: translateY(16%) scale(0.92); border-radius: 36px; }
+/* flip: swings down around its top edge, like turning a page */
+.tw-fp > [data-fx="flip"] { transform-origin: 50% 0; }
+.tw-fp > [data-fx="flip"][data-fp="next"] { transform: perspective(2200px) rotateX(-80deg); opacity: 0; }
+.tw-fp > [data-fx="flip"][data-fp="active"] { transform: perspective(2200px) rotateX(0); }
+.tw-fp > [data-out="flip"][data-fp="prev"] { transform: translateY(8%) scale(0.88); border-radius: 36px; }
+
+/* --full deck (TravelWordPlatform): the slides themselves stay put. On a page change a curtain (.twc, below)
+   covers the screen, the page swaps the visible slide underneath it (data-show / data-leaving), and the
+   curtain leaves to reveal the new slide, which settles in while its .tw-fp-in blocks rise out of a mask
+   one after another (--i orders them) */
+.tw-fp.tw-fp--full { background: #020617; }
+.tw-fp.tw-fp--full > [data-fp] {
+  visibility: hidden; transform: none; clip-path: none; filter: none; opacity: 1; border-radius: 0; transition: none;
+}
+.tw-fp.tw-fp--full > [data-show] { visibility: visible; animation: tw-settle 1.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.tw-fp.tw-fp--full > [data-show][data-leaving] { animation: tw-leave 0.75s cubic-bezier(0.7, 0, 0.84, 0) both; }
+/* backwards fill: once played, the blocks drop the clip so card shadows and hover lifts aren't cut off */
+.tw-fp--full > [data-show] .tw-fp-in {
+  animation: tw-fp-in 1.1s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation-delay: calc(0.3s + var(--i, 0) * 0.1s);
+}
+.tw-fp--full > [data-leaving] .tw-fp-in { animation: none; }
+@keyframes tw-settle { from { scale: 1.08; } }
+@keyframes tw-leave { to { scale: 0.92; translate: 0 calc(var(--tw-dir, 1) * -4%); filter: brightness(0.4); } }
+@keyframes tw-fp-in {
+  from { opacity: 0; translate: 0 56px; clip-path: inset(100% 0 0 0); }
+  to { opacity: 1; translate: 0 0; clip-path: inset(0 0 0 0); }
+}
+
+/* page-change curtain: three layers (green, deep green, near-black) sweep in one after another, the incoming
+   section's number and name rise in the middle, then the layers leave front-first. Each section has its own
+   shape (data-variant); going back flips the layers (data-back) so the motion runs the other way.
+   Timing is mirrored in TravelWordPlatform (SWAP_MS: covered at ~0.75s, CURTAIN_MS: gone by ~1.6s). */
+.twc { position: fixed; inset: 0; z-index: 50; pointer-events: none; overflow: hidden; }
+.twc__layers { position: absolute; inset: 0; }
+.twc[data-back] .twc__layers { scale: 1 -1; }
+.twc[data-back][data-variant="swipe"] .twc__layers, .twc[data-back][data-variant="diagonal"] .twc__layers { scale: -1 1; }
+.twc__p {
+  position: absolute;
+  inset: 0;
+  background: var(--c);
+  animation: var(--in) 0.6s cubic-bezier(0.76, 0, 0.24, 1) calc(var(--k) * 0.07s) both,
+    var(--out) 0.6s cubic-bezier(0.76, 0, 0.24, 1) calc(0.85s + (2 - var(--k)) * 0.07s) forwards;
+}
+.twc__p:nth-child(1) { --k: 0; --c: #22c55e; }
+.twc__p:nth-child(2) { --k: 1; --c: #065f46; }
+.twc__p:nth-child(3) { --k: 2; --c: #020617; }
+.twc[data-variant="wave"] { --in: twc-wave-in; --out: twc-wave-out; }
+.twc[data-variant="swipe"] { --in: twc-swipe-in; --out: twc-swipe-out; }
+.twc[data-variant="iris"] { --in: twc-iris-in; --out: twc-iris-out; }
+.twc[data-variant="split"] { --in: twc-split-in; --out: twc-split-out; }
+.twc[data-variant="diagonal"] { --in: twc-diag-in; --out: twc-diag-out; }
+/* blinds: each layer is six strips that drop in from the top one after another and lift away downwards */
+.twc__p i { display: none; }
+.twc[data-variant="blinds"] .twc__p { display: flex; background: none; animation: none; }
+.twc[data-variant="blinds"] .twc__p i {
+  display: block;
+  flex: 1;
+  margin-right: -1px;
+  background: var(--c);
+  transform-origin: 50% 0;
+  animation: twc-blind-in 0.5s cubic-bezier(0.76, 0, 0.24, 1) calc(var(--k) * 0.04s + var(--s, 0) * 0.03s) both,
+    twc-blind-out 0.5s cubic-bezier(0.76, 0, 0.24, 1) calc(0.85s + (2 - var(--k)) * 0.04s + var(--s, 0) * 0.03s) forwards;
+}
+.twc__p i:nth-child(2) { --s: 1; }
+.twc__p i:nth-child(3) { --s: 2; }
+.twc__p i:nth-child(4) { --s: 3; }
+.twc__p i:nth-child(5) { --s: 4; }
+.twc__p i:nth-child(6) { --s: 5; }
+
+@keyframes twc-wave-in {
+  from { translate: 0 100%; border-radius: 50% 50% 0 0 / 28vh 28vh 0 0; }
+  to { translate: 0 0; border-radius: 0; }
+}
+@keyframes twc-wave-out {
+  from { translate: 0 0; border-radius: 0; }
+  to { translate: 0 -100%; border-radius: 0 0 50% 50% / 0 0 28vh 28vh; }
+}
+@keyframes twc-swipe-in {
+  from { translate: 100% 0; border-radius: 28vw 0 0 28vw / 50% 0 0 50%; }
+  to { translate: 0 0; border-radius: 0; }
+}
+@keyframes twc-swipe-out {
+  from { translate: 0 0; border-radius: 0; }
+  to { translate: -100% 0; border-radius: 0 28vw 28vw 0 / 0 50% 50% 0; }
+}
+@keyframes twc-iris-in { from { clip-path: circle(0% at 50% 50%); } to { clip-path: circle(75% at 50% 50%); } }
+@keyframes twc-iris-out { from { clip-path: circle(75% at 50% 50%); } to { clip-path: circle(0% at 50% 50%); } }
+@keyframes twc-split-in { from { clip-path: inset(50% 0 50% 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes twc-split-out { from { clip-path: inset(0 0 0 0); } to { clip-path: inset(0 50% 0 50%); } }
+/* a slanted band: enters fully off-screen right, covers, then leaves fully off-screen left */
+@keyframes twc-diag-in {
+  from { clip-path: polygon(100% 0, 240% 0, 280% 100%, 140% 100%); }
+  to { clip-path: polygon(-40% 0, 100% 0, 140% 100%, 0 100%); }
+}
+@keyframes twc-diag-out {
+  from { clip-path: polygon(-40% 0, 100% 0, 140% 100%, 0 100%); }
+  to { clip-path: polygon(-180% 0, -40% 0, 0 100%, -140% 100%); }
+}
+@keyframes twc-blind-in { from { scale: 1 0; } to { scale: 1 1; } }
+@keyframes twc-blind-out {
+  from { scale: 1 1; transform-origin: 50% 100%; }
+  to { scale: 1 0; transform-origin: 50% 100%; }
+}
+
+/* the incoming section's number and name, each rising out of its own mask while the screen is covered */
+.twc__type {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  text-align: center;
+  color: #fff;
+}
+.twc__mask { display: block; overflow: hidden; }
+.twc__mask > span {
+  display: block;
+  animation: twc-type-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) calc(0.28s + var(--t, 0) * 0.08s) both,
+    twc-type-out 0.45s cubic-bezier(0.7, 0, 0.84, 0) calc(0.8s + var(--t, 0) * 0.04s) forwards;
+}
+.twc__eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.3em; text-transform: uppercase; color: #4ade80; }
+.twc__num {
+  font-size: clamp(5rem, 20vw, 15rem);
+  line-height: 0.95;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: transparent;
+  -webkit-text-stroke: 2px rgba(255, 255, 255, 0.4);
+}
+.twc__title { padding-bottom: 0.15em; font-size: clamp(1.75rem, 5vw, 3.75rem); font-weight: 800; line-height: 1.25; }
+.twc__line {
+  width: 120px;
+  height: 2px;
+  margin-top: 1.25rem;
+  background: #4ade80;
+  animation: twc-line 1.1s cubic-bezier(0.76, 0, 0.24, 1) 0.3s both;
+}
+@keyframes twc-type-in { from { translate: 0 110%; } }
+@keyframes twc-type-out { to { translate: 0 -110%; } }
+@keyframes twc-line {
+  0% { scale: 0 1; transform-origin: 0 50%; }
+  45%, 55% { scale: 1 1; transform-origin: 0 50%; }
+  56% { transform-origin: 100% 50%; }
+  100% { scale: 0 1; transform-origin: 100% 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tw-fp.tw-fp--full > [data-show] { animation: none; }
+  .tw-fp--full .tw-fp-in { animation: none !important; }
+  .twc { display: none; }
+}
+
+/* content sits vertically centred on its screen; tall content runs past and scrolls inside */
+.tw-fp > .tw-slide { display: flex; flex-direction: column; }
+.tw-fp > .tw-slide > * { width: 100%; margin-block: auto; }
+/* full-bleed sections fill exactly one screen below the header */
+.tw-fp .tw-atlas > div { min-height: calc(100svh - 5rem); }
+.tw-fp .tw-mapx > div { height: calc(100svh - 5rem); min-height: 480px; max-height: none; }
+/* overview sections: centred page-width column */
+.tw-ov__inner { max-width: 1440px; margin: 0 auto; padding: 2.5rem 1rem; }
+@media (min-width: 640px) { .tw-ov__inner { padding: 3rem 1.5rem; } }
+@media (min-width: 1024px) { .tw-ov__inner { padding: 3rem 2.5rem; } }
+.tw-fp > .tw-slide--foot { justify-content: flex-end; background: #0b1f3a; }
+.tw-fp > .tw-slide--foot > * { margin-block: auto 0; }
+
+/* side dots: one per screen, label on hover, counter on top */
+.tw-fp-dots {
+  position: fixed;
+  right: 18px;
+  top: calc(50% + 2.5rem);
+  z-index: 40;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+.tw-fp-count { margin-bottom: 6px; font-size: 12px; font-weight: 800; color: var(--tw-navy); font-variant-numeric: tabular-nums; }
+.tw-fp-count i { font-style: normal; font-weight: 500; color: var(--tw-muted); }
+.tw-fp-dots button {
+  position: relative;
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1.5px solid var(--tw-muted);
+  transition: height 0.45s cubic-bezier(0.3, 1.4, 0.5, 1), background 0.3s, border-color 0.3s;
+}
+.tw-fp-dots button:hover { border-color: var(--tw-navy); }
+.tw-fp-dots button.on { height: 28px; background: var(--tw-blue); border-color: var(--tw-blue); }
+.tw-fp-dots button span {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translate(8px, -50%);
+  white-space: nowrap;
+  pointer-events: none;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: #fff;
+  background: rgba(16, 27, 53, 0.85);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.25s;
+}
+.tw-fp-dots button:hover span, .tw-fp-dots button:focus-visible span { opacity: 1; transform: translate(0, -50%); }
+@media (max-width: 760px) {
+  .tw-fp-dots { right: 6px; gap: 8px; }
+  .tw-fp-dots button { width: 7px; height: 7px; }
+  .tw-fp-dots button.on { height: 18px; }
+  .tw-fp-count, .tw-fp-dots button span { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tw-fp > * { transition: opacity 0.35s ease; }
+  .tw-fp > [data-fp] { transform: none !important; filter: none !important; clip-path: none !important; border-radius: 0 !important; }
+  .tw-fp > [data-fp="next"], .tw-fp > [data-fp="prev"] { opacity: 0; }
+  .tw-fp > [data-fp="active"] { opacity: 1; }
 }

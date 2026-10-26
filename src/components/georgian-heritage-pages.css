@@ -456,7 +456,19 @@
 /* "continue" index at the bottom of every page: one editorial row per page (number, photo, title,
    counts); rows with region-tagged content open their region list right beneath themselves.
    On arrival the rule lines draw in, photos open and titles rise out of their row (--i staggers). */
-.gh .next-pages{padding:80px 0}
+.gh .next-pages{position:relative;padding:80px 0;overflow:hidden;isolation:isolate}
+.gh .next-pages > .wrap{position:relative;z-index:1}
+/* hovered card photo, blown up behind the whole section */
+.gh .nx-backdrop{position:absolute;inset:0;z-index:0;pointer-events:none}
+.gh .nx-backdrop img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.04);
+  transition:opacity .8s ease,transform 6s cubic-bezier(.2,.7,.2,1)}
+.gh .nx-backdrop img.on{opacity:1;transform:scale(1.18)}
+.gh .nx-backdrop::after{content:"";position:absolute;inset:0;opacity:0;transition:opacity .8s ease;
+  background:linear-gradient(180deg,rgba(0,0,0,.7),rgba(0,0,0,.45) 40%,rgba(0,0,0,.75))}
+.gh .next-pages.has-bg .nx-backdrop::after{opacity:1}
+.gh .nx-head h2,.gh .nx-head .eyebrow{transition:color .6s}
+.gh .next-pages.has-bg .nx-head h2{color:#fff}
+.gh .next-pages.has-bg .nx-head .eyebrow{color:rgba(255,255,255,.8)}
 .gh .nx-head{margin-bottom:30px}
 .gh .nx-head h2{margin:12px 0 0;font-size:clamp(32px,4.4vw,58px);line-height:1.05}
 
@@ -559,7 +571,7 @@
   .gh .nx-region{flex:0 0 140px;scroll-snap-align:start}
 }
 @media(prefers-reduced-motion:reduce){
-  .gh .nx-photo img,.gh .nx-card.in .nx-btn,.gh .nx-card.in .nx-photo,.gh .nx-card.in .nx-title span,.gh .nx-card.in .nx-eyebrow,
+  .gh .nx-backdrop img,.gh .nx-photo img,.gh .nx-card.in .nx-btn,.gh .nx-card.in .nx-photo,.gh .nx-card.in .nx-title span,.gh .nx-card.in .nx-eyebrow,
   .gh .nx-card.in .nx-num,.gh .nx-card.in .nx-arrow,.gh .nx-card.in .nx-count,.gh .nx-panel,.gh .nx-region{animation:none}
   .gh .nx-btn::after{display:none}
 }
@@ -684,3 +696,20 @@
   .gh .fp .stories-grid .art-card .tx{padding:20px 22px}
   .gh .fp .stories-grid .art-card h3{font-size:18px}
 }
+
+/* hover zoom for photos that had none. `scale` is used where the image already runs a transform animation
+   (ken burns), so the two compose instead of fighting */
+.gh .kx-item img,.gh .spot-photo img,.gh .tp-day-photo img,.gh .tp-ribbon img,.gh .hero-bg img{
+  transition-property:transform,filter,scale;scale:1}
+.gh .kx-item img{transition-duration:1.2s}
+.gh .kx-item:hover img{scale:1.08}
+.gh .spot-photo img{transition-duration:2.2s,.6s,1.4s}
+.gh .spot-photo:hover img{scale:1.08}
+.gh .tp-day-photo img{transition:scale 1.2s cubic-bezier(.2,.7,.2,1)}
+.gh .tp-day:hover .tp-day-photo img{scale:1.08}
+.gh .tp-ribbon img{transition:scale .5s cubic-bezier(.3,1.6,.5,1)}
+.gh .tp-ribbon li:hover img{scale:1.12}
+.gh .hero-bg img{transition:scale 2.4s cubic-bezier(.2,.7,.2,1)}
+.gh .page-hero:hover .hero-bg img,.gh .hero:hover .hero-bg img{scale:1.05}
+.gh .cx-photo{transition:transform 1.2s cubic-bezier(.2,.7,.2,1)}
+.gh .cx-card:hover .cx-photo{transform:scale(1.08)}

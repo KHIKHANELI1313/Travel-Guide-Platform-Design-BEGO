@@ -196,13 +196,15 @@ export default function DateRangeSearch({
                       type="button"
                       onClick={() => setExpandedId(open ? null : record.id)}
                       aria-expanded={open}
-                      className="flex w-full cursor-pointer gap-3 p-3 text-left transition hover:bg-white/50 dark:hover:bg-slate-800/80 sm:gap-4 sm:p-4"
+                      className="group flex w-full cursor-pointer gap-3 p-3 text-left transition hover:bg-white/50 dark:hover:bg-slate-800/80 sm:gap-4 sm:p-4"
                     >
-                      <img
-                        src={record.image}
-                        alt=""
-                        className="h-20 w-20 shrink-0 rounded-xl object-cover sm:h-28 sm:w-28"
-                      />
+                      <span className="h-20 w-20 shrink-0 overflow-hidden rounded-xl sm:h-28 sm:w-28">
+                        <img
+                          src={record.image}
+                          alt=""
+                          className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                        />
+                      </span>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">

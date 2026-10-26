@@ -8,9 +8,10 @@ import {
 import GeorgiaMap from "./GeorgiaMap"
 import AnimatedNumber from "./AnimatedNumber"
 import {
-  CATEGORIES, DESTINATIONS, EXPERIENCES, HERO_IMAGE, METRICS, PANORAMA_IMAGE, PRICED_CITIES, PRICES,
+  CATEGORIES, DESTINATIONS, HERO_IMAGE, METRICS, PRICED_CITIES, PRICES,
   priceFor, type CategoryId, type MetricId, type Price,
 } from "./data"
+import { showSlideOf } from "@/lib/useFullPage"
 import "./travelword.css"
 
 const EASE = [0.22, 1, 0.36, 1] as const
@@ -34,7 +35,11 @@ const nightsBetween = (from: string, to: string) => {
   return n > 0 ? n : 0
 }
 
-const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" })
+// inside the slide deck the section's slide is brought on screen; on a scrolling page it is scrolled to
+const scrollTo = (id: string) => {
+  const el = document.getElementById(id)
+  if (!showSlideOf(el)) el?.scrollIntoView({ behavior: "smooth", block: "start" })
+}
 
 // ——————————————————————————————————————————————————
 // SHARED PIECES
@@ -122,16 +127,26 @@ export default function TravelWordExperience() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="tw" data-no-reveal>
+      {/* each top-level block is one screen in the trip planner's slide deck (TripPlannerPage) */}
+      <div className="tw-slide">
         <Hero draft={draft} setDraft={setDraft} onSearch={() => runSearch()} />
+      </div>
+      <div className="tw-slide">
         <Results filters={filters} onClear={() => runSearch({ destination: "", category: "", budget: 0 })} />
+      </div>
+      <div className="tw-slide">
         <Destinations onPick={id => runSearch({ destination: id })} />
-        <Panorama />
+      </div>
+      <div className="tw-slide">
         <Categories onPick={id => runSearch({ category: id })} />
+      </div>
+      <div className="tw-slide">
         <Compare
           cities={compareCities} setCities={setCompareCities}
           metric={compareMetric} setMetric={setCompareMetric}
         />
+      </div>
+      <div className="tw-slide">
         <MapSection
           active={mapDestination} setActive={setMapDestination}
           onSelectCity={city => {
@@ -139,7 +154,8 @@ export default function TravelWordExperience() {
             scrollTo("tw-compare")
           }}
         />
-        <Experiences />
+      </div>
+      <div className="tw-slide">
         <Budget />
       </div>
     </MotionConfig>
@@ -361,54 +377,104 @@ function Results({ filters, onClear }: { filters: Filters; onClear: () => void }
 // DESTINATIONS
 // ——————————————————————————————————————————————————
 
-function Destinations({ onPick }: { onPick: (id: string) => void }) {
-  return (
-    <section className="tw-section">
-      <Heading eyebrow="Destinations" title="Thirteen regions. One country." />
-      <div className="tw-dest-grid">
-        {DESTINATIONS.map((d, i) => {
-          const from = PRICES.filter(p => p.destinationId === d.id && p.metric === "hotel-budget").sort((a, b) => a.amount - b.amount)[0]
-          return (
-            <motion.button
-              key={d.id} onClick={() => onPick(d.id)}
-              initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "0px 0px -40px 0px" }}
-              transition={{ duration: 0.7, delay: (i % 4) * 0.08, ease: EASE }}
-              className={`tw-dest group ${i === 0 ? "tw-dest--hero" : i === 3 || i === 8 ? "tw-dest--wide" : ""}`}
-              aria-label={`Explore ${d.name}`}
-            >
-              <img src={d.image} alt={d.alt} loading="lazy" decoding="async" className="tw-dest__img" />
-              <span className="tw-dest__shade" />
-              <span className="tw-dest__body">
-                <span className="text-white/70 text-xs font-medium">{d.nameKa}</span>
-                <span className="tw-dest__title">{d.name}</span>
-                <span className="tw-dest__more">
-                  {d.tagline}
-                  {from && <span className="block mt-1 text-white/90">Stays from ₾{from.amount}/night · estimate</span>}
-                </span>
-              </span>
-              <span className="tw-dest__arrow"><ArrowRight className="w-4 h-4" /></span>
-            </motion.button>
-          )
-        })}
-      </div>
-    </section>
-  )
-}
+const cheapestStay = (destinationId: string) =>
+  PRICES.filter(p => p.destinationId === destinationId && p.metric === "hotel-budget").sort((a, b) => a.amount - b.amount)[0]
 
-function Panorama() {
-  const ref = useRef<HTMLElement>(null)
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] })
-  const x = useTransform(scrollYProgress, [0, 1], ["-4%", "4%"])
+function Destinations({ onPick }: { onPick: (id: string) => void }) {
+  const [active, setActive] = useState(0)
+  const current = DESTINATIONS[active]
+  const currentFrom = cheapestStay(current.id)
   return (
-    <section ref={ref} className="relative h-[46vh] min-h-[300px] overflow-hidden my-6 sm:my-10">
-      <motion.img style={{ x, scale: 1.12 }} src={PANORAMA_IMAGE.src} alt={PANORAMA_IMAGE.alt} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
-      <div className="absolute inset-0 bg-gradient-to-r from-[#101B35]/70 to-transparent" />
-      <div className="relative h-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 flex items-center">
-        <Reveal>
-          <p className="text-white text-3xl sm:text-6xl font-extrabold tracking-tight max-w-xl leading-[1.02]">Every valley<br />has a table set.</p>
-          <p className="text-white/70 text-sm mt-4">Sighnaghi, Kakheti</p>
-        </Reveal>
+    <section>
+      {/* mobile — swipe row */}
+      <div className="tw-section md:hidden">
+        <Heading eyebrow="Destinations" title="Thirteen regions. One country." />
+        <div className="tw-dest-grid">
+          {DESTINATIONS.map((d, i) => {
+            const from = cheapestStay(d.id)
+            return (
+              <motion.button
+                key={d.id} onClick={() => onPick(d.id)}
+                initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "0px 0px -40px 0px" }}
+                transition={{ duration: 0.7, delay: (i % 4) * 0.08, ease: EASE }}
+                className="tw-dest group"
+                aria-label={`Explore ${d.name}`}
+              >
+                <img src={d.image} alt={d.alt} loading="lazy" decoding="async" className="tw-dest__img" />
+                <span className="tw-dest__shade" />
+                <span className="tw-dest__body">
+                  <span className="text-white/70 text-xs font-medium">{d.nameKa}</span>
+                  <span className="tw-dest__title">{d.name}</span>
+                  <span className="tw-dest__more">
+                    {d.tagline}
+                    {from && <span className="block mt-1 text-white/90">Stays from ₾{from.amount}/night · estimate</span>}
+                  </span>
+                </span>
+                <span className="tw-dest__arrow"><ArrowRight className="w-4 h-4" /></span>
+              </motion.button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* desktop — full-bleed photo stage with the index over it */}
+      <div className="tw-atlas hidden md:block">
+        <AnimatePresence initial={false}>
+          <motion.img
+            key={current.id} src={current.image} alt={current.alt} decoding="async"
+            initial={{ opacity: 0, scale: 1.06 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 1.1, ease: EASE }}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        </AnimatePresence>
+        <span className="tw-atlas__shade" />
+
+        <div className="relative max-w-[1440px] min-h-[100svh] mx-auto px-6 lg:px-10 py-24 grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-12 lg:gap-20">
+          <div className="flex flex-col justify-between text-white">
+            <Reveal>
+              <p className="text-[#7FB0FF] text-sm font-semibold uppercase tracking-[0.18em] mb-3">Destinations</p>
+              <h2 className="text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.02]">Thirteen regions.<br />One country.</h2>
+            </Reveal>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={current.id}
+                initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.45, ease: EASE }}
+              >
+                <p className="text-white/60 text-xs font-semibold uppercase tracking-[0.18em]">
+                  {String(active + 1).padStart(2, "0")} / {DESTINATIONS.length} · {current.nameKa}
+                </p>
+                <p className="text-4xl lg:text-5xl font-extrabold tracking-tight mt-3">{current.name}</p>
+                <p className="text-white/80 text-base mt-3">{current.tagline}</p>
+                {currentFrom && <p className="text-white/90 text-sm mt-1">Stays from ₾{currentFrom.amount}/night · estimate</p>}
+                <button onClick={() => onPick(current.id)} className="tw-atlas__cta">
+                  Explore {current.name} <ArrowRight className="w-4 h-4" />
+                </button>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          <ol className="tw-atlas-list self-center">
+            {DESTINATIONS.map((d, i) => (
+              <li key={d.id}>
+                <button
+                  onClick={() => onPick(d.id)}
+                  onMouseEnter={() => setActive(i)} onFocus={() => setActive(i)}
+                  className={`tw-atlas-row ${i === active ? "tw-atlas-row--on" : ""}`}
+                  aria-label={`Explore ${d.name}`}
+                >
+                  <span className="tw-atlas-row__num">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="tw-atlas-row__ka">{d.nameKa}</span>
+                    <span className="tw-atlas-row__en">{d.name}</span>
+                  </span>
+                  <span className="tw-atlas-row__arrow"><ArrowUpRight className="w-4 h-4" /></span>
+                </button>
+              </li>
+            ))}
+          </ol>
+        </div>
       </div>
     </section>
   )
@@ -557,56 +623,62 @@ function Compare({ cities, setCities, metric, setMetric }: {
 function MapSection({ active, setActive, onSelectCity }: {
   active: string | null; setActive: (id: string | null) => void; onSelectCity: (city: string) => void
 }) {
+  const townCount = DESTINATIONS.reduce((n, d) => n + d.places.length, 0)
   return (
-    <section className="tw-section">
-      <Heading eyebrow="Map" title="Find it on the map." />
-      <Reveal>
-        <div className="relative rounded-[28px] overflow-hidden border border-[#E2E8F0] bg-[#EAF2FF] h-[70svh] min-h-[440px] max-h-[680px] shadow-[0_30px_60px_-30px_rgba(16,27,53,0.3)]">
-          <GeorgiaMap activeDestination={active} onSelectCity={(city) => onSelectCity(city)} />
-          <div className="absolute top-3 left-3 right-3 z-[500] flex gap-2 overflow-x-auto tw-noscroll">
+    <section className="tw-mapx">
+      <div className="relative h-[88svh] min-h-[560px] md:h-[100svh] md:max-h-[920px]">
+        <GeorgiaMap activeDestination={active} onSelectCity={(city) => onSelectCity(city)} />
+
+        {/* desktop — glass panel with the region index */}
+        <aside className="tw-mapx__panel hidden md:flex">
+          <Reveal>
+            <p className="text-[#7FB0FF] text-xs font-semibold uppercase tracking-[0.18em] mb-2">Map</p>
+            <h2 className="text-white text-4xl font-extrabold tracking-tight leading-[1.05]">Find it on the map.</h2>
+            <p className="text-white/55 text-sm mt-2">{DESTINATIONS.length} regions · {townCount} towns</p>
+          </Reveal>
+          <ul className="tw-mapx__list tw-noscroll">
+            <li>
+              <button onClick={() => setActive(null)} className={`tw-mapx__row ${!active ? "tw-mapx__row--on" : ""}`}>
+                <span className="flex-1">All regions</span>
+                <span className="tw-mapx__count">{townCount}</span>
+              </button>
+            </li>
+            {DESTINATIONS.map(d => (
+              <li key={d.id}>
+                <button onClick={() => setActive(d.id)} className={`tw-mapx__row ${active === d.id ? "tw-mapx__row--on" : ""}`}>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate">{d.nameKa}</span>
+                    <span className="tw-mapx__en">{d.name}</span>
+                  </span>
+                  <span className="tw-mapx__count">{d.places.length}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <div className="pt-4 border-t border-white/10">
+            <div className="flex gap-4 text-[11px] text-white/70">
+              <span className="flex items-center gap-1.5"><i className="tw-pin tw-pin--priced tw-pin--static" />Price estimates</span>
+              <span className="flex items-center gap-1.5"><i className="tw-pin tw-pin--static" />Town</span>
+            </div>
+            <p className="text-[11px] leading-relaxed text-white/45 mt-2">Town locations only. Business markers appear once verified listings with confirmed addresses are added.</p>
+          </div>
+        </aside>
+
+        {/* mobile — heading and chips over the map */}
+        <div className="md:hidden absolute inset-x-0 top-0 z-[500] pt-8 pb-10 px-4 bg-gradient-to-b from-[#0B1428] via-[#0B1428]/85 to-transparent pointer-events-none">
+          <p className="text-[#7FB0FF] text-xs font-semibold uppercase tracking-[0.18em] mb-2">Map</p>
+          <h2 className="text-white text-3xl font-extrabold tracking-tight">Find it on the map.</h2>
+          <div className="flex gap-2 overflow-x-auto tw-noscroll mt-4 -mx-4 px-4 pointer-events-auto">
             <button onClick={() => setActive(null)} className={`tw-map-chip ${!active ? "tw-map-chip--on" : ""}`}>All regions</button>
             {DESTINATIONS.map(d => (
               <button key={d.id} onClick={() => setActive(d.id)} className={`tw-map-chip ${active === d.id ? "tw-map-chip--on" : ""}`}>{d.name}</button>
             ))}
           </div>
-          <div className="absolute bottom-3 left-3 z-[500] bg-white/95 rounded-xl px-3 py-2 text-[11px] text-[#64748B] flex gap-3 shadow">
-            <span className="flex items-center gap-1.5"><i className="w-2.5 h-2.5 rounded-full bg-[#1769FF]" />Price estimates</span>
-            <span className="flex items-center gap-1.5"><i className="w-2.5 h-2.5 rounded-full bg-[#36C9B4]" />Town</span>
-          </div>
         </div>
-      </Reveal>
-      <p className="text-xs text-[#64748B] mt-3">Town locations only. Business markers appear once verified listings with confirmed addresses are added.</p>
-    </section>
-  )
-}
-
-// ——————————————————————————————————————————————————
-// EXPERIENCES
-// ——————————————————————————————————————————————————
-
-function Experiences() {
-  return (
-    <section className="py-16 sm:py-24">
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10">
-        <Heading eyebrow="Experiences" title="Go further." />
-      </div>
-      <div className="flex gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory px-4 sm:px-6 lg:px-10 pb-4 tw-noscroll">
-        {EXPERIENCES.map((e, i) => (
-          <motion.figure
-            key={e.title}
-            initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }} transition={{ duration: 0.7, delay: i * 0.08, ease: EASE }}
-            className="tw-exp group snap-start"
-          >
-            <img src={e.image} alt={e.alt} loading="lazy" decoding="async" className="tw-dest__img" />
-            <span className="tw-dest__shade" />
-            <figcaption className="absolute inset-x-0 bottom-0 p-5 sm:p-6 text-white">
-              <span className="text-[11px] uppercase tracking-[0.2em] text-white/70">{e.kind} · {DESTINATIONS.find(d => d.id === e.region)?.name}</span>
-              <span className="block text-2xl font-bold mt-1">{e.title}</span>
-              <span className="tw-badge tw-badge--glass mt-3">Price on request</span>
-            </figcaption>
-          </motion.figure>
-        ))}
+        <div className="md:hidden absolute bottom-3 left-3 z-[500] rounded-xl px-3 py-2 text-[11px] text-white/75 flex gap-3 bg-[#0B1428]/80 backdrop-blur">
+          <span className="flex items-center gap-1.5"><i className="tw-pin tw-pin--priced tw-pin--static" />Price estimates</span>
+          <span className="flex items-center gap-1.5"><i className="tw-pin tw-pin--static" />Town</span>
+        </div>
       </div>
     </section>
   )

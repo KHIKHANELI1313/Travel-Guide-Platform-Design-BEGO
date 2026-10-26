@@ -106,8 +106,8 @@ export default function GeorgiaRegionDetailPage({
 
   return (
     <div className="min-h-screen bg-[#F5F7FA]">
-      <section className="relative h-[42svh] min-h-[280px] sm:h-[55vh] flex items-end overflow-hidden">
-        <img src={region.image} alt={region.landmark} className="absolute inset-0 w-full h-full object-cover bg-gray-800" />
+      <section className="group relative h-[42svh] min-h-[280px] sm:h-[55vh] flex items-end overflow-hidden">
+        <img src={region.image} alt={region.landmark} className="absolute inset-0 w-full h-full object-cover bg-gray-800 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
         <button
           onClick={onBack}

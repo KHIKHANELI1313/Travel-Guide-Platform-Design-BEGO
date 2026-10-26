@@ -1,0 +1,94 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Noto+Sans+Georgian:wght@300;400;500;600&family=Noto+Serif+Georgian:wght@500;600;700&display=swap');
+
+/* Login / registration page (AuthPage): a full-screen photo slideshow with the form floating over it on glass */
+@keyframes auth-up { from { opacity: 0; translate: 0 18px; } }
+@keyframes auth-line { from { translate: 0 110%; } }
+
+/* the photo stage follows the mouse a little (parallax: AuthPage sets --mx / --my, -0.5…0.5) */
+.auth-stage {
+  scale: 1.06;
+  translate: calc(var(--mx, 0) * -26px) calc(var(--my, 0) * -18px);
+  transition: translate 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* every photo comes in with its own reveal (data-reveal) over the previous one, then drifts slowly */
+.auth-photo { position: absolute; inset: 0; overflow: hidden; }
+.auth-photo img { width: 100%; height: 100%; object-fit: cover; }
+.auth-photo[data-active] { z-index: 2; animation: var(--reveal) 1.4s cubic-bezier(0.76, 0, 0.24, 1) both; }
+.auth-photo[data-active] img { animation: auth-drift 9s ease-out both; }
+.auth-photo[data-reveal="zoom"] { --reveal: auth-zoom; }
+.auth-photo[data-reveal="wipe"] { --reveal: auth-wipe; }
+.auth-photo[data-reveal="circle"] { --reveal: auth-circle; }
+.auth-photo[data-reveal="diagonal"] { --reveal: auth-diagonal; }
+.auth-photo[data-reveal="split"] { --reveal: auth-split; }
+.auth-photo[data-reveal="side"] { --reveal: auth-side; }
+@keyframes auth-zoom { from { opacity: 0; scale: 1.2; filter: blur(14px); } }
+@keyframes auth-wipe { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes auth-circle { from { clip-path: circle(0% at 35% 65%); } to { clip-path: circle(150% at 35% 65%); } }
+@keyframes auth-diagonal { from { clip-path: polygon(0 0, 0 0, 0 0); } to { clip-path: polygon(0 0, 220% 0, 0 220%); } }
+@keyframes auth-split { from { clip-path: inset(0 50% 0 50%); } to { clip-path: inset(0 0 0 0); } }
+@keyframes auth-side { from { clip-path: inset(0 0 0 100%); } to { clip-path: inset(0 0 0 0); } }
+@keyframes auth-drift { from { scale: 1.14; } to { scale: 1; } }
+/* the bar under the current photo fills up; when it is full the next photo comes in */
+@keyframes auth-progress { from { scale: 0 1; } to { scale: 1 1; } }
+
+/* glass card: rises in, and a thin gold light travels round its edge */
+@property --auth-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.auth-card { animation: auth-card-in 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both; }
+.auth-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: conic-gradient(from var(--auth-angle), transparent 0deg 250deg, rgba(212, 177, 106, 0.95) 300deg, transparent 345deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: auth-orbit 7s linear infinite;
+}
+@keyframes auth-orbit { to { --auth-angle: 360deg; } }
+@keyframes auth-card-in { from { opacity: 0; translate: 0 40px; scale: 0.96; filter: blur(10px); } }
+
+/* the blocks of a form (or of the profile) rise in one after another — again on every tab switch */
+.auth-stagger > * { animation: auth-up 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.auth-stagger > :nth-child(2) { animation-delay: 0.06s; }
+.auth-stagger > :nth-child(3) { animation-delay: 0.12s; }
+.auth-stagger > :nth-child(4) { animation-delay: 0.18s; }
+.auth-stagger > :nth-child(5) { animation-delay: 0.24s; }
+.auth-stagger > :nth-child(6) { animation-delay: 0.3s; }
+.auth-stagger > :nth-child(7) { animation-delay: 0.36s; }
+.auth-stagger > :nth-child(8) { animation-delay: 0.42s; }
+
+/* gold button: a sheen crosses it on hover */
+.auth-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.55) 50%, transparent 70%);
+  translate: -120% 0;
+  pointer-events: none;
+}
+.auth-btn:hover::after { animation: auth-sheen 0.9s ease; }
+@keyframes auth-sheen { to { translate: 120% 0; } }
+
+/* profile avatar: a gold ring turning slowly */
+.auth-ring {
+  background: conic-gradient(from var(--auth-angle), #e6c988, transparent 35%, #b8964f 60%, transparent 85%, #e6c988);
+  animation: auth-orbit 5s linear infinite;
+}
+
+/* the browser's autofill keeps the glass look instead of painting the field white */
+.auth input:-webkit-autofill {
+  -webkit-text-fill-color: #fff;
+  caret-color: #fff;
+  box-shadow: 0 0 0 1000px rgba(11, 31, 26, 0.8) inset;
+  transition: background-color 9999s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-photo[data-active], .auth-photo[data-active] img { animation: none; }
+  .auth-stage { translate: none; transition: none; }
+  .auth-card, .auth-card::before, .auth-ring, .auth-stagger > * { animation: none; }
+}

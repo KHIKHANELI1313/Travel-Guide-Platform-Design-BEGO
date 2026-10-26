@@ -7,7 +7,7 @@ import {
   Send, Filter, ArrowRight, Play,
   Compass, Zap,
   Eye,
-  BarChart3, Settings, LogOut, Upload,
+  BarChart3, Settings, Upload,
   Navigation, Train, Car, Bike, Ship, CreditCard,
   Sun, Languages,
   BadgeCheck, Flag, Globe2, ChevronDown, Check
@@ -24,8 +24,8 @@ import DateRangeSearch from "./components/date-range/DateRangeSearch"
 import TripPricingPanel from "./components/pricing/TripPricingPanel"
 import CountryHistory from "./components/CountryHistory"
 import CountryCulture from "./components/CountryCulture"
-import TravelWordOverview from "./components/TravelWordOverview"
-import TravelWordExperience from "./travelword/TravelWordExperience"
+import TravelWordPlatform from "./travelword/TravelWordPlatform"
+import AuthPage from "./components/auth/AuthPage"
 import { hasPricingCatalog } from "./data/destinations/catalog"
 import { useAutoReveal } from "./lib/autoReveal"
 import { LANGS, useI18n } from "./lib/i18n"
@@ -973,8 +973,8 @@ function CountriesPage({ onNavigate, initialCategory = null }: { onNavigate: Nav
   return (
     <div className="min-h-screen bg-[#F5F7FA]">
       {/* Hero */}
-      <section className="relative h-64 flex items-end overflow-hidden">
-        <img src={HERO_IMAGES.countries} alt="World map" className="absolute inset-0 w-full h-full object-cover bg-gray-800" />
+      <section className="group relative h-64 flex items-end overflow-hidden">
+        <img src={HERO_IMAGES.countries} alt="World map" className="absolute inset-0 w-full h-full object-cover bg-gray-800 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent" />
         <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-10 pt-24 w-full">
           <h1 className="text-5xl font-extrabold text-white mb-2">
@@ -1114,8 +1114,8 @@ function FoodPage({ onNavigate }: { onNavigate: NavigateFn }) {
   return (
     <div className="min-h-screen bg-[#F5F7FA]">
       {/* Hero */}
-      <section className="relative h-64 flex items-end overflow-hidden">
-        <img src={HERO_IMAGES.restaurants} alt="Food around the world" className="absolute inset-0 w-full h-full object-cover bg-gray-800" />
+      <section className="group relative h-64 flex items-end overflow-hidden">
+        <img src={HERO_IMAGES.restaurants} alt="Food around the world" className="absolute inset-0 w-full h-full object-cover bg-gray-800 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent" />
         <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-10 pt-24 w-full">
           <h1 className="text-5xl font-extrabold text-white mb-2">Food & Cuisine</h1>
@@ -1410,8 +1410,8 @@ function CountryDetailPage({
 
   return (
     <div className="min-h-screen bg-[#F5F7FA]">
-      <section className="relative h-[50svh] min-h-[280px] sm:min-h-[400px] sm:h-[65vh] flex items-end overflow-hidden">
-        <img src={country.image} alt={country.name} className="absolute inset-0 w-full h-full object-cover bg-gray-800" />
+      <section className="group relative h-[50svh] min-h-[280px] sm:min-h-[400px] sm:h-[65vh] flex items-end overflow-hidden">
+        <img src={country.image} alt={country.name} className="absolute inset-0 w-full h-full object-cover bg-gray-800 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
         <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-8 sm:pb-10 pt-20 sm:pt-24 w-full">
           <div className="flex items-end justify-between flex-wrap gap-4 sm:gap-6">
@@ -1519,8 +1519,8 @@ function HotelsPage({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }) {
   return (
     <div className="min-h-screen bg-[#F5F7FA]">
       {/* Hero */}
-      <section className="relative h-80 flex items-end overflow-hidden">
-        <img src={HERO_IMAGES.hotels} alt="Luxury hotel" className="absolute inset-0 w-full h-full object-cover bg-gray-800" />
+      <section className="group relative h-80 flex items-end overflow-hidden">
+        <img src={HERO_IMAGES.hotels} alt="Luxury hotel" className="absolute inset-0 w-full h-full object-cover bg-gray-800 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 to-black/30" />
         <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 w-full pb-8">
           <h1 className="text-5xl font-extrabold text-white mb-2">Find Your Perfect Stay</h1>
@@ -1635,8 +1635,8 @@ function TransportPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F7FA]">
-      <section className="relative h-64 flex items-end overflow-hidden">
-        <img src={HERO_IMAGES.transport} alt="Transport" className="absolute inset-0 w-full h-full object-cover bg-gray-800" />
+      <section className="group relative h-64 flex items-end overflow-hidden">
+        <img src={HERO_IMAGES.transport} alt="Transport" className="absolute inset-0 w-full h-full object-cover bg-gray-800 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 to-transparent" />
         <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-10 pt-24 w-full">
           <h1 className="text-5xl font-extrabold text-white mb-2">Move Around Easily</h1>
@@ -1741,8 +1741,8 @@ function CulturePage() {
 
   return (
     <div className="min-h-screen bg-[#F5F7FA]">
-      <section className="relative h-64 flex items-end overflow-hidden">
-        <img src={HERO_IMAGES.culture} alt="Culture" className="absolute inset-0 w-full h-full object-cover bg-gray-800" />
+      <section className="group relative h-64 flex items-end overflow-hidden">
+        <img src={HERO_IMAGES.culture} alt="Culture" className="absolute inset-0 w-full h-full object-cover bg-gray-800 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 to-transparent" />
         <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-10 pt-24 w-full">
           <h1 className="text-5xl font-extrabold text-white mb-2">Discover Local Culture</h1>
@@ -1824,8 +1824,8 @@ function SafetyPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F7FA]">
-      <section className="relative h-64 flex items-end overflow-hidden">
-        <img src={HERO_IMAGES.safety} alt="Safety" className="absolute inset-0 w-full h-full object-cover bg-gray-800" />
+      <section className="group relative h-64 flex items-end overflow-hidden">
+        <img src={HERO_IMAGES.safety} alt="Safety" className="absolute inset-0 w-full h-full object-cover bg-gray-800 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 to-transparent" />
         <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-10 pt-24 w-full">
           <h1 className="text-5xl font-extrabold text-white mb-2">Travel Safe Anywhere</h1>
@@ -1982,12 +1982,12 @@ function MapPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
           <div className="lg:col-span-3">
-            <div className="bg-[#0B1F3A] rounded-2xl overflow-hidden" style={{ height: 520 }}>
+            <div className="group bg-[#0B1F3A] rounded-2xl overflow-hidden" style={{ height: 520 }}>
               <div className="relative w-full h-full">
                 <img
                   src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=1200&h=600&fit=crop&auto=format"
                   alt="World map"
-                  className="w-full h-full object-cover opacity-60"
+                  className="w-full h-full object-cover opacity-60 transition-transform duration-[1500ms] ease-out group-hover:scale-105"
                 />
                 {markers.map((m) => (
                   <div
@@ -2038,15 +2038,9 @@ function MapPage() {
 // PAGE: TRIP PLANNER
 // ——————————————————————————————————————————————————
 
-function TripPlannerPage() {
-  return (
-    <div className="min-h-screen bg-[#F5F8FC]">
-      <TravelWordExperience />
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-10">
-        <TravelWordOverview />
-      </div>
-    </div>
-  )
+// TravelWord Georgia: regions, service catalog with price comparison, budget calculator
+function TripPlannerPage({ onNavigate }: { onNavigate: NavigateFn }) {
+  return <TravelWordPlatform onHome={() => onNavigate("home")} onLogin={() => onNavigate("profile")} />
 }
 
 // ——————————————————————————————————————————————————
@@ -2230,8 +2224,8 @@ function GalleryPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F7FA]">
-      <section className="relative h-64 flex items-end overflow-hidden">
-        <img src={HERO_IMAGES.gallery} alt="Gallery" className="absolute inset-0 w-full h-full object-cover bg-gray-800" />
+      <section className="group relative h-64 flex items-end overflow-hidden">
+        <img src={HERO_IMAGES.gallery} alt="Gallery" className="absolute inset-0 w-full h-full object-cover bg-gray-800 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 to-transparent" />
         <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-10 pt-24 w-full">
           <h1 className="text-5xl font-extrabold text-white mb-2">Explore The World Through Photos</h1>
@@ -2307,7 +2301,7 @@ function GalleryPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {["Tokyo Shibuya Crossing", "Paris Eiffel Tower Base", "Santorini Caldera View"].map((title, i) => (
               <div key={title} className="group relative h-64 rounded-2xl overflow-hidden cursor-pointer bg-gray-300">
-                <img src={photos[i].image} alt={title} className="w-full h-full object-cover" />
+                <img src={photos[i].image} alt={title} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110" />
                 <div className="absolute inset-0 bg-black/30" />
                 <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1.5 flex items-center gap-1.5">
                   <Eye className="w-3.5 h-3.5 text-white" />
@@ -2337,171 +2331,6 @@ function GalleryPage() {
           <button className="px-6 py-2.5 bg-[#1677FF] text-white rounded-xl font-semibold text-sm hover:bg-blue-600 transition-colors cursor-pointer">
             Upload Photos
           </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ——————————————————————————————————————————————————
-// PAGE: USER PROFILE
-// ——————————————————————————————————————————————————
-
-function ProfilePage({ onNavigate }: { onNavigate: NavigateFn }) {
-  const [activeSection, setActiveSection] = useState("My Trips")
-  const sections = ["My Trips", "Saved Countries", "Favorites", "Reviews", "Settings"]
-
-  const myTrips = [
-    { destination: "Japan", dates: "July 20–30, 2026", budget: "$2,800", status: "Upcoming", image: "https://images.unsplash.com/photo-1492571350019-22de08371fd3?w=400&h=250&fit=crop&auto=format" },
-    { destination: "Italy", dates: "Oct 5–15, 2026", budget: "$3,200", status: "Planning", image: "https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?w=400&h=250&fit=crop&auto=format" },
-    { destination: "Greece", dates: "May 1–10, 2026", budget: "$2,100", status: "Completed", image: "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=400&h=250&fit=crop&auto=format" },
-  ]
-
-  const statusColors: Record<string, string> = {
-    Upcoming: "bg-blue-100 text-blue-700",
-    Planning: "bg-orange-100 text-orange-700",
-    Completed: "bg-green-100 text-green-700",
-  }
-
-  return (
-    <div className="min-h-screen bg-[#F5F7FA] pt-20">
-      {/* Profile Header */}
-      <div className="bg-[#0B1F3A]">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-10">
-          <div className="flex items-center gap-6">
-            <div className="relative">
-              <img
-                src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=120&h=120&fit=crop&auto=format"
-                alt="Profile"
-                className="w-24 h-24 rounded-2xl object-cover border-4 border-white/20 bg-gray-400"
-              />
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#22C55E] rounded-full border-2 border-[#0B1F3A]" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-extrabold text-white">Alexandra Turner</h1>
-              <p className="text-white/60 mt-1">United Kingdom · Joined March 2024</p>
-              <div className="flex items-center gap-4 mt-3">
-                <div className="flex items-center gap-1.5 bg-white/10 rounded-full px-3 py-1">
-                  <BadgeCheck className="w-4 h-4 text-[#1677FF]" />
-                  <span className="text-white text-sm font-medium">Explorer Level</span>
-                </div>
-                <span className="text-white/60 text-sm">12 trips · 28 countries</span>
-              </div>
-            </div>
-            <button className="ml-auto px-5 py-2.5 border border-white/20 text-white rounded-xl text-sm font-medium hover:bg-white/10 transition-colors cursor-pointer">
-              Edit Profile
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-              {sections.map(s => (
-                <button
-                  key={s}
-                  onClick={() => setActiveSection(s)}
-                  className={`w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors cursor-pointer ${activeSection === s ? "bg-[#1677FF]/10 text-[#1677FF]" : "text-[#94A3B8] hover:text-[#111827] hover:bg-gray-50"}`}
-                >
-                  {s}
-                  {activeSection === s && <ChevronRight className="w-4 h-4 ml-auto" />}
-                </button>
-              ))}
-              <div className="mt-4 pt-4 border-t border-gray-100">
-                <button
-                  onClick={() => onNavigate("admin")}
-                  className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-[#94A3B8] hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
-                >
-                  <LogOut className="w-4 h-4" /> Admin Dashboard
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="lg:col-span-3">
-            {activeSection === "My Trips" && (
-              <div>
-                <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-2xl font-bold text-[#111827]">My Trips</h2>
-                  <button onClick={() => onNavigate("trip-planner")} className="flex items-center gap-2 px-4 py-2 bg-[#1677FF] text-white rounded-xl text-sm font-semibold cursor-pointer hover:bg-blue-600 transition-colors">
-                    <Calendar className="w-4 h-4" /> New Trip
-                  </button>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  {myTrips.map(t => (
-                    <div key={t.destination} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-all cursor-pointer">
-                      <div className="h-36 overflow-hidden bg-gray-200 relative">
-                        <img src={t.image} alt={t.destination} className="w-full h-full object-cover" />
-                        <div className="absolute top-3 right-3">
-                          <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusColors[t.status]}`}>{t.status}</span>
-                        </div>
-                      </div>
-                      <div className="p-4">
-                        <h3 className="font-bold text-[#111827]">{t.destination}</h3>
-                        <p className="text-[#94A3B8] text-xs mt-1">{t.dates}</p>
-                        <p className="text-[#1677FF] font-semibold text-sm mt-1">{t.budget}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {activeSection === "Saved Countries" && (
-              <div>
-                <h2 className="text-2xl font-bold text-[#111827] mb-5">Saved Countries</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {COUNTRIES.slice(0, 8).map(c => (
-                    <div key={c.name} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-all cursor-pointer">
-                      <div className="h-28 overflow-hidden bg-gray-200">
-                        <img src={c.image} alt={c.name} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="p-3">
-                        <div className="flex items-center gap-1.5">
-                          <span>{c.flag}</span>
-                          <p className="font-semibold text-[#111827] text-sm">{c.name}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {activeSection === "Settings" && (
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <h2 className="text-2xl font-bold text-[#111827] mb-6">Account Settings</h2>
-                <div className="space-y-4">
-                  {[
-                    { label: "Full Name", value: "Alexandra Turner", type: "text" },
-                    { label: "Email", value: "alex.turner@gmail.com", type: "email" },
-                    { label: "Country", value: "United Kingdom", type: "text" },
-                  ].map(({ label, value, type }) => (
-                    <div key={label}>
-                      <label className="text-sm text-[#94A3B8] mb-1.5 block">{label}</label>
-                      <input type={type} defaultValue={value} className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none text-[#111827] focus:border-[#1677FF] transition-colors" />
-                    </div>
-                  ))}
-                  <div className="pt-4">
-                    <button className="px-6 py-3 bg-[#1677FF] text-white rounded-xl font-semibold text-sm cursor-pointer hover:bg-blue-600 transition-colors">
-                      Save Changes
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {(activeSection === "Favorites" || activeSection === "Reviews") && (
-              <div className="bg-white rounded-2xl p-12 shadow-sm border border-gray-100 text-center">
-                <Globe className="w-14 h-14 mx-auto text-[#94A3B8] opacity-30 mb-4" />
-                <p className="text-[#94A3B8] font-medium">{activeSection} section — coming soon</p>
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </div>
@@ -2688,8 +2517,10 @@ export default function App() {
 
   // Georgia gets its own full-page heritage atlas with its own nav and footer
   const isGeorgiaHeritage = page === "country-detail" && selectedCountry === "Georgia"
-  const showHeader = page !== "admin" && !isGeorgiaHeritage
-  const showFooter = !["admin", "ai-assistant", "map"].includes(page) && !isGeorgiaHeritage
+  // the trip planner and the login page have their own nav
+  const showHeader = page !== "admin" && page !== "trip-planner" && page !== "profile" && !isGeorgiaHeritage
+  // the trip planner has its own TravelWord footer; the login page is a single screen
+  const showFooter = !["admin", "ai-assistant", "map", "trip-planner", "profile"].includes(page) && !isGeorgiaHeritage
   const contentPad = showHeader && page !== "home"
   const pageKey = isGeorgiaHeritage
     ? "georgia-heritage"
@@ -2709,9 +2540,10 @@ export default function App() {
         {showHeader && <Header currentPage={page} onNavigate={navigate} />}
 
         {/* page-change animation: a bar sweeps across the top and the new page fades/rises in.
-            The Georgia atlas only fades here — it has its own fixed nav and panel transition. */}
+            The Georgia atlas and the trip planner only fade here — they have their own fixed nav, which a
+            leftover transform from the rise animation would pin to the page instead of the viewport. */}
         <div key={`bar-${pageKey}`} className="route-bar" aria-hidden="true" />
-        <div key={pageKey} ref={pageRef} className={`${contentPad ? "pt-20 " : ""}${isGeorgiaHeritage ? "page-enter-fade" : "page-enter"}`}>
+        <div key={pageKey} ref={pageRef} className={`${contentPad ? "pt-20 " : ""}${isGeorgiaHeritage || page === "trip-planner" ? "page-enter-fade" : "page-enter"}`}>
           {page === "home" && <HomePage onNavigate={navigate} />}
           {page === "countries" && <CountriesPage onNavigate={navigate} initialCategory={categoryFilter} />}
           {isGeorgiaHeritage && (
@@ -2745,10 +2577,12 @@ export default function App() {
           {page === "culture" && <CulturePage />}
           {page === "safety" && <SafetyPage />}
           {page === "map" && <MapPage />}
-          {page === "trip-planner" && <TripPlannerPage />}
+          {page === "trip-planner" && <TripPlannerPage onNavigate={navigate} />}
           {page === "ai-assistant" && <AIAssistantPage />}
           {page === "gallery" && <GalleryPage />}
-          {page === "profile" && <ProfilePage onNavigate={navigate} />}
+          {page === "profile" && (
+            <AuthPage onGo={(to) => (to === "georgia" ? navigate("country-detail", "Georgia") : navigate(to))} />
+          )}
           {page === "admin" && <AdminPage onNavigate={navigate} />}
           {page === "restaurants" && <FoodPage onNavigate={navigate} />}
         </div>
