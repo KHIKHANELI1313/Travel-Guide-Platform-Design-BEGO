@@ -1,10 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Bebas+Neue&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Bebas+Neue&family=Noto+Serif+Georgian:wght@600;700&display=swap');
 @import 'tailwindcss';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: 'Inter', sans-serif;
+  --font-sans: 'Inter', 'Noto Sans Georgian', sans-serif;
 
   --color-ocean-deep: #0B1F3A;
   --color-ocean-blue: #1677FF;
@@ -13,6 +13,32 @@
   --color-light-gray: #F5F7FA;
   --color-slate: #94A3B8;
   --color-dark: #111827;
+
+  /* the trip planner (TravelWord): forest and gold on paper, serif headings */
+  --font-heading: 'Noto Serif Georgian', 'Noto Sans Georgian', Georgia, serif;
+  --color-forest-950: #08170F;
+  --color-forest-900: #0E2418;
+  --color-forest-800: #173A26;
+  --color-forest-700: #215033;
+  --color-forest-600: #2D6743;
+  --color-forest-500: #3F8158;
+  --color-forest-400: #6FA383;
+  --color-paper: #F7F2E7;
+  --color-cream: #FFFDF4;
+  --color-sand-100: #F1E8D5;
+  --color-sand-200: #E5D8BC;
+  --color-sand-300: #D3C19C;
+  --color-sand-400: #B9A57D;
+  --color-gold-100: #F7ECCF;
+  --color-gold-200: #EDD7A1;
+  --color-gold-300: #DDBB72;
+  --color-gold-400: #C9A15A;
+  --color-gold-500: #B08840;
+  --color-gold-600: #8F6A2C;
+  --color-gold-700: #6E511F;
+  --color-ink: #1E2A22;
+  --color-ink-soft: #56604F;
+  --color-ink-mute: #8A8E7C;
 }
 
 @keyframes fadeSlide {
@@ -227,27 +253,9 @@
   from { scale: 1.12; }
   to { scale: 1; }
 }
-/* region cards rising in when "ყველა რეგიონის ნახვა" opens the grid */
-@keyframes tw-card-in {
-  from { opacity: 0; translate: 0 28px; scale: 0.96; }
-}
-/* regions slideshow: photo crossfade, text entrance and the autoplay progress bar */
-@keyframes tw-slide-in {
-  from { opacity: 0; scale: 1.06; }
-}
+/* platform rules: a group's cards rising in */
 @keyframes tw-rise {
   from { opacity: 0; translate: 0 24px; filter: blur(6px); }
-}
-@keyframes tw-rise-full {
-  from { translate: 0 110%; }
-}
-@keyframes tw-progress {
-  from { scale: 0 1; }
-  to { scale: 1 1; }
-}
-/* Adjara directory: category dialog popping in */
-@keyframes tw-pop {
-  from { opacity: 0; scale: 0.94; translate: 0 24px; }
 }
 .route-bar {
   position: fixed;
@@ -257,7 +265,7 @@
   height: 3px;
   z-index: 400;
   pointer-events: none;
-  background: linear-gradient(90deg, #E0313E, #2E7BFF, #1FB86A);
+  background: linear-gradient(90deg, #8f6a2c, #c9a15a, #6fa383);
   transform-origin: left;
   animation: route-bar 0.9s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
@@ -549,8 +557,8 @@ html {
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: #F5F7FA;
-  color: #111827;
+  background-color: #f7f2e7;
+  color: #1e2a22;
   overflow-x: clip;
 }
 
@@ -561,7 +569,7 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #94A3B8;
+  background: #b9a57d;
   border-radius: 3px;
 }
 
@@ -577,11 +585,11 @@ body {
   gap: 1.25rem;
   overflow: hidden;
   border-radius: 1.5rem;
-  border: 1px solid rgba(22, 119, 255, 0.12);
+  border: 1px solid rgba(201, 161, 90, 0.12);
   background:
-    linear-gradient(135deg, rgba(22, 119, 255, 0.08), rgba(255, 255, 255, 0.92) 45%),
+    linear-gradient(135deg, rgba(201, 161, 90, 0.08), rgba(255, 255, 255, 0.92) 45%),
     #fff;
-  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 16px 40px rgba(8, 23, 15, 0.06);
 }
 
 @media (min-width: 900px) {
@@ -610,7 +618,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #1677FF;
+  color: #6e511f;
 }
 
 .country-history__title {
@@ -618,7 +626,7 @@ body {
   font-size: clamp(1.6rem, 2.5vw, 2.15rem);
   font-weight: 800;
   letter-spacing: -0.02em;
-  color: #0B1F3A;
+  color: #0e2418;
   line-height: 1.15;
 }
 
@@ -626,7 +634,7 @@ body {
   margin: 0.4rem 0 0;
   font-size: 1rem;
   font-weight: 600;
-  color: #64748b;
+  color: #56604f;
 }
 
 .country-history__lead {
@@ -634,7 +642,7 @@ body {
   max-width: 34rem;
   font-size: 0.95rem;
   line-height: 1.65;
-  color: #64748b;
+  color: #56604f;
 }
 
 .country-history__hero-media {
@@ -669,7 +677,7 @@ body {
 
 @media (max-width: 899px) {
   .country-history__hero-fade {
-    background: linear-gradient(0deg, rgba(11, 31, 58, 0.35), transparent 50%);
+    background: linear-gradient(0deg, rgba(14, 36, 24, 0.35), transparent 50%);
   }
 }
 
@@ -697,8 +705,8 @@ body {
   height: 0.85rem;
   margin-top: 1.35rem;
   border-radius: 999px;
-  background: #1677FF;
-  box-shadow: 0 0 0 4px rgba(22, 119, 255, 0.15);
+  background: #c9a15a;
+  box-shadow: 0 0 0 4px rgba(201, 161, 90, 0.15);
   flex-shrink: 0;
 }
 
@@ -706,7 +714,7 @@ body {
   flex: 1;
   width: 2px;
   margin-top: 0.35rem;
-  background: linear-gradient(180deg, rgba(22, 119, 255, 0.45), rgba(22, 119, 255, 0.08));
+  background: linear-gradient(180deg, rgba(201, 161, 90, 0.45), rgba(201, 161, 90, 0.08));
   border-radius: 2px;
   min-height: 1.5rem;
 }
@@ -715,17 +723,17 @@ body {
   margin-bottom: 0.85rem;
   padding: 1.15rem 1.25rem;
   border-radius: 1.15rem;
-  border: 1px solid rgba(148, 163, 184, 0.22);
+  border: 1px solid rgba(185, 165, 125, 0.22);
   background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(10px);
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 8px 24px rgba(8, 23, 15, 0.04);
   transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .country-history__card:hover {
-  border-color: rgba(22, 119, 255, 0.35);
+  border-color: rgba(201, 161, 90, 0.35);
   transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(22, 119, 255, 0.08);
+  box-shadow: 0 12px 28px rgba(201, 161, 90, 0.08);
 }
 
 .country-history__year {
@@ -733,8 +741,8 @@ body {
   display: inline-flex;
   padding: 0.2rem 0.55rem;
   border-radius: 999px;
-  background: rgba(22, 119, 255, 0.1);
-  color: #1677FF;
+  background: rgba(201, 161, 90, 0.1);
+  color: #6e511f;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -744,22 +752,22 @@ body {
   margin: 0;
   font-size: 1.05rem;
   font-weight: 700;
-  color: #111827;
+  color: #1e2a22;
 }
 
 .country-history__fact-text {
   margin: 0.4rem 0 0;
   font-size: 0.9rem;
   line-height: 1.65;
-  color: #64748b;
+  color: #56604f;
 }
 
 .country-history__story {
   padding: 1.5rem;
   border-radius: 1.35rem;
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  border: 1px solid rgba(185, 165, 125, 0.2);
   background:
-    radial-gradient(ellipse at top left, rgba(22, 119, 255, 0.06), transparent 55%),
+    radial-gradient(ellipse at top left, rgba(201, 161, 90, 0.06), transparent 55%),
     #fff;
 }
 
@@ -769,7 +777,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #94A3B8;
+  color: #b9a57d;
 }
 
 .country-history__paragraph {

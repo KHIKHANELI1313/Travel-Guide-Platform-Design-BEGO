@@ -26,7 +26,7 @@
 .gh .tp-region:hover:not(:disabled){transform:translateY(-4px)}
 .gh .tp-region:hover:not(:disabled) img{transform:scale(1.12)}
 .gh .tp-region.on{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--red-bright);transform:translateY(-4px)}
-.gh .tp-region.on::after{background:linear-gradient(180deg,rgba(224,49,62,.25),rgba(0,0,0,.8))}
+.gh .tp-region.on::after{background:linear-gradient(180deg,rgba(143, 106, 44,.25),rgba(0,0,0,.8))}
 .gh .tp-region-name{position:absolute;left:12px;right:40px;bottom:10px;z-index:1;font-size:14px;font-weight:600;line-height:1.2}
 .gh .tp-check{
   position:absolute;top:9px;right:9px;z-index:1;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;
@@ -44,15 +44,15 @@
   color-scheme:dark;transition:border-color .3s,box-shadow .3s;
 }
 .gh[data-theme="light"] .tp-date-in input{color-scheme:light}
-.gh .tp-date-in input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px rgba(46,123,255,.18)}
+.gh .tp-date-in input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px rgba(201, 161, 90,.18)}
 .gh .tp-step-ctrl{display:flex;align-items:center;height:54px;border:1px solid var(--border);border-radius:14px;overflow:hidden}
 .gh .tp-step-ctrl button{width:54px;height:100%;border:0;background:transparent;color:var(--text);font-size:22px;cursor:pointer;transition:background .25s}
-.gh .tp-step-ctrl button:hover:not(:disabled){background:rgba(46,123,255,.14)}
+.gh .tp-step-ctrl button:hover:not(:disabled){background:rgba(201, 161, 90,.14)}
 .gh .tp-step-ctrl button:disabled{opacity:.3;cursor:default}
 .gh .tp-step-ctrl b{flex:1;text-align:center;font-family:'Noto Serif Georgian',serif;font-size:22px;animation:tp-flip .35s cubic-bezier(.3,1.5,.5,1)}
 @keyframes tp-flip{from{opacity:0;transform:translateY(-60%) scale(.7)}}
 .gh .tp-unit{display:block;margin-top:6px;font-size:12.5px;color:var(--muted)}
-.gh .tp-warn{margin:14px 0 0;padding:10px 14px;border-radius:12px;background:rgba(255,77,90,.12);color:var(--text);font-size:13.5px;animation:ph-blur .5s ease both}
+.gh .tp-warn{margin:14px 0 0;padding:10px 14px;border-radius:12px;background:rgba(221, 187, 114,.12);color:var(--text);font-size:13.5px;animation:ph-blur .5s ease both}
 
 /* 03 interests, 04 pace */
 .gh .tp-chips{display:flex;flex-wrap:wrap;gap:10px}
@@ -73,7 +73,7 @@
 .gh .tp-paces button b{font-family:'Noto Serif Georgian',serif;font-size:18px}
 .gh .tp-paces button > span:last-child{font-size:13px;color:var(--muted)}
 .gh .tp-paces button:hover{transform:translateY(-3px)}
-.gh .tp-paces button.on{border-color:var(--blue);background:rgba(46,123,255,.12)}
+.gh .tp-paces button.on{border-color:var(--blue);background:rgba(201, 161, 90,.12)}
 .gh .tp-pace-dots{display:flex;gap:5px;margin-bottom:6px}
 .gh .tp-pace-dots i{width:9px;height:9px;border-radius:50%;background:var(--border)}
 .gh .tp-paces button.on .tp-pace-dots i{background:var(--red-bright);animation:tp-dot 1.2s ease-in-out infinite}
@@ -162,14 +162,14 @@
 .gh .tp-day-body{padding:22px 24px}
 .gh .tp-day-head{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-bottom:14px}
 .gh .tp-date{font-size:14px;font-weight:600;color:var(--red-bright)}
-.gh .tp-travel{padding:5px 12px;border-radius:999px;background:rgba(46,123,255,.14);font-size:12.5px}
+.gh .tp-travel{padding:5px 12px;border-radius:999px;background:rgba(201, 161, 90,.14);font-size:12.5px}
 .gh .tp-acts{display:grid;gap:8px;margin:0;padding:0;list-style:none}
 .gh .tp-acts li{animation:htl-in .6s cubic-bezier(.2,.7,.2,1) backwards;animation-delay:calc(min(var(--i,0), 6) * .14s + .9s + var(--a,0) * .1s)}
 .gh .tp-acts button{
   display:grid;grid-template-columns:86px 64px minmax(0,1fr) 30px;align-items:center;gap:14px;width:100%;padding:10px;border:1px solid transparent;border-radius:16px;
   background:transparent;color:var(--text);font:inherit;text-align:left;cursor:pointer;transition:background .3s,border-color .3s;
 }
-.gh .tp-acts button:hover{background:rgba(46,123,255,.08);border-color:var(--border-soft)}
+.gh .tp-acts button:hover{background:rgba(201, 161, 90,.08);border-color:var(--border-soft)}
 .gh .tp-slot{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .gh .tp-thumb{position:relative;width:64px;height:64px;border-radius:14px;overflow:hidden}
 .gh .tp-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.2,.7,.2,1)}

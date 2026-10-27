@@ -13,16 +13,14 @@ const AREA_BY_ID = new Map(AREAS.map((a) => [a.id, a]))
 const pad = (n: number) => String(n).padStart(2, "0")
 
 function shapeCls(r: Region, selected: boolean, hovered: boolean) {
-  if (selected) return r.occupied ? "fill-rose-400/45 stroke-rose-200" : "fill-green-500 stroke-green-200"
-  if (hovered) return "fill-slate-500 stroke-slate-300"
-  return r.occupied ? "fill-slate-800 stroke-slate-900" : "fill-slate-700 stroke-slate-900"
+  if (selected) return r.occupied ? "fill-rose-400/45 stroke-rose-200" : "fill-gold-400 stroke-gold-100"
+  if (hovered) return "fill-forest-500 stroke-forest-400"
+  return r.occupied ? "fill-forest-950 stroke-forest-900" : "fill-forest-700 stroke-forest-900"
 }
 
-export default function RegionsMap({ selected, onSelect, onAdjara, onAddBusiness }: {
+export default function RegionsMap({ selected, onSelect, onAddBusiness }: {
   selected: RegionId
   onSelect: (id: RegionId) => void
-  /** opens the Adjara services directory */
-  onAdjara: () => void
   onAddBusiness: () => void
 }) {
   const [hover, setHover] = useState<RegionId | null>(null)
@@ -43,23 +41,23 @@ export default function RegionsMap({ selected, onSelect, onAdjara, onAddBusiness
         {/* the bottom padding sits on the map block, so the services band runs to the slide's bottom edge */}
         <div className="container mx-auto px-4 pb-16">
           <div className="tw-fp-in mb-6 md:mb-8">
-            <span className="text-green-600 text-xs font-bold uppercase tracking-widest">{n} მხარე · ინტერაქტიული რუკა</span>
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mt-1">საქართველოს რეგიონები</h2>
-            <p className="text-xs md:text-sm text-slate-500 mt-1">
+            <span className="text-gold-700 text-xs font-bold uppercase tracking-[0.2em]">{n} მხარე · ინტერაქტიული რუკა</span>
+            <h2 className="font-heading text-3xl md:text-4xl font-bold text-forest-900 mt-2">საქართველოს რეგიონები</h2>
+            <p className="text-sm md:text-base text-ink-soft mt-2 max-w-2xl">
               აირჩიეთ მხარე რუკაზე ან სიიდან და ნახეთ მისი სერვისები — ფოტოებით, აღწერით და ფასებით.
             </p>
           </div>
 
           <div className="grid lg:grid-cols-[1.2fr_1fr] gap-6 items-start">
             <div className="tw-fp-in [--i:1] min-w-0">
-              <div className="relative rounded-3xl bg-slate-900 bg-[radial-gradient(ellipse_at_30%_20%,rgba(34,197,94,0.14),transparent_60%)] p-3 sm:p-5 shadow-xl shadow-slate-900/10">
+              <div className="relative rounded-3xl bg-forest-900 bg-[radial-gradient(ellipse_at_30%_20%,rgba(201,161,90,0.16),transparent_60%)] p-3 sm:p-5 shadow-xl shadow-forest-950/15 ring-1 ring-gold-400/20">
                 <svg viewBox="80 120 1050 560" className="w-full h-auto select-none" aria-hidden="true">
                   <defs>
                     <pattern id="tw-rm-hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                      <line x1="0" y1="0" x2="0" y2="10" className="stroke-slate-500/50" strokeWidth="3" />
+                      <line x1="0" y1="0" x2="0" y2="10" className="stroke-forest-400/40" strokeWidth="3" />
                     </pattern>
                   </defs>
-                  <text x="150" y="480" className="fill-sky-300/40 text-[18px] italic tracking-[0.3em]">შავი ზღვა</text>
+                  <text x="150" y="480" className="fill-gold-200/45 font-heading text-[18px] italic tracking-[0.3em]">შავი ზღვა</text>
 
                   {drawOrder.map((r) => (
                     <g key={r.id} onClick={() => onSelect(r.id)} {...hoverProps(r.id)} className="cursor-pointer">
@@ -79,7 +77,7 @@ export default function RegionsMap({ selected, onSelect, onAdjara, onAddBusiness
                     </g>
                   ))}
 
-                  <path d={OUTLINE_D} fill="none" strokeWidth="2" strokeLinejoin="round" className="stroke-white/35 pointer-events-none" />
+                  <path d={OUTLINE_D} fill="none" strokeWidth="2" strokeLinejoin="round" className="stroke-cream/40 pointer-events-none" />
 
                   {/* number markers, in the slideshow's order */}
                   {REGIONS.map((r, i) => {
@@ -88,14 +86,14 @@ export default function RegionsMap({ selected, onSelect, onAdjara, onAddBusiness
                     const on = r === region
                     return (
                       <g key={r.id} className="pointer-events-none">
-                        {on && <circle cx={a.cx} cy={a.cy} r="16" className="fill-white/40 [transform-box:fill-box] origin-center motion-safe:animate-ping" />}
+                        {on && <circle cx={a.cx} cy={a.cy} r="16" className="fill-gold-200/40 [transform-box:fill-box] origin-center motion-safe:animate-ping" />}
                         <circle
                           cx={a.cx} cy={a.cy} r={on ? 17 : 13} strokeWidth="1.5"
-                          className={on ? "fill-white stroke-green-200" : r.occupied ? "fill-slate-600 stroke-slate-400" : "fill-slate-950/75 stroke-white/50"}
+                          className={on ? "fill-cream stroke-gold-300" : r.occupied ? "fill-forest-800 stroke-forest-500" : "fill-forest-950/80 stroke-cream/50"}
                         />
                         <text
                           x={a.cx} y={a.cy} textAnchor="middle" dominantBaseline="central"
-                          className={`font-bold tabular-nums ${on ? "text-[14px] fill-green-700" : "text-[12px] fill-white"}`}
+                          className={`font-bold tabular-nums ${on ? "text-[14px] fill-forest-800" : "text-[12px] fill-cream"}`}
                         >
                           {i + 1}
                         </text>
@@ -104,7 +102,7 @@ export default function RegionsMap({ selected, onSelect, onAdjara, onAddBusiness
                   })}
                 </svg>
 
-                <p className="hidden sm:block absolute left-8 bottom-7 text-[11px] font-semibold text-white/60 pointer-events-none">
+                <p className="hidden sm:block absolute left-8 bottom-7 text-[11px] font-semibold text-cream/60 pointer-events-none">
                   {hovered ? hovered.name : "აირჩიეთ რეგიონი"}
                 </p>
               </div>
@@ -119,8 +117,8 @@ export default function RegionsMap({ selected, onSelect, onAdjara, onAddBusiness
                     aria-pressed={r === region}
                     className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
                       r === region
-                        ? "bg-green-600 border-green-600 text-white"
-                        : "bg-white border-slate-200 text-slate-600 hover:border-green-500 hover:text-green-700"
+                        ? "bg-forest-900 border-forest-900 text-cream"
+                        : "bg-cream border-sand-200 text-ink-soft hover:border-gold-400 hover:text-forest-800"
                     }`}
                   >
                     <span className="tabular-nums opacity-60">{pad(i + 1)}</span> {r.name}
@@ -133,7 +131,7 @@ export default function RegionsMap({ selected, onSelect, onAdjara, onAddBusiness
               {/* keyed by region: the old summary folds away, then the new one unfolds */}
               <MotionConfig reducedMotion="user">
                 <AnimatePresence mode="wait" initial={false}>
-                  <RegionSummary key={region.id} region={region} index={index} total={n} onStep={step} onAdjara={onAdjara} />
+                  <RegionSummary key={region.id} region={region} index={index} total={n} onStep={step} />
                 </AnimatePresence>
               </MotionConfig>
             </div>

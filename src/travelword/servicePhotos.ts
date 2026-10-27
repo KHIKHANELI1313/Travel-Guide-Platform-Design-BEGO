@@ -7,6 +7,8 @@
 /** Commons thumbnail at 960px (cards swap in the 500px step) */
 const commons = (path: string, file: string) =>
   `https://upload.wikimedia.org/wikipedia/commons/thumb/${path}/${file}/960px-${file}`
+/** a Commons file narrower than 960px, which has no 960px thumbnail */
+const original = (path: string, file: string) => `https://upload.wikimedia.org/wikipedia/commons/${path}/${file}`
 
 export interface ServicePhoto {
   photo: string
@@ -97,6 +99,15 @@ export const SERVICE_PHOTOS: Record<string, ServicePhoto[]> = {
     { photo: commons("9/9d", "Traditional_Doukhobor_house_in_Tambovka%2C_Georgia_-_front_view.jpg"), credit: "FingerWiki / CC BY-SA 4.0", match: ["სახლის გაქირავება"] },
     { photo: commons("0/03", "Hotel_bed_with_lit_lamp_at_Hotel_Esplanade_in_October_2023.jpg"), credit: "JIP / CC BY-SA 4.0", match: ["სასტუმრო", "სტუმრ", "დაბინავება"] },
     { photo: commons("b/bf", "Land_for_sale%2C_off_Neil_Fox_Way_-_geograph.org.uk_-_8062075.jpg"), credit: "Christine Johnstone / CC BY-SA 2.0", match: ["მიწის"] },
+  ],
+  stay: [
+    { photo: commons("0/03", "Hotel_bed_with_lit_lamp_at_Hotel_Esplanade_in_October_2023.jpg"), credit: "JIP / CC BY-SA 4.0", match: ["სასტუმრო"] },
+    { photo: commons("b/b1", "Lobby_lounge_of_Amantaka_Suite_Amantaka_luxury_Resort_%26_Hotel_Luang_Prabang_Laos.jpg"), credit: "Basile Morin / CC BY-SA 4.0", match: ["ლუქს", "ბუტიკ"] },
+    { photo: commons("4/44", "Bagrati_Guest_House.jpg"), credit: "Bernard Gagnon / CC BY 4.0", match: ["საოჯახო", "აგროტურისტ", "კოტეჯ"] },
+    { photo: commons("0/0c", "Hostel_6-bed_dorm_room%2C_Kuching%2C_Malaysia.jpg"), credit: "Sgroey / CC BY 4.0", match: ["ჰოსტელ"] },
+    { photo: commons("4/49", "Modern_living_room_with_stylish_furniture_and_a_view_of_the_outdoors_in_a_cozy_apartment_setting.jpg"), credit: "Shixart1985 / CC BY 2.0", match: ["აპარტამენტ"] },
+    { photo: commons("3/30", "Glamping_Thorbjornrud_Hotel.jpg"), credit: "JLunder96 / CC BY 4.0", match: ["გლემპინგ", "კემპინგ"] },
+    { photo: commons("0/00", "Indoor_swimming_pool_at_Hotel_Mercure_Krynica_Zdroj_Resort_%26_Spa%2C_Poland%2C_2023%2C_01.jpg"), credit: "Kgbo / CC BY-SA 4.0", match: ["სპა"] },
   ],
   tourism: [
     { photo: commons("a/a4", "Batumi_Boulevard_Alley.jpg"), credit: "Sosotedrd / CC BY-SA 4.0", match: ["ბათუმის"], only: "adjara" },
@@ -235,4 +246,49 @@ export const ELSEWHERE_COVERS: Record<string, { photo: string; alt: string; cred
     photo: commons("e/e3", "Vegetable_garden_%281246487595%29.jpg"),
     alt: "ბოსტანი სოფლის ეზოში", credit: "johnantoni from Toronto, Canada / CC BY-SA 2.0",
   },
+  stay: {
+    photo: commons("f/f1", "Panorama_over_Sighnaghi_from_Guesthouse_Balcony_-_Sighnaghi_-_Georgia_%2818308941142%29.jpg"),
+    alt: "სიღნაღის ხედი საოჯახო სასტუმროს აივნიდან", credit: "Adam Jones / CC BY-SA 2.0",
+  },
+}
+
+/**
+ * The "ღირსშესანიშნაობები" category's photos, by monument (its `en` name in data/monuments): the lead image of its
+ * English Wikipedia article. Monuments without one show their region's photo.
+ */
+export const MONUMENT_PHOTOS: Record<string, { photo: string; credit: string }> = {
+  "Svetitskhoveli Cathedral": { photo: commons("b/bd", "Svetitskhoveli_Cathedral_09.23_%283%29.jpg"), credit: "Supanut Arunoprayote / CC BY 4.0" },
+  "Jvari Monastery": { photo: commons("4/47", "Georgia_Jvari_monastery_IMG_9345_2070.jpg"), credit: "Alexxx1979 / CC BY-SA 4.0" },
+  "Shio-Mgvime Monastery": { photo: commons("3/31", "Shio_Mghvime.jpg"), credit: "George Melashvili / CC BY-SA 3.0" },
+  "Samtavisi Cathedral": { photo: commons("d/d2", "Samtavisi_Cathedral%2C_Kaspi_03.jpg"), credit: "Jaba1977 / CC BY-SA 4.0" },
+  "Ateni Sioni": { photo: commons("a/a8", "Atenis_sioni_%282%29.jpg"), credit: "ანი ბირთველიშვილი / CC BY-SA 4.0" },
+  "Sioni Cathedral": { photo: commons("c/ce", "Tbilisi_Sioni_Cathedral_09.23.jpg"), credit: "Supanut Arunoprayote / CC BY 4.0" },
+  "Metekhi Church": { photo: commons("6/6e", "Tbilisi_The_Metekhi_Church_of_Assumption_IMG_8842_1920.jpg"), credit: "Alexxx1979 / CC BY-SA 4.0" },
+  "Gergeti Trinity Church": { photo: commons("4/4c", "Gergeti_Trinity_Church_09.23.jpg"), credit: "Supanut Arunoprayote / CC BY 4.0" },
+  "Gelati Monastery": { photo: commons("f/f8", "Gelati_Monastery_1.jpg"), credit: "Ihor Burliai / CC BY-SA 3.0" },
+  "Bagrati Cathedral": { photo: commons("3/3c", "2014_Kutaisi%2C_Katedra_Bagrati_%2819%29.jpg"), credit: "Marcin Konsek / CC BY-SA 4.0" },
+  "Motsameta Monastery": { photo: commons("5/52", "Motsameta_monastery.JPG"), credit: "CHARGERLEVANI / CC BY-SA 3.0" },
+  "Nikortsminda Cathedral": { photo: commons("b/b2", "2015-08-30_%2825%29_Nikortsminda.jpg"), credit: "Yasuhiro Kojima / CC BY-SA 2.0" },
+  "Martvili Monastery": { photo: original("5/55", "Martvili_Monastery_%283%29.jpg"), credit: "Paata Vardanashvili / CC BY 2.0" },
+  "Alaverdi Cathedral": { photo: commons("b/bc", "Alaverdi_Monastery%2C_Kakheti%2C_Georgia.jpg"), credit: "Max Benidze / CC BY-SA 2.0" },
+  "Bodbe Monastery": { photo: commons("0/07", "Bodbe_Monastery%2C_Sighnaghi_09.23.jpg"), credit: "Supanut Arunoprayote / CC BY 4.0" },
+  "Nekresi Monastery": { photo: original("e/eb", "Shilda_%281%29.jpg"), credit: "Zabette / CC BY-SA 3.0" },
+  "Bolnisi Sioni": { photo: commons("7/70", "Bolnisi_Sioni_Cathedral.jpg"), credit: "Diaoha / CC BY-SA 3.0" },
+  "Sapara Monastery": { photo: original("b/ba", "Sapara1_%28B%29.jpg"), credit: "Claire à Taiwan / CC BY-SA 2.0" },
+  "Zarzma Monastery": { photo: commons("6/6f", "Zarzma_monastery_%2881%29.jpg"), credit: "Jaba1977 / CC BY-SA 4.0" },
+  "Lamaria Church, Ushguli": { photo: commons("f/f9", "Ushguli_Svaneti_Georgia.JPG"), credit: "Florian Pinel / CC BY-SA 3.0" },
+  "Narikala Fortress": { photo: commons("4/45", "Tbilisi_IMG_8846_1920.jpg"), credit: "Alexxx1979 / CC BY-SA 4.0" },
+  "Ananuri Fortress": { photo: commons("6/62", "Georgian_Fortress_Ananuri.jpg"), credit: "Vadim Tolbatov / CC BY-SA 3.0" },
+  "Rabati Castle": { photo: commons("1/1d", "Akhalcikhe%2C_old_city_general_view.jpg"), credit: "I kynitsky / CC BY-SA 4.0" },
+  "Khertvisi Fortress": { photo: commons("5/58", "Fortress_of_Khertvisi1_%28edited%29.jpg"), credit: "Jaba1977, Giorgi Balakhadze / CC BY-SA 4.0" },
+  "Tmogvi Fortress": { photo: commons("9/9d", "Fortress_of_Tmogvi.jpg"), credit: "Jaba1977 / Attribution" },
+  "Gonio Fortress": { photo: commons("8/84", "Castle_of_Gonio2.jpg"), credit: "კოლხი / CC BY-SA 4.0" },
+  "Shatili": { photo: commons("c/cf", "Shatili_fortress%2C_Khevsureti%2C_Georgia.jpg"), credit: "Vyacheslav Argenberg / CC BY 4.0" },
+  "Mutso": { photo: commons("8/8c", "%E1%B2%9B%E1%83%A3%E1%83%AA%E1%83%9D.jpg"), credit: "Giorgimailo / CC BY-SA 4.0" },
+  "Keselo Fortress": { photo: commons("6/6f", "Keselo%2C_Tusheti.jpg"), credit: "Alex Maisuradze / CC BY-SA 3.0" },
+  "Gremi Citadel": { photo: commons("8/8a", "Kakheti_15465_%289124094644%29.jpg"), credit: "Sarah Murray / CC BY-SA 2.0" },
+  "Sighnaghi Walls": { photo: commons("6/61", "Sighnagi_2009.jpg"), credit: "George Nikoladze / Public domain" },
+  "Surami Fortress": { photo: commons("5/58", "Surami_View.JPG"), credit: "Zviad Avaliani / Attribution" },
+  "Nokalakevi": { photo: original("a/a3", "Nokalakevi99.jpg"), credit: "Lika (ლიკა) / Public domain" },
+  "Bridge of Peace": { photo: commons("5/5c", "Mtkvari_-_panoramio.jpg"), credit: "ako-aleko / CC BY-SA 3.0" },
 }

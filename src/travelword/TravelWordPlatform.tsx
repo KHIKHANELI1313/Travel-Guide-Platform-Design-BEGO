@@ -1,29 +1,33 @@
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type MouseEvent, type ReactNode, type SVGProps } from "react"
 import { createPortal } from "react-dom"
 import {
-  AlertTriangle, BriefcaseMedical, Car, ChevronDown, Compass, ConciergeBell, Hotel, MapPin, MountainSnow, Phone,
-  PhoneCall, Search, Send, Store, User, Users, Utensils, X, type LucideIcon,
+  AlertTriangle, ChevronDown, ConciergeBell, MapPin, Phone, PhoneCall, Search, Send, Store, User, Users, X,
+  type LucideIcon,
 } from "lucide-react"
-import AdjaraDirectory from "./AdjaraDirectory"
 import { ADJARA_DIRECTORY } from "./adjaraServices"
-import { CATEGORIES } from "./data"
+import PlatformRules, { RULES_ID } from "./PlatformRules"
+import RegionGuide, { GUIDE_ID } from "./RegionGuide"
 import type { RegionId } from "./regions"
 import RegionsMap from "./RegionsMap"
-import Showcase, { type ShowcaseSlide } from "./Showcase"
+import { SERVICES_ID } from "./RegionServices"
 import { showSlideOf, useFullPage } from "@/lib/useFullPage"
 import "./travelword.css"
 
-// TravelWord Georgia — regions, the regions map and service categories (the trip-planner page).
+// TravelWord Georgia — regions: the regions map with each region's services, the region guide and the platform's rules
+// (the trip-planner page).
 // Noto Sans Georgian is loaded by georgian-heritage.css.
 
 type Category = "stay" | "food" | "transport" | "tours" | "attractions" | "activities"
 
-const HERO_IMG = "https://images.unsplash.com/photo-1565008447742-97f6f38c985c?auto=format&fit=crop&w=1920&q=80"
+const HERO_IMG = {
+  src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Gergeti_Trinity_Church_09.23.jpg/1920px-Gergeti_Trinity_Church_09.23.jpg",
+  credit: "Supanut Arunoprayote / CC BY 4.0",
+}
 
 const SECTIONS: Array<[id: string, label: string]> = [
   ["regions", "რეგიონები"],
-  ["services", "სერვისები"],
-  ["adjara", "აჭარის სერვისები"],
+  [GUIDE_ID, "გზამკვლევი"],
+  [RULES_ID, "წესები"],
   ["safety", "უსაფრთხოება & 112"],
 ]
 
@@ -65,52 +69,6 @@ const POPULAR: Array<[RegionId, string]> = [
   ["kazbegi", "ყაზბეგი"],
   ["imereti", "ქუთაისი"],
   ["svaneti", "მესტია"],
-]
-
-// category photos come from the destination data's Commons images
-const categoryPhoto = (id: string) => CATEGORIES.find((c) => c.id === id)?.image?.src ?? ""
-
-// the safety card's slide links to the 112 section
-const SERVICE_CATEGORIES: Array<{
-  id: string; short: string; icon: LucideIcon; tone: string
-  title: string; desc: string; tags: string[]; photo: string; alt: string
-}> = [
-  {
-    id: "stay", short: "საცხოვრებელი", icon: Hotel, tone: "bg-indigo-50 text-indigo-600", title: "სასტუმროები & საცხოვრებელი",
-    desc: "სასტუმროები, საოჯახო სახლები, აპარტამენტები, კოტეჯები, გლემპინგი და ჰოსტელები.",
-    tags: ["ბათუმის აპარტამენტები", "ყაზბეგის კოტეჯები", "გლემპინგი"],
-    photo: categoryPhoto("guesthouses"), alt: "სიღნაღის ხედი საოჯახო სასტუმროს აივნიდან",
-  },
-  {
-    id: "food", short: "კვება", icon: Utensils, tone: "bg-orange-50 text-orange-600", title: "კვება & ადგილობრივი მენიუები",
-    desc: "ქართული ტრადიციული რესტორნები, მარნები, კაფეები, ვეგანური და ჰალალ კვების ობიექტები.",
-    tags: ["ღვინის მარნები", "მთის სამზარეულო", "საშუალო ფასი"],
-    photo: categoryPhoto("restaurants"), alt: "ქართული სუფრა",
-  },
-  {
-    id: "transport", short: "ტრანსპორტი", icon: Car, tone: "bg-emerald-50 text-emerald-600", title: "ტრანსპორტი & ავტომობილები",
-    desc: "აეროპორტის ტრანსფერები, 4x4 ჯიპების ქირაობა, ქალაქის ტაქსი, საქალაქთაშორისო ტრანსპორტი.",
-    tags: ["ქუთაისის ტრანსფერი", "4x4 იჯარა", "მძღოლით"],
-    photo: categoryPhoto("taxi"), alt: "ტაქსი რუსთაველის გამზირზე, თბილისი",
-  },
-  {
-    id: "tours", short: "გიდები", icon: Compass, tone: "bg-sky-50 text-sky-600", title: "სერთიფიცირებული გიდები",
-    desc: "ისტორიული, კულტურული, მთისა და ღვინის ტურების გიდები მრავალენოვანი სერვისით.",
-    tags: ["ინგლისურენოვანი", "მთის გიდი", "ინდივიდუალური ტური"],
-    photo: categoryPhoto("tours"), alt: "ძველი თბილისის ქუჩები",
-  },
-  {
-    id: "activities", short: "აქტივობები", icon: MountainSnow, tone: "bg-rose-50 text-rose-600", title: "აქტივობები & ექსტრიმი",
-    desc: "პარაპლანით ფრენა, ჯომარდობა (რაფტინგი), კვადროციკლები, სათხილამურო ექსკურსიები.",
-    tags: ["გუდაურის პარაპლანი", "რიონის ჯომარდობა"],
-    photo: categoryPhoto("ski"), alt: "გუდაურის სათხილამურო კურორტი",
-  },
-  {
-    id: "safety", short: "უსაფრთხოება", icon: BriefcaseMedical, tone: "bg-teal-50 text-teal-600", title: "საჭიროებები & უსაფრთხოება",
-    desc: "24/7 აფთიაქები, ბანკომატები, eSIM ბარათები, ბარგის შენახვა და გადაუდებელი სამუშაოები.",
-    tags: ["112 ცხელი ხაზი", "eSIM", "მთის სამაშველო"],
-    photo: categoryPhoto("hiking"), alt: "სადზელეს უღელტეხილის ბილიკი, ყაზბეგი",
-  },
 ]
 
 const BUSINESS_REGIONS = [
@@ -157,7 +115,7 @@ function Modal({ open, onClose, title, subtitle, wide, children }: {
   if (!open) return null
   return createPortal(
     <div
-      className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-60 flex items-center justify-center p-4 font-['Noto_Sans_Georgian',Inter,sans-serif]"
+      className="fixed inset-0 bg-forest-900/60 backdrop-blur-xs z-60 flex items-center justify-center p-4 font-['Noto_Sans_Georgian',Inter,sans-serif]"
       onClick={onClose}
     >
       <div
@@ -165,13 +123,13 @@ function Modal({ open, onClose, title, subtitle, wide, children }: {
         aria-modal="true"
         aria-label={title}
         onClick={(e) => e.stopPropagation()}
-        className={`bg-white w-full ${wide ? "max-w-lg max-h-[90vh] overflow-y-auto" : "max-w-md"} rounded-2xl p-6 shadow-2xl relative`}
+        className={`bg-cream border border-sand-200 w-full ${wide ? "max-w-lg max-h-[90vh] overflow-y-auto" : "max-w-md"} rounded-2xl p-6 shadow-2xl shadow-forest-950/30 relative`}
       >
-        <button onClick={onClose} aria-label="დახურვა" className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer">
+        <button onClick={onClose} aria-label="დახურვა" className="absolute top-4 right-4 text-ink-mute hover:text-ink-soft cursor-pointer">
           <X className="w-5 h-5" />
         </button>
-        <h3 className="text-xl font-bold text-slate-900 mb-1">{title}</h3>
-        <p className="text-xs text-slate-500 mb-6">{subtitle}</p>
+        <h3 className="font-heading text-2xl font-bold text-forest-900 mb-1">{title}</h3>
+        <p className="text-xs text-ink-soft mb-6">{subtitle}</p>
         {children}
       </div>
     </div>,
@@ -179,8 +137,8 @@ function Modal({ open, onClose, title, subtitle, wide, children }: {
   )
 }
 
-const inputCls = "w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-const fieldLabelCls = "block text-xs font-semibold text-slate-600 mb-1"
+const inputCls = "w-full border border-sand-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
+const fieldLabelCls = "block text-xs font-semibold text-ink-soft mb-1"
 
 const pad = (n: number) => String(n).padStart(2, "0")
 
@@ -216,23 +174,23 @@ function SearchField({ id, label, icon: Icon, value, options, onChange, divider 
   return (
     <label
       htmlFor={id}
-      className={`relative flex items-center gap-3 px-4 py-3 md:py-2.5 rounded-xl md:rounded-full bg-slate-50 md:bg-transparent hover:bg-slate-100 focus-within:bg-slate-100 focus-within:ring-2 focus-within:ring-green-500 transition-colors cursor-pointer ${
-        divider ? "md:before:absolute md:before:left-0 md:before:top-1/2 md:before:-translate-y-1/2 md:before:h-8 md:before:w-px md:before:bg-slate-200" : ""
+      className={`relative flex items-center gap-3 px-4 py-3 md:py-2.5 rounded-xl md:rounded-full bg-paper md:bg-transparent hover:bg-sand-100 focus-within:bg-sand-100 focus-within:ring-2 focus-within:ring-gold-500 transition-colors cursor-pointer ${
+        divider ? "md:before:absolute md:before:left-0 md:before:top-1/2 md:before:-translate-y-1/2 md:before:h-8 md:before:w-px md:before:bg-sand-200" : ""
       }`}
     >
-      <Icon className="w-5 h-5 text-green-600 shrink-0" />
+      <Icon className="w-5 h-5 text-gold-600 shrink-0" />
       <span className="flex-1 min-w-0">
-        <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap truncate">{label}</span>
+        <span className="block text-[11px] font-bold uppercase tracking-wider text-gold-700 whitespace-nowrap truncate">{label}</span>
         <select
           id={id}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full appearance-none bg-transparent text-sm font-semibold text-slate-900 focus:outline-none cursor-pointer"
+          className="w-full appearance-none bg-transparent text-sm font-semibold text-forest-900 focus:outline-none cursor-pointer"
         >
           {options.map(([v, text]) => <option key={v} value={v}>{text}</option>)}
         </select>
       </span>
-      <ChevronDown className="w-4 h-4 text-slate-400 shrink-0 pointer-events-none" />
+      <ChevronDown className="w-4 h-4 text-ink-mute shrink-0 pointer-events-none" />
     </label>
   )
 }
@@ -292,25 +250,21 @@ export default function TravelWordPlatform({ onHome, onLogin }: { onHome: () => 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault()
     if (region !== "all") showRegion(region)
-    else scrollToSection(service === "all" ? "regions" : "services")
+    // a service type opens the regions map's services band
+    else scrollToSection(service === "all" ? "regions" : SERVICES_ID)
   }
 
-  const categorySlides: ShowcaseSlide[] = SERVICE_CATEGORIES.map((c) => ({
-    id: c.id, title: c.title, short: c.short, icon: c.icon, tone: c.tone, photo: c.photo, alt: c.alt, desc: c.desc, chips: c.tags,
-    action: c.id === "safety" ? { label: "112 და უსაფრთხოება", onClick: () => scrollToSection("safety") } : undefined,
-  }))
-
   return (
-    <div className="bg-slate-50 text-slate-800 font-['Noto_Sans_Georgian',Inter,sans-serif] antialiased">
+    <div className="bg-paper text-ink font-['Noto_Sans_Georgian',Inter,sans-serif] antialiased">
       {/* Page nav — the site header is hidden here; the logo leads back home */}
-      <header className={`fixed inset-x-0 top-0 z-40 transition-[background-color,box-shadow] duration-300 ${onPhoto ? "" : "bg-white/95 backdrop-blur-md shadow-sm"}`}>
+      <header className={`fixed inset-x-0 top-0 z-40 transition-[background-color,box-shadow] duration-300 ${onPhoto ? "" : "bg-paper/95 backdrop-blur-md shadow-sm shadow-forest-950/5"}`}>
         {/* announcement bar folds away once the page scrolls */}
         <div className={`grid transition-[grid-template-rows] duration-300 ${onPhoto ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
           <div className="overflow-hidden" inert={!onPhoto}>
-            <div className="bg-slate-950/40 backdrop-blur-sm text-slate-200 text-xs py-2 px-4 border-b border-white/10">
+            <div className="bg-forest-950/40 backdrop-blur-sm text-sand-200 text-xs py-2 px-4 border-b border-white/10">
               <div className="container mx-auto flex flex-wrap justify-between items-center gap-x-4 gap-y-1">
                 <span className="flex items-center gap-2">
-                  <span className="inline-block w-2 h-2 rounded-full bg-green-400 animate-pulse shrink-0" />
+                  <span className="inline-block w-2 h-2 rounded-full bg-gold-400 animate-pulse shrink-0" />
                   TravelWord: საქართველოს ყველა რეგიონის ტურისტული სერვისების პლატფორმა
                 </span>
                 <a href="tel:112" className="text-rose-400 font-bold hover:underline flex items-center gap-1">
@@ -321,38 +275,38 @@ export default function TravelWordPlatform({ onHome, onLogin }: { onHome: () => 
           </div>
         </div>
 
-        <div className={`border-b transition-colors duration-300 ${onPhoto ? "border-white/10" : "border-slate-100"}`}>
+        <div className={`border-b transition-colors duration-300 ${onPhoto ? "border-white/10" : "border-sand-200"}`}>
           <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-3">
-            <button onClick={onHome} title="მთავარი გვერდი" className="flex items-center gap-2 group cursor-pointer text-left">
-              <div className="w-10 h-10 rounded-xl bg-linear-to-tr from-green-600 to-emerald-400 flex items-center justify-center text-white font-bold text-xl shadow-md group-hover:scale-105 transition-transform">
+            <button onClick={onHome} title="მთავარი გვერდი" className="flex items-center gap-2.5 group cursor-pointer text-left">
+              <div className="w-10 h-10 rounded-lg bg-forest-900 ring-1 ring-gold-400/50 flex items-center justify-center text-gold-300 font-heading font-bold text-lg shadow-md group-hover:scale-105 transition-transform">
                 TW
               </div>
               <div className="flex flex-col">
-                <span className={`font-black text-xl tracking-tight leading-tight transition-colors ${onPhoto ? "text-white" : "text-slate-900"}`}>
-                  Travel<span className={onPhoto ? "text-green-400" : "text-green-600"}>Word</span>
+                <span className={`font-heading font-bold text-xl leading-tight transition-colors ${onPhoto ? "text-cream" : "text-forest-900"}`}>
+                  Travel<span className={onPhoto ? "text-gold-300" : "text-gold-600"}>Word</span>
                 </span>
-                <span className={`text-[10px] tracking-widest uppercase font-semibold ${onPhoto ? "text-white/60" : "text-slate-400"}`}>Georgia</span>
+                <span className={`text-[10px] tracking-[0.25em] uppercase font-semibold ${onPhoto ? "text-cream/60" : "text-gold-700"}`}>Sakartvelo</span>
               </div>
             </button>
 
-            <nav className={`hidden md:flex items-center gap-6 text-sm font-medium transition-colors ${onPhoto ? "text-white/85" : "text-slate-600"}`}>
+            <nav className={`hidden md:flex items-center gap-6 text-sm font-medium transition-colors ${onPhoto ? "text-cream/85" : "text-ink-soft"}`}>
               {SECTIONS.map(([id, label]) => (
-                <SectionLink key={id} id={id} className={`transition-colors ${onPhoto ? "hover:text-white" : "hover:text-green-600"}`}>{label}</SectionLink>
+                <SectionLink key={id} id={id} className={`transition-colors ${onPhoto ? "hover:text-gold-200" : "hover:text-gold-700"}`}>{label}</SectionLink>
               ))}
             </nav>
 
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setModal("business")}
-                className={`hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border transition-colors cursor-pointer ${
-                  onPhoto ? "border-white/30 text-white hover:bg-white/10" : "border-slate-300 text-slate-700 hover:bg-slate-50"
+                className={`hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-full border transition-colors cursor-pointer ${
+                  onPhoto ? "border-cream/30 text-cream hover:bg-cream/10" : "border-sand-300 text-ink hover:bg-sand-100"
                 }`}
               >
-                <Store className={`w-3.5 h-3.5 ${onPhoto ? "text-green-400" : "text-green-600"}`} /> ბიზნესის დამატება
+                <Store className={`w-3.5 h-3.5 ${onPhoto ? "text-gold-300" : "text-gold-600"}`} /> ბიზნესის დამატება
               </button>
               <button
                 onClick={onLogin}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 shadow-xs transition-all hover:shadow-sm cursor-pointer"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full bg-forest-900 text-cream hover:bg-forest-800 shadow-xs transition-all hover:shadow-sm cursor-pointer"
               >
                 <User className="w-3.5 h-3.5" /> შესვლა
               </button>
@@ -366,27 +320,27 @@ export default function TravelWordPlatform({ onHome, onLogin }: { onHome: () => 
         {/* Hero — full-screen photo with the search */}
         <section className="relative isolate min-h-svh flex flex-col overflow-hidden text-white" data-fp-label="მთავარი">
           <div className="absolute inset-0 -z-10 overflow-hidden" data-no-reveal aria-hidden="true">
-            <img src={HERO_IMG} alt="" fetchPriority="high" className="w-full h-full object-cover motion-safe:animate-[tw-hero-zoom_16s_ease-out_both]" />
-            <div className="absolute inset-0 bg-linear-to-b from-slate-950/75 via-slate-950/40 to-slate-950/85" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_35%,rgba(2,6,23,0.5)_100%)]" />
+            <img src={HERO_IMG.src} alt="" fetchPriority="high" className="w-full h-full object-cover motion-safe:animate-[tw-hero-zoom_16s_ease-out_both]" />
+            <div className="absolute inset-0 bg-linear-to-b from-forest-950/75 via-forest-950/40 to-forest-950/85" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_35%,rgba(8,23,15,0.5)_100%)]" />
           </div>
 
           <div className="flex-1 flex items-center px-4 pt-36 pb-28 md:pt-40">
             <div className="container mx-auto max-w-5xl text-center">
-              <span className="tw-fp-in inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-emerald-100 text-xs font-semibold uppercase tracking-wider mb-6 border border-white/20">
-                <MapPin className="w-3.5 h-3.5 text-green-400" /> საქართველოს ტურისტული პლატფორმა
+              <span className="tw-fp-in inline-flex items-center gap-2 text-gold-300 text-xs font-bold uppercase tracking-[0.12em] sm:tracking-[0.25em] mb-6">
+                <MapPin className="w-3.5 h-3.5" /> საქართველოს ტურისტული პლატფორმა
               </span>
-              <h1 className="tw-fp-in [--i:1] text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6 text-balance drop-shadow-lg">
+              <h1 className="tw-fp-in [--i:1] font-heading text-4xl sm:text-5xl lg:text-7xl font-bold leading-[1.2] mb-6 text-balance text-cream drop-shadow-lg">
                 აღმოაჩინე საქართველო,{" "}
-                <span className="bg-linear-to-r from-green-300 via-emerald-300 to-teal-200 bg-clip-text text-transparent">რეალური ფასებით</span>
+                <span className="bg-linear-to-r from-gold-300 via-gold-200 to-gold-300 bg-clip-text text-transparent">რეალური ფასებით</span>
               </h1>
-              <p className="tw-fp-in [--i:2] text-base md:text-xl text-slate-200/90 mb-10 max-w-2xl mx-auto font-light leading-relaxed text-pretty">
+              <p className="tw-fp-in [--i:2] text-base md:text-xl text-cream/85 mb-10 max-w-2xl mx-auto leading-relaxed text-pretty">
                 სასტუმროები, ტრანსპორტი, გიდები, რესტორნები და აქტივობები საქართველოს ყველა რეგიონში — ერთ სივრცეში.
               </p>
 
               <form
                 onSubmit={handleSearch}
-                className="tw-fp-in [--i:3] max-w-4xl mx-auto bg-white/95 backdrop-blur-xl text-slate-800 text-left rounded-2xl md:rounded-full shadow-2xl shadow-slate-950/40 ring-1 ring-white/50 p-2 grid grid-cols-1 md:grid-cols-[1.3fr_1fr_1fr_auto] md:items-center gap-1.5 md:gap-0"
+                className="tw-fp-in [--i:3] max-w-4xl mx-auto bg-cream/95 backdrop-blur-xl text-ink text-left rounded-2xl md:rounded-full shadow-2xl shadow-forest-950/40 ring-1 ring-gold-200/60 p-2 grid grid-cols-1 md:grid-cols-[1.3fr_1fr_1fr_auto] md:items-center gap-1.5 md:gap-0"
               >
                 <SearchField
                   id="tw-region" label="მიმართულება / რეგიონი" icon={MapPin}
@@ -402,7 +356,7 @@ export default function TravelWordPlatform({ onHome, onLogin }: { onHome: () => 
                 />
                 <button
                   type="submit"
-                  className="md:ml-2 bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 px-7 rounded-xl md:rounded-full shadow-lg shadow-green-600/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
+                  className="md:ml-2 bg-gold-400 hover:bg-gold-300 text-forest-950 font-bold py-3.5 px-7 rounded-xl md:rounded-full shadow-lg shadow-forest-950/25 transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Search className="w-4 h-4" /> ძებნა
                 </button>
@@ -431,71 +385,60 @@ export default function TravelWordPlatform({ onHome, onLogin }: { onHome: () => 
             გადაახვიე
             <ChevronDown className="w-5 h-5 motion-safe:animate-bounce" />
           </SectionLink>
+          {/* in the flow on phones, where the search reaches the bottom edge */}
+          <span className="px-4 pb-4 text-center sm:p-0 sm:absolute sm:bottom-3 sm:right-4 text-[10px] text-cream/45">
+            გერგეტის სამება · ფოტო: {HERO_IMG.credit} · Wikimedia Commons
+          </span>
         </section>
 
         {/* Regions map — every region on an outline map of Georgia, with the picked one's services beside it */}
-        <RegionsMap
-          selected={mapRegion} onSelect={setMapRegion}
-          onAdjara={() => scrollToSection("adjara")} onAddBusiness={() => setModal("business")}
-        />
+        <RegionsMap selected={mapRegion} onSelect={setMapRegion} onAddBusiness={() => setModal("business")} />
 
-        {/* Service categories — full-screen slideshow with the grid it opens */}
-        <Showcase
-          id="services"
-          navLabel="სერვისები"
-          eyebrow={`${SERVICE_CATEGORIES.length} კატეგორია · ერთ სივრცეში`}
-          title="მომსახურების კატეგორიები"
-          subtitle="ყველაფერი, რაც გჭირდებათ კომფორტული და უსაფრთხო მოგზაურობისთვის"
-          allLabel="ყველა კატეგორიის ნახვა"
-          slides={categorySlides}
-        />
+        {/* Region guide — the picked region's centre, towns, nature, monuments, routes and map */}
+        <RegionGuide selected={mapRegion} onSelect={setMapRegion} />
 
-        {/* 500 services and businesses in Adjara */}
-        <div className="pt-24 pb-16" data-fp-label="აჭარის სერვისები">
-          <div className="tw-fp-in container mx-auto px-4">
-            <AdjaraDirectory onAddBusiness={() => setModal("business")} />
-          </div>
-        </div>
+        {/* Platform rules — the general rules and the special rules of 100 fields */}
+        <PlatformRules />
 
         {/* last slide: 112 and the footer */}
         <div className="flex flex-col" data-fp-label="112 და კონტაქტი">
-          <section id="safety" className="flex-1 flex items-center pt-24 pb-12 bg-rose-50">
+          <section id="safety" className="flex-1 flex items-center pt-24 pb-12 bg-sand-100">
             <div className="container mx-auto px-4">
-              <div className="tw-fp-in max-w-4xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-xs border border-rose-200/80 flex flex-col md:flex-row items-center gap-6">
-                <div className="w-16 h-16 rounded-2xl bg-rose-600 text-white flex items-center justify-center shrink-0">
+              <div className="tw-fp-in max-w-4xl mx-auto bg-cream p-6 md:p-8 rounded-2xl shadow-sm shadow-forest-950/5 border border-sand-200 flex flex-col md:flex-row items-center gap-6">
+                <div className="w-16 h-16 rounded-2xl bg-rose-700 text-cream flex items-center justify-center shrink-0">
                   <AlertTriangle className="w-8 h-8" />
                 </div>
                 <div className="grow text-center md:text-left">
-                  <h3 className="text-xl font-bold text-slate-900">უსაფრთხოება და საგანგებო სამსახურები</h3>
-                  <p className="text-xs md:text-sm text-slate-600 mt-1">
+                  <h3 className="font-heading text-2xl font-bold text-forest-900">უსაფრთხოება და საგანგებო სამსახურები</h3>
+                  <p className="text-xs md:text-sm text-ink-soft mt-1">
                     საქართველოში მოგზაურობისას ნებისმიერი საგანგებო სიტუაციის დროს (სასწრაფო სამედიცინო დახმარება, პოლიცია, სამაშველო, მთის სამაშველო) დარეკეთ ერთიან ნომერზე:
                   </p>
                 </div>
                 <div className="shrink-0 text-center">
-                  <a href="tel:112" className="inline-flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white text-2xl font-black px-6 py-3 rounded-xl shadow-md transition-all">
+                  <a href="tel:112" className="inline-flex items-center gap-2 bg-rose-700 hover:bg-rose-800 text-cream text-2xl font-black px-6 py-3 rounded-full shadow-md transition-all">
                     <Phone className="w-6 h-6" /> 112
                   </a>
-                  <span className="block text-[10px] text-slate-400 mt-1">უფასო / 24-საათიანი</span>
+                  <span className="block text-[10px] text-ink-mute mt-1">უფასო / 24-საათიანი</span>
                 </div>
               </div>
             </div>
           </section>
 
           {/* Footer */}
-          <footer className="tw-fp-in [--i:1] bg-slate-900 text-slate-400 text-xs py-12">
+          <footer className="tw-fp-in [--i:1] bg-forest-950 text-cream/60 text-xs py-12">
             <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
               <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-green-600 flex items-center justify-center text-white font-bold text-sm">TW</div>
-                  <span className="font-bold text-lg text-white">TravelWord</span>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-md bg-forest-900 ring-1 ring-gold-400/50 flex items-center justify-center text-gold-300 font-heading font-bold text-sm">TW</div>
+                  <span className="font-heading font-bold text-lg text-cream">Travel<span className="text-gold-300">Word</span></span>
                 </div>
-                <p className="text-slate-400 leading-relaxed">
+                <p className="text-cream/60 leading-relaxed">
                   საქართველოს ტურისტული სერვისების, რეალური ფასებისა და მარშრუტების ერთიანი ციფრული პლატფორმა.
                 </p>
               </div>
 
               <div>
-                <h4 className="font-bold text-white mb-3 uppercase text-[11px] tracking-wider">რეგიონები</h4>
+                <h4 className="font-bold text-gold-300 mb-3 uppercase text-[11px] tracking-[0.2em]">რეგიონები</h4>
                 <ul className="space-y-2">
                   {["თბილისი & შემოგარენი", "აჭარა (ბათუმი)", "მცხეთა-მთიანეთი (ყაზბეგი)", "იმერეთი (ქუთაისი)"].map((label) => (
                     <li key={label}><SectionLink id="regions" className="hover:text-white transition-colors">{label}</SectionLink></li>
@@ -504,16 +447,16 @@ export default function TravelWordPlatform({ onHome, onLogin }: { onHome: () => 
               </div>
 
               <div>
-                <h4 className="font-bold text-white mb-3 uppercase text-[11px] tracking-wider">კატეგორიები</h4>
+                <h4 className="font-bold text-gold-300 mb-3 uppercase text-[11px] tracking-[0.2em]">კატეგორიები</h4>
                 <ul className="space-y-2">
                   {["სასტუმროები & ბინები", "რესტორნები & მენიუები", "ავტომობილები & ტრანსფერი", "გიდები & ექსკურსიები"].map((label) => (
-                    <li key={label}><SectionLink id="services" className="hover:text-white transition-colors">{label}</SectionLink></li>
+                    <li key={label}><SectionLink id={SERVICES_ID} className="hover:text-white transition-colors">{label}</SectionLink></li>
                   ))}
                 </ul>
               </div>
 
               <div>
-                <h4 className="font-bold text-white mb-3 uppercase text-[11px] tracking-wider">კონტაქტი & მხარდაჭერა</h4>
+                <h4 className="font-bold text-gold-300 mb-3 uppercase text-[11px] tracking-[0.2em]">კონტაქტი & მხარდაჭერა</h4>
                 <p className="mb-2">info@travelword.ge</p>
                 <p className="mb-4">+995 32 2 00 00 00</p>
                 <div className="flex gap-3">
@@ -523,7 +466,7 @@ export default function TravelWordPlatform({ onHome, onLogin }: { onHome: () => 
                 </div>
               </div>
             </div>
-            <div className="container mx-auto px-4 mt-8 pt-6 border-t border-slate-800 text-center text-slate-500">
+            <div className="container mx-auto px-4 mt-8 pt-6 border-t border-cream/10 text-center text-cream/45">
               &copy; 2026 TravelWord Georgia. ყველა უფლება დაცულია.
             </div>
           </footer>
@@ -533,7 +476,7 @@ export default function TravelWordPlatform({ onHome, onLogin }: { onHome: () => 
       {fp.count > 1 && (
         <nav
           aria-label="გვერდის ნაწილები"
-          className="fixed right-1.5 sm:right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center gap-2 sm:gap-2.5 rounded-full bg-slate-900/40 backdrop-blur-md px-1 sm:px-1.5 py-3"
+          className="fixed right-1.5 sm:right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center gap-2 sm:gap-2.5 rounded-full bg-forest-950/50 backdrop-blur-md px-1 sm:px-1.5 py-3"
         >
           <span className="hidden sm:block text-[10px] font-bold text-white tabular-nums mb-1">{pad(fp.index + 1)}</span>
           {fp.labels.map((label, i) => (
@@ -544,10 +487,10 @@ export default function TravelWordPlatform({ onHome, onLogin }: { onHome: () => 
               aria-label={label}
               aria-current={i === fp.index ? "step" : undefined}
               className={`group relative w-1.5 sm:w-2 rounded-full transition-all duration-500 cursor-pointer ${
-                i === fp.index ? "h-6 sm:h-7 bg-green-400" : "h-1.5 sm:h-2 bg-white/60 hover:bg-white"
+                i === fp.index ? "h-6 sm:h-7 bg-gold-400" : "h-1.5 sm:h-2 bg-white/60 hover:bg-cream"
               }`}
             >
-              <span className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 translate-x-2 whitespace-nowrap rounded-full bg-slate-900/85 px-3 py-1 text-xs text-white opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100 hidden sm:block">
+              <span className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 translate-x-2 whitespace-nowrap rounded-full bg-forest-900/85 px-3 py-1 text-xs text-white opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100 hidden sm:block">
                 {label}
               </span>
             </button>
@@ -591,7 +534,7 @@ export default function TravelWordPlatform({ onHome, onLogin }: { onHome: () => 
             <label htmlFor="tw-biz-phone" className={fieldLabelCls}>საკონტაქტო ტელეფონი</label>
             <input id="tw-biz-phone" type="tel" placeholder="+995 5XX XX XX XX" required className={inputCls} />
           </div>
-          <button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-lg text-sm transition-colors cursor-pointer">
+          <button type="submit" className="w-full bg-forest-800 hover:bg-forest-700 text-white font-bold py-2.5 rounded-lg text-sm transition-colors cursor-pointer">
             განაცხადის გაგზავნა
           </button>
         </form>

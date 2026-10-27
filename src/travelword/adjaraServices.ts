@@ -1,15 +1,9 @@
-// "500 სერვისი და ბიზნესი აჭარაში": the service directory on the trip planner page.
+// The service directory, as listed for Adjara: every region's services are built from it (regionDirectory.ts).
 // Photos are Wikimedia Commons thumbnails; `credit` is the author and licence the page shows with each one.
 
-/** Commons thumbnail at a standard width step */
-const commons = (path: string, file: string, width = 1280) =>
-  `https://upload.wikimedia.org/wikipedia/commons/thumb/${path}/${file}/${width}px-${file}`
-
-export const DIRECTORY_BANNER = {
-  photo: commons("d/d2", "Black_Sea_coast_of_Georgia_%28country%29%2C_with_skyline_of_Batumi_on_the_horizon.jpg", 1920),
-  alt: "შავი ზღვის სანაპირო, ჰორიზონტზე ბათუმი",
-  credit: "Jagermesh / CC BY-SA 2.0",
-}
+/** Commons thumbnail, 1280px wide */
+const commons = (path: string, file: string) =>
+  `https://upload.wikimedia.org/wikipedia/commons/thumb/${path}/${file}/1280px-${file}`
 
 export interface DirectoryCategory {
   id: string
@@ -120,6 +114,14 @@ export const ADJARA_DIRECTORY: DirectoryCategory[] = [
       "კომერციული ფართის დასუფთავება", "რემონტის შემდგომი დასუფთავება", "ფანჯრების წმენდა", "ხალიჩების წმენდა", "რბილი ავეჯის წმენდა",
       "მატრასის წმენდა", "ფასადის წმენდა", "ეზოს დასუფთავება", "აუზის დასუფთავება", "სამზარეულოს პროფესიული წმენდა", "დეზინფექცია",
       "მავნებლების კონტროლი", "მწერების წინააღმდეგ დამუშავება", "მღრღნელების კონტროლი", "წყლის ავზების წმენდა",
+    ],
+  },
+  {
+    id: "stay", emoji: "🛏️", name: "სასტუმროები და საცხოვრებელი",
+    photo: commons("7/74", "Sheraton_Hotel_Batumi.jpg"), alt: "სასტუმრო „შერატონი“ ღამით, ბათუმი", credit: "Nino Keller / CC BY-SA 4.0",
+    services: [
+      "სასტუმრო", "ბუტიკ სასტუმრო", "ლუქს სასტუმრო", "საოჯახო სასტუმრო", "ჰოსტელი", "აპარტამენტები დღიურად", "კოტეჯი",
+      "გლემპინგი", "კემპინგი", "სპა-კურორტი", "ღვინის სასტუმრო (შატო)", "აგროტურისტული მეურნეობა",
     ],
   },
   {
@@ -278,5 +280,3 @@ export const ADJARA_DIRECTORY: DirectoryCategory[] = [
     ],
   },
 ]
-
-export const DIRECTORY_TOTAL = ADJARA_DIRECTORY.reduce((n, c) => n + c.services.length, 0)

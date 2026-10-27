@@ -21,7 +21,7 @@ export default function CountryHistory({ country }: CountryHistoryProps) {
       <div className="country-history__hero">
         <div className="country-history__hero-copy">
           <p className="country-history__eyebrow">Historical facts</p>
-          <h3 className="country-history__title">
+          <h3 className="font-heading country-history__title">
             {country.flag} History of {country.name}
           </h3>
           {country.nameKa && (

@@ -35,27 +35,27 @@ function RegionServices({ regionId, regionName }: { regionId: string; regionName
     })
 
   return (
-    <section className="mt-8 rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
+    <section className="mt-8 rounded-2xl border border-sand-100 bg-cream p-5 sm:p-6">
       <div className="flex flex-wrap items-end justify-between gap-3 mb-5">
         <div>
           <div className="flex items-center gap-2">
-            <LayoutGrid className="h-4 w-4 text-[#1677FF]" />
-            <h3 className="font-bold text-[#111827]">{genitive(regionName)} სერვისები</h3>
+            <LayoutGrid className="h-4 w-4 text-gold-700" />
+            <h3 className="font-heading font-bold text-ink">{genitive(regionName)} სერვისები</h3>
           </div>
-          <p className="text-[#94A3B8] text-sm mt-1">{SERVICE_DIRECTORY.length} კატეგორია · {total} ქვეკატეგორია</p>
+          <p className="text-ink-mute text-sm mt-1">{SERVICE_DIRECTORY.length} კატეგორია · {total} ქვეკატეგორია</p>
         </div>
         <label className="relative w-full sm:w-64">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94A3B8]" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-mute" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="მოძებნე სერვისი…"
-            className="w-full rounded-xl border border-gray-200 bg-[#F5F7FA] py-2 pl-9 pr-3 text-sm text-[#111827] outline-none focus:border-[#1677FF] focus:bg-white"
+            className="w-full rounded-xl border border-sand-200 bg-paper py-2 pl-9 pr-3 text-sm text-ink outline-none focus:border-gold-500 focus:bg-cream"
           />
         </label>
       </div>
 
-      {categories.length === 0 && <p className="text-sm text-[#94A3B8] py-6 text-center">„{query}“ ვერ მოიძებნა</p>}
+      {categories.length === 0 && <p className="text-sm text-ink-mute py-6 text-center">„{query}“ ვერ მოიძებნა</p>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
         {categories.map((c) => {
@@ -63,26 +63,26 @@ function RegionServices({ regionId, regionName }: { regionId: string; regionName
           const isOpen = Boolean(q) || open.has(c.id)
           const num = SERVICE_DIRECTORY.findIndex((x) => x.id === c.id) + 1
           return (
-            <div key={c.id} className={`rounded-xl border transition-colors ${isOpen ? "border-[#1677FF]/30 bg-[#F8FBFF]" : "border-gray-100"}`}>
+            <div key={c.id} className={`rounded-xl border transition-colors ${isOpen ? "border-gold-500/30 bg-paper" : "border-sand-100"}`}>
               <button
                 onClick={() => toggle(c.id)}
                 aria-expanded={isOpen}
                 className="flex w-full items-center gap-3 p-3 text-left cursor-pointer"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#1677FF]/10 text-[#1677FF]">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gold-400/10 text-gold-700">
                   <Icon className="h-[18px] w-[18px]" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[11px] font-semibold text-[#94A3B8]">{num}</span>
-                  <span className="block text-sm font-semibold text-[#111827] leading-snug">{c.title}</span>
+                  <span className="block text-[11px] font-semibold text-ink-mute">{num}</span>
+                  <span className="block text-sm font-semibold text-ink leading-snug">{c.title}</span>
                 </span>
-                <span className="shrink-0 rounded-full bg-[#F1F5F9] px-2 py-0.5 text-xs font-medium text-[#475569]">{c.items.length}</span>
-                <ChevronDown className={`h-4 w-4 shrink-0 text-[#94A3B8] transition-transform ${isOpen ? "rotate-180" : ""}`} />
+                <span className="shrink-0 rounded-full bg-sand-100 px-2 py-0.5 text-xs font-medium text-ink-soft">{c.items.length}</span>
+                <ChevronDown className={`h-4 w-4 shrink-0 text-ink-mute transition-transform ${isOpen ? "rotate-180" : ""}`} />
               </button>
               {isOpen && (
                 <div className="flex flex-wrap gap-1.5 px-3 pb-3">
                   {c.items.map((item) => (
-                    <span key={item} className="rounded-full border border-gray-200 bg-white px-2.5 py-1 text-xs text-[#475569]">{item}</span>
+                    <span key={item} className="rounded-full border border-sand-200 bg-cream px-2.5 py-1 text-xs text-ink-soft">{item}</span>
                   ))}
                 </div>
               )}
@@ -105,9 +105,9 @@ export default function GeorgiaRegionDetailPage({
   const others = GEORGIA_REGIONS.filter((r) => r.id !== region.id)
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA]">
+    <div className="min-h-screen bg-paper">
       <section className="group relative h-[42svh] min-h-[280px] sm:h-[55vh] flex items-end overflow-hidden">
-        <img src={region.image} alt={region.landmark} className="absolute inset-0 w-full h-full object-cover bg-gray-800 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
+        <img src={region.image} alt={region.landmark} className="absolute inset-0 w-full h-full object-cover bg-forest-900 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
         <button
           onClick={onBack}
@@ -127,24 +127,24 @@ export default function GeorgiaRegionDetailPage({
             <MapPin className="h-4 w-4" />
             {region.name} · {region.nameEn}
           </div>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-white break-words">{region.landmark}</h1>
+          <h1 className="font-heading text-3xl sm:text-5xl font-extrabold text-white break-words">{region.landmark}</h1>
         </div>
       </section>
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
-          <h2 className="text-2xl font-bold text-[#111827] mb-4">{genitive(region.name)} შესახებ</h2>
-          <p className="text-[#475569] leading-relaxed text-base sm:text-lg">{region.description}</p>
+          <h2 className="font-heading text-2xl font-bold text-ink mb-4">{genitive(region.name)} შესახებ</h2>
+          <p className="text-ink-soft leading-relaxed text-base sm:text-lg">{region.description}</p>
 
-          <div className="mt-8 rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
+          <div className="mt-8 rounded-2xl border border-sand-100 bg-cream p-5 sm:p-6">
             <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="h-4 w-4 text-[#1677FF]" />
-              <h3 className="font-bold text-[#111827]">საინტერესო ფაქტები</h3>
+              <Sparkles className="h-4 w-4 text-gold-700" />
+              <h3 className="font-heading font-bold text-ink">საინტერესო ფაქტები</h3>
             </div>
             <ul className="space-y-3">
               {region.facts.map((fact) => (
-                <li key={fact} className="flex gap-3 text-sm sm:text-base text-[#475569]">
-                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-[#1677FF] shrink-0" />
+                <li key={fact} className="flex gap-3 text-sm sm:text-base text-ink-soft">
+                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-forest-900 shrink-0" />
                   {fact}
                 </li>
               ))}
@@ -155,27 +155,27 @@ export default function GeorgiaRegionDetailPage({
 
           <button
             onClick={onNavigateCountry}
-            className="mt-8 inline-flex items-center gap-2 px-5 py-2.5 bg-[#1677FF] text-white rounded-xl text-sm font-semibold hover:bg-blue-600 transition-colors cursor-pointer"
+            className="mt-8 inline-flex items-center gap-2 px-5 py-2.5 bg-forest-900 text-white rounded-xl text-sm font-semibold hover:bg-forest-900 transition-colors cursor-pointer"
           >
             დაბრუნება საქართველოს გვერდზე <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-[#94A3B8] mb-4">სხვა კუთხეები</h3>
+          <h3 className="font-heading text-sm font-semibold uppercase tracking-wider text-ink-mute mb-4">სხვა კუთხეები</h3>
           <div className="space-y-3">
             {others.map((r) => (
               <button
                 key={r.id}
                 onClick={() => onSelectRegion(r.id)}
-                className="group flex w-full items-center gap-3 rounded-2xl border border-gray-100 bg-white p-3 text-left hover:border-[#1677FF]/30 hover:shadow-md transition-all cursor-pointer"
+                className="group flex w-full items-center gap-3 rounded-2xl border border-sand-100 bg-cream p-3 text-left hover:border-gold-500/30 hover:shadow-md transition-all cursor-pointer"
               >
-                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-gray-200">
+                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-sand-200">
                   <img src={r.image} alt={r.landmark} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-semibold text-[#111827] text-sm truncate">{r.name}</p>
-                  <p className="text-[#94A3B8] text-xs truncate">{r.landmark}</p>
+                  <p className="font-semibold text-ink text-sm truncate">{r.name}</p>
+                  <p className="text-ink-mute text-xs truncate">{r.landmark}</p>
                 </div>
               </button>
             ))}

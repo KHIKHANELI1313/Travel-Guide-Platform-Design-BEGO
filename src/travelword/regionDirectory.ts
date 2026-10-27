@@ -1,11 +1,13 @@
 import { MONUMENTS } from "@/data/monuments"
 import { ADJARA_DIRECTORY, type DirectoryCategory } from "./adjaraServices"
 import type { Region, RegionId } from "./regions"
-import { ELSEWHERE_COVERS, SERVICE_PHOTOS } from "./servicePhotos"
+import { SERVICE_DESCRIPTIONS, SIGHT_DESCRIPTIONS } from "./serviceDescriptions"
+import { ELSEWHERE_COVERS, MONUMENT_PHOTOS, SERVICE_PHOTOS } from "./servicePhotos"
 
-// The service directory as the regions map shows it for one region: the Adjara directory's categories with a short
-// description, a filter group, and per service an indicative price and a photo (servicePhotos). Prices are rough
-// market estimates in GEL (no provider data behind them yet) and the page says so; 0 means free.
+// The service directory as the regions map shows it for one region: the Adjara directory's categories plus the
+// region's own sights, each with a short description and the filter tabs it shows under, and per service an
+// indicative price and a photo (servicePhotos). Prices are rough market estimates in GEL (no provider data behind
+// them yet) and the page says so; 0 means free.
 
 type Price = [gel: number, unit: string]
 
@@ -16,7 +18,8 @@ const U = {
   event: "ღონისძიება", kg: "კგ", page: "გვერდი",
 } as const
 
-export type GroupId = "travel" | "daily" | "home" | "business"
+/** what a traveller looks for; a category can show under several of these tabs, or (only under "ყველა") none */
+export type GroupId = "transport" | "stay" | "sights" | "shops" | "fun"
 
 /** a tab of the services filter: one group, every category, or the priority ones */
 export type GroupFilter = GroupId | "all" | "priority"
@@ -24,37 +27,40 @@ export type GroupFilter = GroupId | "all" | "priority"
 export const GROUPS: Array<{ id: GroupFilter; label: string }> = [
   { id: "priority", label: "პრიორიტეტული" },
   { id: "all", label: "ყველა" },
-  { id: "travel", label: "მოგზაურობა" },
-  { id: "daily", label: "ყოველდღიური" },
-  { id: "home", label: "სახლი & ავტო" },
-  { id: "business", label: "ბიზნესი & IT" },
+  { id: "transport", label: "მგზავრობა" },
+  { id: "stay", label: "სასტუმროები" },
+  { id: "sights", label: "ღირსშესანიშნაობები" },
+  { id: "shops", label: "მაღაზიები" },
+  { id: "fun", label: "გართობები" },
 ]
 
-const CATEGORY_INFO: Record<string, { group: GroupId; desc: string }> = {
-  taxi: { group: "travel", desc: "ქალაქის ტაქსი, აეროპორტის ტრანსფერები და მძღოლით მომსახურება 24/7." },
-  couriers: { group: "daily", desc: "ამანათები, დოკუმენტები და საკვები — იმავე დღეს, კარიდან კარამდე." },
-  shops: { group: "daily", desc: "სუპერმარკეტებიდან ელექტრონიკამდე — ყველაფერი ყოველდღიური ცხოვრებისთვის." },
-  food: { group: "travel", desc: "ქართული სუფრა, ზღვის პროდუქტები, ქეითერინგი და საკვების მიტანა." },
-  "auto-service": { group: "home", desc: "დიაგნოსტიკა, შეკეთება, საბურავები და ავტოსამრეცხაო." },
-  "home-repair": { group: "home", desc: "სანტექნიკოსი, ელექტრიკოსი და ტექნიკის ხელოსნები სახლში გამოძახებით." },
-  construction: { group: "home", desc: "რემონტი გასაღებამდე, პროექტირება და საინჟინრო სისტემები." },
-  moving: { group: "home", desc: "ბინისა და ოფისის გადატანა, სატვირთოები და ნარჩენების გატანა." },
-  cleaning: { group: "home", desc: "ბინის, ოფისისა და სასტუმროს დასუფთავება, დეზინფექცია." },
-  "real-estate": { group: "travel", desc: "ქირავნობა, ყიდვა-გაყიდვა და მოკლევადიანი გაქირავების მართვა." },
-  tourism: { group: "travel", desc: "გიდები, ტურები, აქტივობები და აღჭურვილობის გაქირავება." },
-  "car-rental": { group: "travel", desc: "ავტომობილები დღიურად თუ გრძელვადიანად, მიწოდებით აეროპორტში." },
-  pets: { group: "daily", desc: "ვეტერინარი, გრუმინგი, ცხოველების სასტუმრო და გასეირნება." },
-  beauty: { group: "daily", desc: "სალონები, ბარბერშოპები, სპა და მასაჟი." },
-  health: { group: "daily", desc: "კლინიკები, ანალიზები, ფიტნესი და სახლში მოვლა." },
-  kids: { group: "daily", desc: "ძიძები, განვითარების ცენტრები, მასწავლებლები და დღესასწაულები." },
-  tech: { group: "business", desc: "ტელეფონისა და კომპიუტერის შეკეთება, ქსელები და პროგრამირება." },
-  digital: { group: "business", desc: "მარკეტინგი, დიზაინი, ვიდეო და ონლაინ მაღაზიები." },
-  business: { group: "business", desc: "ბუღალტერია, იურიდიული და საბაჟო მომსახურება, კადრები." },
-  events: { group: "business", desc: "ქორწილები, დაბადების დღეები, მუსიკა და აპარატურის გაქირავება." },
-  garden: { group: "home", desc: "ეზოს მოვლა, გამწვანება, ფერმერული ტექნიკა და სოფლის პროდუქტი." },
-  energy: { group: "home", desc: "მზის პანელები, გენერატორები, წყალი და გათბობა." },
-  security: { group: "home", desc: "დაცვა, კამერები, სიგნალიზაცია და საგზაო დახმარება 24/7." },
-  everyday: { group: "daily", desc: "სამრეცხაო, ქიმწმენდა, შეკეთება და ბეჭდვა." },
+const CATEGORY_INFO: Record<string, { groups: GroupId[]; desc: string }> = {
+  taxi: { groups: ["transport"], desc: "ქალაქის ტაქსი, აეროპორტის ტრანსფერები და მძღოლით მომსახურება 24/7." },
+  couriers: { groups: [], desc: "ამანათები, დოკუმენტები და საკვები — იმავე დღეს, კარიდან კარამდე." },
+  shops: { groups: ["shops"], desc: "სუპერმარკეტებიდან ელექტრონიკამდე — ყველაფერი ყოველდღიური ცხოვრებისთვის." },
+  food: { groups: [], desc: "ქართული სუფრა, ზღვის პროდუქტები, ქეითერინგი და საკვების მიტანა." },
+  "auto-service": { groups: [], desc: "დიაგნოსტიკა, შეკეთება, საბურავები და ავტოსამრეცხაო." },
+  "home-repair": { groups: [], desc: "სანტექნიკოსი, ელექტრიკოსი და ტექნიკის ხელოსნები სახლში გამოძახებით." },
+  construction: { groups: [], desc: "რემონტი გასაღებამდე, პროექტირება და საინჟინრო სისტემები." },
+  moving: { groups: [], desc: "ბინისა და ოფისის გადატანა, სატვირთოები და ნარჩენების გატანა." },
+  cleaning: { groups: [], desc: "ბინის, ოფისისა და სასტუმროს დასუფთავება, დეზინფექცია." },
+  stay: { groups: ["stay"], desc: "სასტუმროები, საოჯახო სასტუმროები, ჰოსტელები, კოტეჯები და გლემპინგი — ფასი ღამეში." },
+  "real-estate": { groups: ["stay"], desc: "ქირავნობა, ყიდვა-გაყიდვა და მოკლევადიანი გაქირავების მართვა." },
+  tourism: { groups: ["sights", "fun"], desc: "გიდები, ტურები, აქტივობები და აღჭურვილობის გაქირავება." },
+  sights: { groups: ["sights"], desc: "მხარის ტაძრები, ციხე-სიმაგრეები და ისტორიული ხიდები — ექსკურსიით, გიდთან ერთად." },
+  "car-rental": { groups: ["transport"], desc: "ავტომობილები დღიურად თუ გრძელვადიანად, მიწოდებით აეროპორტში." },
+  pets: { groups: [], desc: "ვეტერინარი, გრუმინგი, ცხოველების სასტუმრო და გასეირნება." },
+  beauty: { groups: [], desc: "სალონები, ბარბერშოპები, სპა და მასაჟი." },
+  health: { groups: [], desc: "კლინიკები, ანალიზები, ფიტნესი და სახლში მოვლა." },
+  kids: { groups: [], desc: "ძიძები, განვითარების ცენტრები, მასწავლებლები და დღესასწაულები." },
+  tech: { groups: [], desc: "ტელეფონისა და კომპიუტერის შეკეთება, ქსელები და პროგრამირება." },
+  digital: { groups: [], desc: "მარკეტინგი, დიზაინი, ვიდეო და ონლაინ მაღაზიები." },
+  business: { groups: [], desc: "ბუღალტერია, იურიდიული და საბაჟო მომსახურება, კადრები." },
+  events: { groups: ["fun"], desc: "ქორწილები, დაბადების დღეები, მუსიკა და აპარატურის გაქირავება." },
+  garden: { groups: [], desc: "ეზოს მოვლა, გამწვანება, ფერმერული ტექნიკა და სოფლის პროდუქტი." },
+  energy: { groups: [], desc: "მზის პანელები, გენერატორები, წყალი და გათბობა." },
+  security: { groups: [], desc: "დაცვა, კამერები, სიგნალიზაცია და საგზაო დახმარება 24/7." },
+  everyday: { groups: [], desc: "სამრეცხაო, ქიმწმენდა, შეკეთება და ბეჭდვა." },
 }
 
 const SERVICE_PRICES: Record<string, Price> = {
@@ -74,6 +80,11 @@ const SERVICE_PRICES: Record<string, Price> = {
   "იმავე დღეს მიწოდება": [10, U.order], "ექსპრესკურიერი": [15, U.order], "დოკუმენტების საერთაშორისო გაგზავნა": [90, U.order],
   "ამანათების შენახვა": [5, U.day], "ამანათების შეფუთვა": [5, U.piece], "ტვირთის გადაზიდვა": [120, U.trip],
   "ტვირთის საერთაშორისო გადაზიდვა": [10, U.kg],
+  // სასტუმროები და საცხოვრებელი (in line with the trip calculator's hotel estimates)
+  "სასტუმრო": [220, U.night], "ბუტიკ სასტუმრო": [300, U.night], "ლუქს სასტუმრო": [550, U.night], "საოჯახო სასტუმრო": [90, U.night],
+  "ჰოსტელი": [35, U.night], "აპარტამენტები დღიურად": [120, U.night], "კოტეჯი": [200, U.night], "გლემპინგი": [180, U.night],
+  "კემპინგი": [25, U.night], "სპა-კურორტი": [400, U.night], "ღვინის სასტუმრო (შატო)": [350, U.night],
+  "აგროტურისტული მეურნეობა": [100, U.night],
   // მაღაზიები და სავაჭრო ობიექტები
   "სუპერმარკეტი": [40, U.check], "მინიმარკეტი": [15, U.check], "სასურსათო მაღაზია": [25, U.check], "ხილ-ბოსტნეულის მაღაზია": [15, U.check],
   "ხორცის მაღაზია": [30, U.check], "თევზის მაღაზია": [30, U.check], "საცხობი": [5, U.check], "საკონდიტრო მაღაზია": [20, U.check],
@@ -253,8 +264,7 @@ const ADJARA_ONLY = new Set([
 ])
 const COAST_ONLY = new Set(["იახტის დაქირავება", "საპსერფინგო მომსახურება"])
 const COASTAL: RegionId[] = ["adjara", "guria", "svaneti"]
-/** elsewhere the tourism list opens with excursions to the region's own monuments */
-const EXCURSIONS = 4
+/** a guided excursion to one of the region's monuments (the "ღირსშესანიშნაობები" category) */
 const EXCURSION_PRICE: Price = [50, U.person]
 
 export interface PricedService {
@@ -265,19 +275,21 @@ export interface PricedService {
   /** Commons thumbnail and its author / licence ("" when the region's own photo stands in) */
   photo: string
   credit: string
+  /** what this one service is (serviceDescriptions); "" leaves the category's description to stand in */
+  desc: string
 }
 
 /**
  * What a traveller needs first, most important first: getting around, a bed, food, things to do, a car, a doctor or
  * pharmacy, help in an emergency. These lead the directory and make up the "პრიორიტეტული" tab.
  */
-const PRIORITY = ["taxi", "real-estate", "food", "tourism", "car-rental", "health", "security"]
+const PRIORITY = ["taxi", "stay", "food", "tourism", "car-rental", "health", "security"]
 
 export const inGroup = (c: RegionCategory, group: GroupFilter) =>
-  group === "all" || (group === "priority" ? c.priority : c.group === group)
+  group === "all" || (group === "priority" ? c.priority : c.groups.includes(group))
 
 export interface RegionCategory extends DirectoryCategory {
-  group: GroupId
+  groups: GroupId[]
   /** one of the PRIORITY categories */
   priority: boolean
   desc: string
@@ -302,7 +314,7 @@ export const monumentsOf = (r: Region) => MONUMENTS.filter((m) => r.areas.includ
 
 const priced = (name: string, price?: Price, photo = "", credit = ""): PricedService => {
   const p = price ?? SERVICE_PRICES[name]
-  return { name, price: p ? p[0] : null, unit: p ? p[1] : "", photo, credit }
+  return { name, price: p ? p[0] : null, unit: p ? p[1] : "", photo, credit, desc: SERVICE_DESCRIPTIONS[name] ?? "" }
 }
 
 /** where in `name` a photo's earliest fragment appears; Infinity when none does */
@@ -338,35 +350,54 @@ const rank = (id: string) => {
   return i < 0 ? PRIORITY.length : i
 }
 
-/** the directory for one region, priority categories first; empty for occupied territory */
+type Cover = { photo: string; alt: string; credit: string }
+
+function category(c: DirectoryCategory, cover: Cover, list: PricedService[]): RegionCategory {
+  const paid = list.map((s) => s.price).filter((p): p is number => p !== null && p > 0)
+  return {
+    ...c, ...cover, ...(CATEGORY_INFO[c.id] ?? { groups: [], desc: "" }),
+    priority: PRIORITY.includes(c.id),
+    services: list.map((s) => s.name),
+    priced: list,
+    from: paid.length ? Math.min(...paid) : null,
+  }
+}
+
+/**
+ * The region's monuments as guided excursions, each with its own photo where it has one. Monuments a tour already
+ * covers (Adjara's "გონიოს ციხის ტურები") are left out; null when the region has none listed.
+ */
+function sightsOf(region: Region, tours: PricedService[]): RegionCategory | null {
+  const cover = { photo: region.photo, alt: region.alt, credit: "" }
+  const list = monumentsOf(region)
+    .filter((m) => !tours.some((s) => s.name.includes(m.ka)))
+    .map((m) => {
+      const p = MONUMENT_PHOTOS[m.en] ?? cover
+      return { ...priced(`${m.ka} — ექსკურსია`, EXCURSION_PRICE, p.photo, p.credit), desc: SIGHT_DESCRIPTIONS[m.kind] }
+    })
+  return list.length ? category({ id: "sights", emoji: "🏛️", name: "ღირსშესანიშნაობები", ...cover, services: [] }, cover, list) : null
+}
+
+/** the directory for one region, priority categories first, its sights after tourism; empty for occupied territory */
 export function regionDirectory(region: Region): RegionCategory[] {
   if (region.occupied) return []
   const adjara = region.id === "adjara"
   const coastal = COASTAL.includes(region.id)
-  return [...ADJARA_DIRECTORY].sort((a, b) => rank(a.id) - rank(b.id)).map((c) => {
-    const info = CATEGORY_INFO[c.id] ?? { group: "daily", desc: "" }
-    let list = c.services
+  const directory = ADJARA_DIRECTORY.map((c) => {
+    const list = c.services
       .filter((s) => (adjara || !ADJARA_ONLY.has(s)) && (coastal || !COAST_ONLY.has(s)))
       .map((s) => priced(s))
-    // the directory's photos were taken in Batumi; other regions get neutral ones
-    let photo = (!adjara && ELSEWHERE_COVERS[c.id]) || { photo: c.photo, alt: c.alt, credit: c.credit }
-    if (c.id === "tourism" && !adjara) {
-      const tours = monumentsOf(region).slice(0, EXCURSIONS)
-        .map((m) => priced(`${m.ka} — ექსკურსია`, EXCURSION_PRICE, region.photo))
-      list = [...tours, ...list]
-      // the Gonio photo is Adjara's; the region's own photo stands in
-      photo = { photo: region.photo, alt: region.alt, credit: "" }
-    }
-    list = withPhotos(list, c.id, photo, adjara)
-    const paid = list.map((s) => s.price).filter((p): p is number => p !== null && p > 0)
-    return {
-      ...c, ...photo, ...info,
-      priority: PRIORITY.includes(c.id),
-      services: list.map((s) => s.name),
-      priced: list,
-      from: paid.length ? Math.min(...paid) : null,
-    }
+    // the directory's photos were taken in Batumi; other regions get neutral ones, and tourism (Gonio) the region's own
+    const cover = c.id === "tourism" && !adjara ? { photo: region.photo, alt: region.alt, credit: "" }
+      : (!adjara && ELSEWHERE_COVERS[c.id]) || { photo: c.photo, alt: c.alt, credit: c.credit }
+    return category(c, cover, withPhotos(list, c.id, cover, adjara))
   })
+  const at = directory.findIndex((c) => c.id === "tourism")
+  const sights = sightsOf(region, directory[at].priced)
+  if (sights) directory.splice(at + 1, 0, sights)
+  return directory.sort((a, b) => rank(a.id) - rank(b.id))
 }
 
 export const gel = (n: number) => (n === 0 ? "უფასო" : `${n.toLocaleString("en-US", { maximumFractionDigits: 2 })} ₾`)
+/** a service's indicative price: "~25 ₾", "უფასო", or "შეთანხმებით" when there is no estimate */
+export const priceText = (p: number | null) => (p === null ? "შეთანხმებით" : p === 0 ? gel(0) : `~${gel(p)}`)

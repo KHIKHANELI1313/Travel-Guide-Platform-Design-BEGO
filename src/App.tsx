@@ -128,26 +128,39 @@ function StarRating({ rating, size = "sm" }: { rating: number; size?: "sm" | "md
   return (
     <div className="flex items-center gap-0.5">
       {[1, 2, 3, 4, 5].map((i) => (
-        <Star key={i} className={`${sz} ${i <= Math.floor(rating) ? "fill-amber-400 text-amber-400" : "fill-gray-200 text-gray-200"}`} />
+        <Star key={i} className={`${sz} ${i <= Math.floor(rating) ? "fill-gold-400 text-gold-400" : "fill-sand-200 text-sand-200"}`} />
       ))}
     </div>
   )
 }
 
-function Tag({ label }: { label: string }) {
+// the home page keeps its original colourful tags; the other pages use the forest-and-gold ones
+const TAG_COLORS: Record<string, string> = {
+  Culture: "bg-sand-200 text-forest-800",
+  Food: "bg-gold-100 text-gold-700",
+  Nature: "bg-sand-200 text-forest-700",
+  Beach: "bg-sand-200 text-gold-700",
+  History: "bg-gold-100 text-gold-700",
+  Adventure: "bg-[#f0d6cc] text-[#8f3422]",
+  Luxury: "bg-gold-100 text-gold-700",
+  Budget: "bg-sand-200 text-forest-700",
+}
+const LEGACY_TAG_COLORS: Record<string, string> = {
+  Culture: "bg-purple-100 text-purple-700",
+  Food: "bg-orange-100 text-orange-700",
+  Nature: "bg-green-100 text-green-700",
+  Beach: "bg-blue-100 text-blue-700",
+  History: "bg-yellow-100 text-yellow-700",
+  Adventure: "bg-red-100 text-red-700",
+  Luxury: "bg-pink-100 text-pink-700",
+  Budget: "bg-teal-100 text-teal-700",
+}
+
+function Tag({ label, legacy = false }: { label: string; legacy?: boolean }) {
   const { tx } = useI18n()
-  const colors: Record<string, string> = {
-    Culture: "bg-purple-100 text-purple-700",
-    Food: "bg-orange-100 text-orange-700",
-    Nature: "bg-green-100 text-green-700",
-    Beach: "bg-blue-100 text-blue-700",
-    History: "bg-yellow-100 text-yellow-700",
-    Adventure: "bg-red-100 text-red-700",
-    Luxury: "bg-pink-100 text-pink-700",
-    Budget: "bg-teal-100 text-teal-700",
-  }
+  const color = (legacy ? LEGACY_TAG_COLORS : TAG_COLORS)[label] ?? (legacy ? "bg-gray-100 text-gray-600" : "bg-sand-100 text-ink-soft")
   return (
-    <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${colors[label] ?? "bg-gray-100 text-gray-600"}`}>
+    <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${color}`}>
       {tx(`tag.${label}`, label)}
     </span>
   )
@@ -223,7 +236,7 @@ function Header({ currentPage, onNavigate }: { currentPage: Page; onNavigate: Na
   ]
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#0B1F3A]/95 backdrop-blur-md border-b border-white/10">
+    <header className="font-['Inter',sans-serif] fixed top-0 left-0 right-0 z-50 bg-[#0B1F3A]/95 backdrop-blur-md border-b border-white/10">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 h-16 sm:h-20 flex items-center justify-between gap-3">
         <button onClick={() => onNavigate("home")} className="flex items-center gap-2.5 cursor-pointer min-w-0">
           <div className="w-9 h-9 rounded-xl bg-[#1677FF] flex items-center justify-center shrink-0">
@@ -309,22 +322,22 @@ function Header({ currentPage, onNavigate }: { currentPage: Page; onNavigate: Na
 function Footer({ onNavigate }: { onNavigate: NavigateFn }) {
   const { t, tx } = useI18n()
   return (
-    <footer className="bg-[#0B1F3A] text-white">
+    <footer className="bg-forest-950 text-cream">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           <div>
             <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-9 h-9 rounded-xl bg-[#1677FF] flex items-center justify-center">
-                <Globe className="w-5 h-5 text-white" />
+              <div className="w-9 h-9 rounded-lg bg-forest-950 ring-1 ring-gold-400/50 flex items-center justify-center">
+                <Globe className="w-5 h-5 text-gold-300" />
               </div>
-              <span className="font-bold text-xl">TravelWorld</span>
+              <span className="font-heading font-bold text-xl text-cream">Travel<span className="text-gold-300">World</span></span>
             </div>
             <p className="text-white/50 text-sm leading-relaxed">
               {t("footer.tagline")}
             </p>
           </div>
           <div>
-            <h4 className="font-semibold mb-4 text-white/90">{t("footer.explore")}</h4>
+            <h4 className="font-bold mb-4 text-gold-300 uppercase text-xs tracking-[0.2em]">{t("footer.explore")}</h4>
             <ul className="space-y-2.5">
               {(["countries", "hotels", "restaurants", "map"] as Page[]).map((p) => (
                 <li key={p}>
@@ -336,7 +349,7 @@ function Footer({ onNavigate }: { onNavigate: NavigateFn }) {
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold mb-4 text-white/90">{t("footer.support")}</h4>
+            <h4 className="font-bold mb-4 text-gold-300 uppercase text-xs tracking-[0.2em]">{t("footer.support")}</h4>
             <ul className="space-y-2.5">
               {[t("footer.help"), t("footer.contact"), t("footer.safetyTips"), t("footer.privacy")].map((item) => (
                 <li key={item}>
@@ -346,10 +359,10 @@ function Footer({ onNavigate }: { onNavigate: NavigateFn }) {
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold mb-4 text-white/90">{t("footer.follow")}</h4>
+            <h4 className="font-bold mb-4 text-gold-300 uppercase text-xs tracking-[0.2em]">{t("footer.follow")}</h4>
             <div className="flex gap-3">
               {[Instagram, Facebook, Youtube, Twitter].map((Icon, i) => (
-                <a key={i} href="#" className="w-9 h-9 rounded-lg bg-white/10 hover:bg-[#1677FF] flex items-center justify-center transition-colors">
+                <a key={i} href="#" className="w-9 h-9 rounded-lg bg-white/10 hover:bg-forest-900 flex items-center justify-center transition-colors">
                   <Icon className="w-4 h-4" />
                 </a>
               ))}
@@ -455,7 +468,7 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
   ]
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA]">
+    <div className="min-h-screen bg-[#F5F7FA] font-['Inter',sans-serif]">
       {/* Interactive Earth hero */}
       <section className="relative h-[58svh] min-h-[300px] max-h-[560px] sm:h-[72svh] sm:min-h-[420px] sm:max-h-[720px] overflow-hidden bg-[#020617]">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(22,119,255,0.18)_0%,_transparent_55%)] pointer-events-none" />
@@ -656,7 +669,7 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
               <div className="relative h-48 overflow-hidden bg-gray-200">
                 <img src={c.image} alt={c.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute top-3 left-3 flex gap-1.5">
-                  {c.tags.slice(0, 1).map(t => <Tag key={t} label={t} />)}
+                  {c.tags.slice(0, 1).map(t => <Tag key={t} legacy label={t} />)}
                 </div>
                 <button className="absolute top-3 right-3 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center hover:bg-white transition-colors">
                   <Heart className="w-4 h-4 text-gray-400" />
@@ -879,7 +892,7 @@ function HomePage({ onNavigate }: { onNavigate: NavigateFn }) {
                 <div className="relative h-52 overflow-hidden bg-gray-200">
                   <img src={post.image} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <div className="absolute top-3 left-3">
-                    <Tag label={post.category} />
+                    <Tag legacy label={post.category} />
                   </div>
                 </div>
                 <div className="p-5">
@@ -971,13 +984,13 @@ function CountriesPage({ onNavigate, initialCategory = null }: { onNavigate: Nav
   )
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA]">
+    <div className="min-h-screen bg-paper">
       {/* Hero */}
       <section className="group relative h-64 flex items-end overflow-hidden">
-        <img src={HERO_IMAGES.countries} alt="World map" className="absolute inset-0 w-full h-full object-cover bg-gray-800 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
+        <img src={HERO_IMAGES.countries} alt="World map" className="absolute inset-0 w-full h-full object-cover bg-forest-900 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent" />
         <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-10 pt-24 w-full">
-          <h1 className="text-5xl font-extrabold text-white mb-2">
+          <h1 className="font-heading text-5xl font-extrabold text-white mb-2">
             {category ? `${category} Destinations` : "Explore Countries"}
           </h1>
           <p className="text-white/60">
@@ -989,16 +1002,16 @@ function CountriesPage({ onNavigate, initialCategory = null }: { onNavigate: Nav
       </section>
 
       {/* Search + Filter bar */}
-      <div className="bg-white border-b border-gray-100 sticky top-16 sm:top-20 z-30">
+      <div className="bg-cream border-b border-sand-100 sticky top-16 sm:top-20 z-30">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-4 flex flex-col gap-4">
           <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
-            <div className="flex items-center gap-3 flex-1 border border-gray-200 rounded-xl px-4 py-2.5">
-              <Search className="w-4 h-4 text-[#94A3B8]" />
+            <div className="flex items-center gap-3 flex-1 border border-sand-200 rounded-xl px-4 py-2.5">
+              <Search className="w-4 h-4 text-ink-mute" />
               <input
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search country or capital..."
-                className="flex-1 text-sm outline-none text-[#111827] placeholder-gray-400"
+                className="flex-1 text-sm outline-none text-ink placeholder-ink-mute"
               />
             </div>
             <div className="flex gap-2 flex-wrap">
@@ -1006,7 +1019,7 @@ function CountriesPage({ onNavigate, initialCategory = null }: { onNavigate: Nav
                 <button
                   key={r}
                   onClick={() => setRegion(r)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${region === r ? "bg-[#0B1F3A] text-white" : "bg-gray-100 text-[#94A3B8] hover:text-[#111827]"}`}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${region === r ? "bg-forest-900 text-white" : "bg-sand-100 text-ink-mute hover:text-ink"}`}
                 >
                   {r}
                 </button>
@@ -1014,10 +1027,10 @@ function CountriesPage({ onNavigate, initialCategory = null }: { onNavigate: Nav
             </div>
           </div>
           <div className="flex gap-2 flex-wrap items-center">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#94A3B8] mr-1">Style</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-ink-mute mr-1">Style</span>
             <button
               onClick={() => setCategory(null)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${!category ? "bg-[#1677FF] text-white" : "bg-gray-100 text-[#94A3B8] hover:text-[#111827]"}`}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${!category ? "bg-forest-900 text-white" : "bg-sand-100 text-ink-mute hover:text-ink"}`}
             >
               All
             </button>
@@ -1025,7 +1038,7 @@ function CountriesPage({ onNavigate, initialCategory = null }: { onNavigate: Nav
               <button
                 key={c}
                 onClick={() => setCategory(c)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${category === c ? "bg-[#1677FF] text-white" : "bg-gray-100 text-[#94A3B8] hover:text-[#111827]"}`}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${category === c ? "bg-forest-900 text-white" : "bg-sand-100 text-ink-mute hover:text-ink"}`}
               >
                 {c}
               </button>
@@ -1036,10 +1049,10 @@ function CountriesPage({ onNavigate, initialCategory = null }: { onNavigate: Nav
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-10">
         <div className="flex items-center justify-between mb-6">
-          <p className="text-[#94A3B8] text-sm">{filtered.length} countries found</p>
+          <p className="text-ink-mute text-sm">{filtered.length} countries found</p>
           <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-[#94A3B8]" />
-            <select className="text-sm outline-none text-[#94A3B8] bg-transparent cursor-pointer">
+            <Filter className="w-4 h-4 text-ink-mute" />
+            <select className="text-sm outline-none text-ink-mute bg-transparent cursor-pointer">
               <option>Sort: Popular</option>
               <option>Sort: Rating</option>
               <option>Sort: A-Z</option>
@@ -1052,9 +1065,9 @@ function CountriesPage({ onNavigate, initialCategory = null }: { onNavigate: Nav
             <div
               key={c.name}
               onClick={() => onNavigate("country-detail", c.name)}
-              className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer hover:-translate-y-1"
+              className="group bg-cream rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer hover:-translate-y-1"
             >
-              <div className="relative h-44 overflow-hidden bg-gray-200">
+              <div className="relative h-44 overflow-hidden bg-sand-200">
                 <img src={c.image} alt={c.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute top-3 left-3 flex gap-1">
                   {c.tags.slice(0, 2).map(t => <Tag key={t} label={t} />)}
@@ -1065,24 +1078,24 @@ function CountriesPage({ onNavigate, initialCategory = null }: { onNavigate: Nav
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="text-xl shrink-0">{c.flag}</span>
                     <div className="min-w-0">
-                      <h3 className="font-bold text-[#111827] truncate">{c.name}</h3>
-                      <p className="text-[#94A3B8] text-xs truncate">{c.nameKa}</p>
+                      <h3 className="font-heading font-bold text-ink truncate">{c.name}</h3>
+                      <p className="text-ink-mute text-xs truncate">{c.nameKa}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                    <span className="text-xs font-bold text-[#111827]">{c.rating}</span>
+                    <Star className="w-3 h-3 fill-gold-400 text-gold-400" />
+                    <span className="text-xs font-bold text-ink">{c.rating}</span>
                   </div>
                 </div>
-                <p className="text-[#94A3B8] text-xs flex items-center gap-1 mb-4">
+                <p className="text-ink-mute text-xs flex items-center gap-1 mb-4">
                   <MapPin className="w-3 h-3" /> {c.capital} · {c.region}
                 </p>
-                <div className="flex justify-between text-xs text-[#94A3B8] border-t border-gray-100 pt-3">
-                  <span><span className="text-[#111827] font-medium">{c.language}</span><br />Language</span>
-                  <span><span className="text-[#111827] font-medium">{c.currency}</span><br />Currency</span>
-                  <span><span className="text-[#111827] font-medium">{c.population}</span><br />Population</span>
+                <div className="flex justify-between text-xs text-ink-mute border-t border-sand-100 pt-3">
+                  <span><span className="text-ink font-medium">{c.language}</span><br />Language</span>
+                  <span><span className="text-ink font-medium">{c.currency}</span><br />Currency</span>
+                  <span><span className="text-ink font-medium">{c.population}</span><br />Population</span>
                 </div>
-                <button className="w-full mt-4 py-2 bg-[#F5F7FA] text-[#0B1F3A] text-sm font-semibold rounded-xl hover:bg-[#0B1F3A] hover:text-white transition-colors cursor-pointer">
+                <button className="w-full mt-4 py-2 bg-paper text-forest-900 text-sm font-semibold rounded-xl hover:bg-forest-900 hover:text-white transition-colors cursor-pointer">
                   Explore Country
                 </button>
               </div>
@@ -1112,27 +1125,27 @@ function FoodPage({ onNavigate }: { onNavigate: NavigateFn }) {
   )
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA]">
+    <div className="min-h-screen bg-paper">
       {/* Hero */}
       <section className="group relative h-64 flex items-end overflow-hidden">
-        <img src={HERO_IMAGES.restaurants} alt="Food around the world" className="absolute inset-0 w-full h-full object-cover bg-gray-800 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
+        <img src={HERO_IMAGES.restaurants} alt="Food around the world" className="absolute inset-0 w-full h-full object-cover bg-forest-900 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent" />
         <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-10 pt-24 w-full">
-          <h1 className="text-5xl font-extrabold text-white mb-2">Food & Cuisine</h1>
+          <h1 className="font-heading text-5xl font-extrabold text-white mb-2">Food & Cuisine</h1>
           <p className="text-white/60">Famous dishes from {withFood.length} countries — pick a country to see its signature food</p>
         </div>
       </section>
 
       {/* Search + Filter bar */}
-      <div className="bg-white border-b border-gray-100 sticky top-16 sm:top-20 z-30">
+      <div className="bg-cream border-b border-sand-100 sticky top-16 sm:top-20 z-30">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-4 flex flex-col md:flex-row gap-4 items-stretch md:items-center">
-          <div className="flex items-center gap-3 flex-1 border border-gray-200 rounded-xl px-4 py-2.5">
-            <Search className="w-4 h-4 text-[#94A3B8]" />
+          <div className="flex items-center gap-3 flex-1 border border-sand-200 rounded-xl px-4 py-2.5">
+            <Search className="w-4 h-4 text-ink-mute" />
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search country..."
-              className="flex-1 text-sm outline-none text-[#111827] placeholder-gray-400"
+              className="flex-1 text-sm outline-none text-ink placeholder-ink-mute"
             />
           </div>
           <div className="flex gap-2 flex-wrap">
@@ -1140,7 +1153,7 @@ function FoodPage({ onNavigate }: { onNavigate: NavigateFn }) {
               <button
                 key={r}
                 onClick={() => setRegion(r)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${region === r ? "bg-[#0B1F3A] text-white" : "bg-gray-100 text-[#94A3B8] hover:text-[#111827]"}`}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${region === r ? "bg-forest-900 text-white" : "bg-sand-100 text-ink-mute hover:text-ink"}`}
               >
                 {r}
               </button>
@@ -1150,7 +1163,7 @@ function FoodPage({ onNavigate }: { onNavigate: NavigateFn }) {
       </div>
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-10">
-        <p className="text-[#94A3B8] text-sm mb-6">{filtered.length} countries found</p>
+        <p className="text-ink-mute text-sm mb-6">{filtered.length} countries found</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((c) => {
@@ -1158,18 +1171,18 @@ function FoodPage({ onNavigate }: { onNavigate: NavigateFn }) {
             return (
               <div
                 key={c.name}
-                className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                className="group bg-cream rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
               >
                 <div className="p-5 pb-3 flex items-center gap-2">
                   <span className="text-xl">{c.flag}</span>
                   <div className="min-w-0">
-                    <h3 className="font-bold text-[#111827] truncate">{c.name}</h3>
-                    <p className="text-[#94A3B8] text-xs truncate">{c.region}</p>
+                    <h3 className="font-heading font-bold text-ink truncate">{c.name}</h3>
+                    <p className="text-ink-mute text-xs truncate">{c.region}</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-1 px-3">
                   {dishes.map((f) => (
-                    <div key={f.name} className="relative h-24 rounded-lg overflow-hidden bg-gray-200">
+                    <div key={f.name} className="relative h-24 rounded-lg overflow-hidden bg-sand-200">
                       <img src={f.image} alt={f.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       <div className="absolute inset-x-0 bottom-0 bg-black/60 px-1.5 py-1">
                         <p className="text-white text-[10px] font-medium truncate">{f.name}</p>
@@ -1180,7 +1193,7 @@ function FoodPage({ onNavigate }: { onNavigate: NavigateFn }) {
                 <div className="p-5 pt-4">
                   <button
                     onClick={() => onNavigate("country-detail", c.name, "Food")}
-                    className="w-full py-2 bg-[#F5F7FA] text-[#0B1F3A] text-sm font-semibold rounded-xl hover:bg-[#0B1F3A] hover:text-white transition-colors cursor-pointer"
+                    className="w-full py-2 bg-paper text-forest-900 text-sm font-semibold rounded-xl hover:bg-forest-900 hover:text-white transition-colors cursor-pointer"
                   >
                     See all dishes in {c.name}
                   </button>
@@ -1229,15 +1242,15 @@ function CountryDetailPage({
         return (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              <h3 className="text-2xl font-bold text-[#111827] mb-4">About {country.name}</h3>
-              <p className="text-[#94A3B8] leading-relaxed mb-6">{country.about}</p>
-              <p className="text-[#94A3B8] leading-relaxed">
+              <h3 className="font-heading text-2xl font-bold text-ink mb-4">About {country.name}</h3>
+              <p className="text-ink-mute leading-relaxed mb-6">{country.about}</p>
+              <p className="text-ink-mute leading-relaxed">
                 Plan hotels, transport, safety tips and itineraries for {country.name} with TravelWorld.
-                Best season to visit: <span className="text-[#111827] font-medium">{country.bestSeason}</span>.
+                Best season to visit: <span className="text-ink font-medium">{country.bestSeason}</span>.
               </p>
               {country.nameKa && (
-                <p className="text-[#94A3B8] text-sm mt-4">
-                  Also known as: <span className="text-[#111827] font-medium">{country.nameKa}</span>
+                <p className="text-ink-mute text-sm mt-4">
+                  Also known as: <span className="text-ink font-medium">{country.nameKa}</span>
                 </p>
               )}
             </div>
@@ -1252,9 +1265,9 @@ function CountryDetailPage({
                 { label: "Best Season", value: country.bestSeason },
                 { label: "Emergency", value: country.emergency },
               ].map(({ label, value }) => (
-                <div key={label} className="flex justify-between items-center gap-4 py-3 border-b border-gray-100 last:border-0">
-                  <span className="text-[#94A3B8] text-sm shrink-0">{label}</span>
-                  <span className="font-medium text-[#111827] text-sm text-right">{value}</span>
+                <div key={label} className="flex justify-between items-center gap-4 py-3 border-b border-sand-100 last:border-0">
+                  <span className="text-ink-mute text-sm shrink-0">{label}</span>
+                  <span className="font-medium text-ink text-sm text-right">{value}</span>
                 </div>
               ))}
             </div>
@@ -1267,17 +1280,17 @@ function CountryDetailPage({
       case "Food":
         return (
           <div>
-            <h3 className="text-2xl font-bold text-[#111827] mb-6">Food in {country.name}</h3>
+            <h3 className="font-heading text-2xl font-bold text-ink mb-6">Food in {country.name}</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {foods.map((f) => (
-                <div key={f.name} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all group">
-                  <div className="h-40 overflow-hidden bg-gray-200">
+                <div key={f.name} className="bg-cream rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all group">
+                  <div className="h-40 overflow-hidden bg-sand-200">
                     <img src={f.image} alt={f.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   </div>
                   <div className="p-4">
-                    <h4 className="font-bold text-[#111827] mb-1">{f.name}</h4>
-                    <p className="text-[#94A3B8] text-xs leading-relaxed mb-3">{f.desc}</p>
-                    <p className="text-[#1677FF] text-xs font-semibold">{f.price}</p>
+                    <h4 className="font-bold text-ink mb-1">{f.name}</h4>
+                    <p className="text-ink-mute text-xs leading-relaxed mb-3">{f.desc}</p>
+                    <p className="text-gold-700 text-xs font-semibold">{f.price}</p>
                   </div>
                 </div>
               ))}
@@ -1287,17 +1300,17 @@ function CountryDetailPage({
       case "Places":
         return (
           <div>
-            <h3 className="text-2xl font-bold text-[#111827] mb-6">Best Places To Visit</h3>
+            <h3 className="font-heading text-2xl font-bold text-ink mb-6">Best Places To Visit</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               {places.map((p) => (
-                <div key={p.name} className="group relative h-56 rounded-2xl overflow-hidden cursor-pointer bg-gray-300">
+                <div key={p.name} className="group relative h-56 rounded-2xl overflow-hidden cursor-pointer bg-sand-300">
                   <img src={p.image} alt={p.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-5">
                     <div className="flex items-center justify-between mb-1">
                       <h4 className="text-white font-bold text-xl">{p.name}</h4>
                       <div className="flex items-center gap-1 bg-white/20 rounded-full px-2 py-0.5">
-                        <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                        <Star className="w-3 h-3 fill-gold-400 text-gold-400" />
                         <span className="text-white text-xs">{p.rating}</span>
                       </div>
                     </div>
@@ -1311,21 +1324,21 @@ function CountryDetailPage({
       case "Safety":
         return (
           <div>
-            <h3 className="text-2xl font-bold text-[#111827] mb-6">Travel Safety in {country.name}</h3>
-            <p className="text-[#94A3B8] leading-relaxed mb-8 max-w-3xl">{country.safety}</p>
+            <h3 className="font-heading text-2xl font-bold text-ink mb-6">Travel Safety in {country.name}</h3>
+            <p className="text-ink-mute leading-relaxed mb-8 max-w-3xl">{country.safety}</p>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-1">
-                <div className="bg-[#0B1F3A] rounded-2xl p-6 text-center">
-                  <div className="w-24 h-24 mx-auto rounded-full bg-[#22C55E]/20 flex items-center justify-center mb-4">
-                    <span className="text-3xl font-extrabold text-[#22C55E]">{safetyScore}%</span>
+                <div className="bg-forest-900 rounded-2xl p-6 text-center">
+                  <div className="w-24 h-24 mx-auto rounded-full bg-forest-500/20 flex items-center justify-center mb-4">
+                    <span className="text-3xl font-extrabold text-forest-400">{safetyScore}%</span>
                   </div>
                   <h4 className="text-white font-bold text-lg mb-1">Safety Score</h4>
                   <p className="text-white/50 text-sm mb-5">Traveler readiness index for {country.name}</p>
                   <div className="space-y-3">
                     {[
-                      { label: "Overall", value: country.rating >= 4.7 ? "Very Good" : "Good", color: "text-[#22C55E]" },
+                      { label: "Overall", value: country.rating >= 4.7 ? "Very Good" : "Good", color: "text-forest-400" },
                       { label: "Best Season", value: country.bestSeason, color: "text-white" },
-                      { label: "Emergency", value: country.emergency, color: "text-[#FF9F43]" },
+                      { label: "Emergency", value: country.emergency, color: "text-gold-500" },
                     ].map(({ label, value, color }) => (
                       <div key={label} className="flex justify-between gap-3 text-sm">
                         <span className="text-white/50 shrink-0">{label}</span>
@@ -1337,17 +1350,17 @@ function CountryDetailPage({
               </div>
               <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
-                  { icon: Phone, label: "Emergency", number: country.emergency, color: "bg-red-100 text-red-600" },
-                  { icon: Shield, label: "Calling code", number: country.callingCode || "Local", color: "bg-blue-100 text-blue-600" },
-                  { icon: Globe, label: "Capital", number: country.capital, color: "bg-purple-100 text-purple-600" },
-                  { icon: Languages, label: "Language", number: country.language.split(" / ")[0], color: "bg-orange-100 text-orange-600" },
+                  { icon: Phone, label: "Emergency", number: country.emergency, color: "bg-[#f0d6cc] text-[#a03d29]" },
+                  { icon: Shield, label: "Calling code", number: country.callingCode || "Local", color: "bg-sand-200 text-gold-700" },
+                  { icon: Globe, label: "Capital", number: country.capital, color: "bg-sand-200 text-forest-800" },
+                  { icon: Languages, label: "Language", number: country.language.split(" / ")[0], color: "bg-gold-100 text-gold-600" },
                 ].map(({ icon: Icon, label, number, color }) => (
-                  <div key={label} className="bg-white rounded-2xl p-5 border border-gray-100">
+                  <div key={label} className="bg-cream rounded-2xl p-5 border border-sand-100">
                     <div className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center mb-3`}>
                       <Icon className="w-5 h-5" />
                     </div>
-                    <p className="font-semibold text-[#111827]">{label}</p>
-                    <p className="text-lg font-bold text-[#1677FF] mt-1 leading-snug">{number}</p>
+                    <p className="font-semibold text-ink">{label}</p>
+                    <p className="text-lg font-bold text-gold-700 mt-1 leading-snug">{number}</p>
                   </div>
                 ))}
               </div>
@@ -1357,22 +1370,22 @@ function CountryDetailPage({
       case "Hotels":
         return (
           <div>
-            <h3 className="text-2xl font-bold text-[#111827] mb-6">Recommended Hotels in {country.name}</h3>
+            <h3 className="font-heading text-2xl font-bold text-ink mb-6">Recommended Hotels in {country.name}</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {hotelsToShow.map((h) => (
-                <div key={h.name} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all group cursor-pointer">
-                  <div className="h-44 overflow-hidden bg-gray-200 relative">
+                <div key={h.name} className="bg-cream rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all group cursor-pointer">
+                  <div className="h-44 overflow-hidden bg-sand-200 relative">
                     <img src={h.image} alt={h.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    <div className="absolute top-3 right-3 bg-white/90 rounded-lg px-2 py-1 text-xs font-bold text-[#111827]">
+                    <div className="absolute top-3 right-3 bg-white/90 rounded-lg px-2 py-1 text-xs font-bold text-ink">
                       ${h.price}/night
                     </div>
                   </div>
                   <div className="p-4">
-                    <h4 className="font-bold text-[#111827] mb-1">{h.name}</h4>
-                    <p className="text-[#94A3B8] text-xs flex items-center gap-1 mb-3"><MapPin className="w-3 h-3" />{h.location}</p>
+                    <h4 className="font-bold text-ink mb-1">{h.name}</h4>
+                    <p className="text-ink-mute text-xs flex items-center gap-1 mb-3"><MapPin className="w-3 h-3" />{h.location}</p>
                     <div className="flex items-center justify-between">
                       <StarRating rating={h.stars} />
-                      <button onClick={() => onNavigate("hotels")} className="px-3 py-1.5 bg-[#1677FF] text-white text-xs rounded-lg font-medium cursor-pointer">
+                      <button onClick={() => onNavigate("hotels")} className="px-3 py-1.5 bg-forest-900 text-white text-xs rounded-lg font-medium cursor-pointer">
                         Book Now
                       </button>
                     </div>
@@ -1381,18 +1394,18 @@ function CountryDetailPage({
               ))}
             </div>
             {countryHotels.length === 0 && (
-              <p className="text-[#94A3B8] text-sm mt-4">Showing popular worldwide picks while {country.name}-specific hotels are added.</p>
+              <p className="text-ink-mute text-sm mt-4">Showing popular worldwide picks while {country.name}-specific hotels are added.</p>
             )}
           </div>
         )
       case "Transport":
         return (
           <div className="max-w-3xl">
-            <h3 className="text-2xl font-bold text-[#111827] mb-4">Getting Around {country.name}</h3>
-            <p className="text-[#94A3B8] leading-relaxed mb-4">{country.transport}</p>
+            <h3 className="font-heading text-2xl font-bold text-ink mb-4">Getting Around {country.name}</h3>
+            <p className="text-ink-mute leading-relaxed mb-4">{country.transport}</p>
             <button
               onClick={() => onNavigate("transport")}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1677FF] text-white rounded-xl text-sm font-semibold cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-forest-900 text-white rounded-xl text-sm font-semibold cursor-pointer"
             >
               Open transport guide <ArrowRight className="w-4 h-4" />
             </button>
@@ -1400,7 +1413,7 @@ function CountryDetailPage({
         )
       default:
         return (
-          <div className="text-center py-16 text-[#94A3B8]">
+          <div className="text-center py-16 text-ink-mute">
             <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-30" />
             <p>Content for {activeTab} coming soon...</p>
           </div>
@@ -1409,9 +1422,9 @@ function CountryDetailPage({
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA]">
+    <div className="min-h-screen bg-paper">
       <section className="group relative h-[50svh] min-h-[280px] sm:min-h-[400px] sm:h-[65vh] flex items-end overflow-hidden">
-        <img src={country.image} alt={country.name} className="absolute inset-0 w-full h-full object-cover bg-gray-800 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
+        <img src={country.image} alt={country.name} className="absolute inset-0 w-full h-full object-cover bg-forest-900 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
         <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-8 sm:pb-10 pt-20 sm:pt-24 w-full">
           <div className="flex items-end justify-between flex-wrap gap-4 sm:gap-6">
@@ -1426,7 +1439,7 @@ function CountryDetailPage({
               <div className="flex items-start sm:items-center gap-3 sm:gap-4 mb-3">
                 <span className="text-3xl sm:text-5xl leading-none shrink-0">{country.flag}</span>
                 <div className="min-w-0">
-                  <h1 className="text-3xl sm:text-5xl font-extrabold text-white break-words">{country.name}</h1>
+                  <h1 className="font-heading text-3xl sm:text-5xl font-extrabold text-white break-words">{country.name}</h1>
                   <p className="text-white/60 text-sm sm:text-lg mt-1">{country.tagline}</p>
                   <p className="text-white/40 text-sm mt-1">{country.nameKa}</p>
                 </div>
@@ -1434,7 +1447,7 @@ function CountryDetailPage({
               <div className="flex items-center gap-4 mt-4">
                 <div className="flex flex-wrap items-center gap-1">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className={`w-4 h-4 ${i < Math.round(country.rating) ? "fill-amber-400 text-amber-400" : "fill-white/20 text-white/20"}`} />
+                    <Star key={i} className={`w-4 h-4 ${i < Math.round(country.rating) ? "fill-gold-400 text-gold-400" : "fill-white/20 text-white/20"}`} />
                   ))}
                   <span className="text-white font-bold ml-1">{country.rating}</span>
                   <span className="text-white/50 text-sm">Traveler rating</span>
@@ -1445,7 +1458,7 @@ function CountryDetailPage({
               <button className="flex flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2.5 bg-white/10 backdrop-blur-sm border border-white/20 text-white rounded-xl text-sm font-medium hover:bg-white/20 transition-colors cursor-pointer">
                 <Heart className="w-4 h-4" /> Save Country
               </button>
-              <button onClick={() => onNavigate("trip-planner")} className="flex flex-1 sm:flex-none items-center justify-center gap-2 px-5 py-2.5 bg-[#1677FF] text-white rounded-xl text-sm font-semibold hover:bg-blue-600 transition-colors cursor-pointer">
+              <button onClick={() => onNavigate("trip-planner")} className="flex flex-1 sm:flex-none items-center justify-center gap-2 px-5 py-2.5 bg-forest-900 text-white rounded-xl text-sm font-semibold hover:bg-forest-900 transition-colors cursor-pointer">
                 <Calendar className="w-4 h-4" /> Plan Trip
               </button>
             </div>
@@ -1463,13 +1476,13 @@ function CountryDetailPage({
             { label: "Region", value: country.region, icon: Globe },
             { label: "Rating", value: String(country.rating), icon: Star },
           ].map(({ label, value, icon: Icon }) => (
-            <div key={label} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#1677FF]/10 flex items-center justify-center shrink-0">
-                <Icon className="w-4 h-4 text-[#1677FF]" />
+            <div key={label} className="bg-cream rounded-2xl p-4 shadow-sm border border-sand-100 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gold-400/10 flex items-center justify-center shrink-0">
+                <Icon className="w-4 h-4 text-gold-700" />
               </div>
               <div className="min-w-0">
-                <p className="text-[#94A3B8] text-xs">{label}</p>
-                <p className="font-semibold text-[#111827] text-sm leading-tight truncate">{value}</p>
+                <p className="text-ink-mute text-xs">{label}</p>
+                <p className="font-semibold text-ink text-sm leading-tight truncate">{value}</p>
               </div>
             </div>
           ))}
@@ -1480,7 +1493,7 @@ function CountryDetailPage({
         <GeorgiaRegionsMap onSelectRegion={(id) => onNavigate("region-detail", id)} />
       )}
 
-      <div className="bg-white border-b border-gray-100 sticky top-16 sm:top-20 z-30 mt-6">
+      <div className="bg-cream border-b border-sand-100 sticky top-16 sm:top-20 z-30 mt-6">
         <div className="max-w-[1440px] mx-auto px-2 sm:px-4 lg:px-10">
           <div className="flex flex-nowrap gap-1 overflow-x-auto overscroll-x-contain py-1 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {tabs.map((tab) => (
@@ -1488,7 +1501,7 @@ function CountryDetailPage({
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`snap-start px-4 sm:px-5 py-3 text-sm font-medium whitespace-nowrap transition-colors cursor-pointer rounded-lg shrink-0 ${
-                  activeTab === tab ? "text-[#1677FF] bg-[#1677FF]/5" : "text-[#94A3B8] hover:text-[#111827]"
+                  activeTab === tab ? "text-gold-700 bg-gold-400/5" : "text-ink-mute hover:text-ink"
                 }`}
               >
                 {tab}
@@ -1517,32 +1530,32 @@ function HotelsPage({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }) {
   const types = ["All", "Hotel", "Apartment", "Villa", "Resort"]
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA]">
+    <div className="min-h-screen bg-paper">
       {/* Hero */}
       <section className="group relative h-80 flex items-end overflow-hidden">
-        <img src={HERO_IMAGES.hotels} alt="Luxury hotel" className="absolute inset-0 w-full h-full object-cover bg-gray-800 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
+        <img src={HERO_IMAGES.hotels} alt="Luxury hotel" className="absolute inset-0 w-full h-full object-cover bg-forest-900 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 to-black/30" />
         <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 w-full pb-8">
-          <h1 className="text-5xl font-extrabold text-white mb-2">Find Your Perfect Stay</h1>
+          <h1 className="font-heading text-5xl font-extrabold text-white mb-2">Find Your Perfect Stay</h1>
           <p className="text-white/60 mb-8">Compare hotels, apartments and resorts around the world</p>
           <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-4 flex flex-col md:flex-row gap-3">
-            <div className="flex-1 flex items-center gap-3 bg-white rounded-xl px-4 py-2.5">
-              <MapPin className="w-4 h-4 text-[#1677FF]" />
-              <input value={destination} onChange={e => setDestination(e.target.value)} placeholder="Destination" className="flex-1 text-sm outline-none text-[#111827]" />
+            <div className="flex-1 flex items-center gap-3 bg-cream rounded-xl px-4 py-2.5">
+              <MapPin className="w-4 h-4 text-gold-700" />
+              <input value={destination} onChange={e => setDestination(e.target.value)} placeholder="Destination" className="flex-1 text-sm outline-none text-ink" />
             </div>
-            <div className="flex items-center gap-3 bg-white rounded-xl px-4 py-2.5 min-w-[160px]">
-              <Calendar className="w-4 h-4 text-[#1677FF]" />
-              <span className="text-sm text-gray-500">Check-in</span>
+            <div className="flex items-center gap-3 bg-cream rounded-xl px-4 py-2.5 min-w-[160px]">
+              <Calendar className="w-4 h-4 text-gold-700" />
+              <span className="text-sm text-ink-soft">Check-in</span>
             </div>
-            <div className="flex items-center gap-3 bg-white rounded-xl px-4 py-2.5 min-w-[160px]">
-              <Calendar className="w-4 h-4 text-[#1677FF]" />
-              <span className="text-sm text-gray-500">Check-out</span>
+            <div className="flex items-center gap-3 bg-cream rounded-xl px-4 py-2.5 min-w-[160px]">
+              <Calendar className="w-4 h-4 text-gold-700" />
+              <span className="text-sm text-ink-soft">Check-out</span>
             </div>
-            <div className="flex items-center gap-3 bg-white rounded-xl px-4 py-2.5 min-w-[120px]">
-              <Users className="w-4 h-4 text-[#1677FF]" />
-              <span className="text-sm text-gray-500">2 Guests</span>
+            <div className="flex items-center gap-3 bg-cream rounded-xl px-4 py-2.5 min-w-[120px]">
+              <Users className="w-4 h-4 text-gold-700" />
+              <span className="text-sm text-ink-soft">2 Guests</span>
             </div>
-            <button className="flex items-center gap-2 px-6 py-2.5 bg-[#1677FF] text-white rounded-xl font-semibold text-sm cursor-pointer whitespace-nowrap hover:bg-blue-600 transition-colors">
+            <button className="flex items-center gap-2 px-6 py-2.5 bg-forest-900 text-white rounded-xl font-semibold text-sm cursor-pointer whitespace-nowrap hover:bg-forest-900 transition-colors">
               <Search className="w-4 h-4" /> Search
             </button>
           </div>
@@ -1557,51 +1570,51 @@ function HotelsPage({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }) {
               <button
                 key={t}
                 onClick={() => setTypeFilter(t)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors cursor-pointer ${typeFilter === t ? "bg-[#0B1F3A] text-white" : "bg-white text-[#94A3B8] border border-gray-200 hover:text-[#111827]"}`}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors cursor-pointer ${typeFilter === t ? "bg-forest-900 text-white" : "bg-cream text-ink-mute border border-sand-200 hover:text-ink"}`}
               >
                 {t}
               </button>
             ))}
           </div>
           <div className="ml-auto flex items-center gap-3">
-            <span className="text-sm text-[#94A3B8]">{HOTELS.length} hotels found</span>
+            <span className="text-sm text-ink-mute">{HOTELS.length} hotels found</span>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {HOTELS.map(h => (
-            <div key={h.name} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer">
-              <div className="relative h-52 overflow-hidden bg-gray-200">
+            <div key={h.name} className="group bg-cream rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer">
+              <div className="relative h-52 overflow-hidden bg-sand-200">
                 <img src={h.image} alt={h.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <button className="absolute top-3 right-3 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center">
-                  <Heart className="w-4 h-4 text-gray-400" />
+                  <Heart className="w-4 h-4 text-ink-mute" />
                 </button>
                 <div className="absolute bottom-3 left-3 bg-white/95 rounded-lg px-3 py-1.5">
-                  <span className="text-[#0B1F3A] font-bold text-sm">${h.price}</span>
-                  <span className="text-[#94A3B8] text-xs"> /night</span>
+                  <span className="text-forest-900 font-bold text-sm">${h.price}</span>
+                  <span className="text-ink-mute text-xs"> /night</span>
                 </div>
               </div>
               <div className="p-5">
                 <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-bold text-[#111827] text-lg">{h.name}</h3>
-                  <div className="flex items-center gap-1 bg-amber-50 rounded-lg px-2 py-1">
-                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                    <span className="text-sm font-bold text-[#111827]">{h.rating}</span>
+                  <h3 className="font-heading font-bold text-ink text-lg">{h.name}</h3>
+                  <div className="flex items-center gap-1 bg-gold-100 rounded-lg px-2 py-1">
+                    <Star className="w-3.5 h-3.5 fill-gold-400 text-gold-400" />
+                    <span className="text-sm font-bold text-ink">{h.rating}</span>
                   </div>
                 </div>
-                <p className="text-[#94A3B8] text-sm flex items-center gap-1 mb-4">
+                <p className="text-ink-mute text-sm flex items-center gap-1 mb-4">
                   <MapPin className="w-3.5 h-3.5" /> {h.location}
                 </p>
                 <div className="flex gap-2 mb-4 flex-wrap">
                   {h.facilities.map(f => (
-                    <span key={f} className="text-xs px-2.5 py-1 bg-[#F5F7FA] text-[#94A3B8] rounded-lg font-medium">{f}</span>
+                    <span key={f} className="text-xs px-2.5 py-1 bg-paper text-ink-mute rounded-lg font-medium">{f}</span>
                   ))}
                 </div>
                 <div className="flex gap-3">
-                  <button className="flex-1 py-2.5 border border-[#1677FF] text-[#1677FF] text-sm rounded-xl font-semibold hover:bg-[#1677FF]/5 transition-colors cursor-pointer">
+                  <button className="flex-1 py-2.5 border border-gold-500 text-gold-700 text-sm rounded-xl font-semibold hover:bg-gold-400/5 transition-colors cursor-pointer">
                     View Details
                   </button>
-                  <button className="flex-1 py-2.5 bg-[#1677FF] text-white text-sm rounded-xl font-semibold hover:bg-blue-600 transition-colors cursor-pointer">
+                  <button className="flex-1 py-2.5 bg-forest-900 text-white text-sm rounded-xl font-semibold hover:bg-forest-900 transition-colors cursor-pointer">
                     Book Now
                   </button>
                 </div>
@@ -1623,58 +1636,58 @@ function TransportPage() {
   const [to, setTo] = useState("")
 
   const transportTypes = [
-    { icon: Plane, label: "Airplane", desc: "International & domestic flights", color: "bg-blue-500" },
-    { icon: Train, label: "Train", desc: "High-speed & regional rail networks", color: "bg-green-500" },
-    { icon: Navigation, label: "Metro", desc: "Urban subway & underground", color: "bg-purple-500" },
-    { icon: Bus, label: "Bus", desc: "City and intercity coaches", color: "bg-orange-500" },
-    { icon: Car, label: "Taxi / Rideshare", desc: "On-demand private transport", color: "bg-yellow-500" },
-    { icon: Car, label: "Car Rental", desc: "Self-drive across any country", color: "bg-red-500" },
-    { icon: Bike, label: "Bike", desc: "Cycling & e-scooter rentals", color: "bg-teal-500" },
-    { icon: Ship, label: "Ferry", desc: "Island hops & coastal routes", color: "bg-indigo-500" },
+    { icon: Plane, label: "Airplane", desc: "International & domestic flights", color: "bg-forest-800" },
+    { icon: Train, label: "Train", desc: "High-speed & regional rail networks", color: "bg-forest-600" },
+    { icon: Navigation, label: "Metro", desc: "Urban subway & underground", color: "bg-forest-700" },
+    { icon: Bus, label: "Bus", desc: "City and intercity coaches", color: "bg-gold-500" },
+    { icon: Car, label: "Taxi / Rideshare", desc: "On-demand private transport", color: "bg-gold-500" },
+    { icon: Car, label: "Car Rental", desc: "Self-drive across any country", color: "bg-[#b5452f]" },
+    { icon: Bike, label: "Bike", desc: "Cycling & e-scooter rentals", color: "bg-forest-600" },
+    { icon: Ship, label: "Ferry", desc: "Island hops & coastal routes", color: "bg-forest-800" },
   ]
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA]">
+    <div className="min-h-screen bg-paper">
       <section className="group relative h-64 flex items-end overflow-hidden">
-        <img src={HERO_IMAGES.transport} alt="Transport" className="absolute inset-0 w-full h-full object-cover bg-gray-800 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
+        <img src={HERO_IMAGES.transport} alt="Transport" className="absolute inset-0 w-full h-full object-cover bg-forest-900 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 to-transparent" />
         <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-10 pt-24 w-full">
-          <h1 className="text-5xl font-extrabold text-white mb-2">Move Around Easily</h1>
+          <h1 className="font-heading text-5xl font-extrabold text-white mb-2">Move Around Easily</h1>
           <p className="text-white/60">Find the best transport options in any country</p>
         </div>
       </section>
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-10">
         {/* Route Planner */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-10">
-          <h2 className="text-xl font-bold text-[#111827] mb-5">Route Planner</h2>
+        <div className="bg-cream rounded-2xl p-6 shadow-sm border border-sand-100 mb-10">
+          <h2 className="font-heading text-xl font-bold text-ink mb-5">Route Planner</h2>
           <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 flex items-center gap-3 border border-gray-200 rounded-xl px-4 py-3">
-              <MapPin className="w-4 h-4 text-[#22C55E]" />
-              <input value={from} onChange={e => setFrom(e.target.value)} placeholder="From: Current Location" className="flex-1 text-sm outline-none text-[#111827]" />
+            <div className="flex-1 flex items-center gap-3 border border-sand-200 rounded-xl px-4 py-3">
+              <MapPin className="w-4 h-4 text-forest-500" />
+              <input value={from} onChange={e => setFrom(e.target.value)} placeholder="From: Current Location" className="flex-1 text-sm outline-none text-ink" />
             </div>
-            <div className="flex-1 flex items-center gap-3 border border-gray-200 rounded-xl px-4 py-3">
-              <MapPin className="w-4 h-4 text-[#1677FF]" />
-              <input value={to} onChange={e => setTo(e.target.value)} placeholder="To: Destination" className="flex-1 text-sm outline-none text-[#111827]" />
+            <div className="flex-1 flex items-center gap-3 border border-sand-200 rounded-xl px-4 py-3">
+              <MapPin className="w-4 h-4 text-gold-700" />
+              <input value={to} onChange={e => setTo(e.target.value)} placeholder="To: Destination" className="flex-1 text-sm outline-none text-ink" />
             </div>
-            <button className="flex items-center gap-2 px-6 py-3 bg-[#1677FF] text-white rounded-xl font-semibold text-sm cursor-pointer hover:bg-blue-600 transition-colors">
+            <button className="flex items-center gap-2 px-6 py-3 bg-forest-900 text-white rounded-xl font-semibold text-sm cursor-pointer hover:bg-forest-900 transition-colors">
               <Navigation className="w-4 h-4" /> Find Route
             </button>
           </div>
           {from && to && (
             <div className="mt-5 grid grid-cols-3 gap-4">
               {[
-                { icon: Train, label: "Train", time: "2h 30m", price: "¥4,280", color: "border-green-200 bg-green-50" },
-                { icon: Car, label: "Car", time: "3h 15m", price: "¥6,500", color: "border-blue-200 bg-blue-50" },
-                { icon: Bus, label: "Bus", time: "4h 00m", price: "¥2,100", color: "border-orange-200 bg-orange-50" },
+                { icon: Train, label: "Train", time: "2h 30m", price: "¥4,280", color: "border-sand-300 bg-sand-100" },
+                { icon: Car, label: "Car", time: "3h 15m", price: "¥6,500", color: "border-sand-300 bg-sand-100" },
+                { icon: Bus, label: "Bus", time: "4h 00m", price: "¥2,100", color: "border-gold-200 bg-gold-100" },
               ].map(({ icon: Icon, label, time, price, color }) => (
                 <div key={label} className={`border rounded-xl p-4 ${color}`}>
                   <div className="flex items-center gap-2 mb-2">
-                    <Icon className="w-5 h-5 text-[#111827]" />
-                    <span className="font-semibold text-[#111827]">{label}</span>
+                    <Icon className="w-5 h-5 text-ink" />
+                    <span className="font-semibold text-ink">{label}</span>
                   </div>
-                  <p className="text-2xl font-bold text-[#111827]">{time}</p>
-                  <p className="text-[#94A3B8] text-sm">{price} estimated</p>
+                  <p className="text-2xl font-bold text-ink">{time}</p>
+                  <p className="text-ink-mute text-sm">{price} estimated</p>
                 </div>
               ))}
             </div>
@@ -1682,22 +1695,22 @@ function TransportPage() {
         </div>
 
         {/* Transport Types */}
-        <h2 className="text-2xl font-bold text-[#111827] mb-6">Transport Options</h2>
+        <h2 className="font-heading text-2xl font-bold text-ink mb-6">Transport Options</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
           {transportTypes.map(({ icon: Icon, label, desc, color }) => (
-            <div key={label} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-all cursor-pointer group">
+            <div key={label} className="bg-cream rounded-2xl p-5 shadow-sm border border-sand-100 hover:shadow-md transition-all cursor-pointer group">
               <div className={`w-12 h-12 ${color} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
                 <Icon className="w-6 h-6 text-white" />
               </div>
-              <h3 className="font-bold text-[#111827] mb-1">{label}</h3>
-              <p className="text-[#94A3B8] text-xs">{desc}</p>
+              <h3 className="font-heading font-bold text-ink mb-1">{label}</h3>
+              <p className="text-ink-mute text-xs">{desc}</p>
             </div>
           ))}
         </div>
 
         {/* Cost Calculator */}
-        <div className="bg-[#0B1F3A] rounded-2xl p-8">
-          <h2 className="text-2xl font-bold text-white mb-6">Travel Cost Calculator</h2>
+        <div className="bg-forest-900 rounded-2xl p-8">
+          <h2 className="font-heading text-2xl font-bold text-white mb-6">Travel Cost Calculator</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             {[
               { label: "Transport Type", input: <select className="w-full text-sm outline-none bg-transparent text-white cursor-pointer"><option>Train</option><option>Bus</option><option>Taxi</option></select> },
@@ -1715,7 +1728,7 @@ function TransportPage() {
               <p className="text-white/50 text-sm mb-1">Estimated Total Cost</p>
               <p className="text-3xl font-extrabold text-white">¥4,280</p>
             </div>
-            <button className="px-6 py-3 bg-[#1677FF] text-white rounded-xl font-semibold text-sm cursor-pointer hover:bg-blue-600 transition-colors">
+            <button className="px-6 py-3 bg-forest-900 text-white rounded-xl font-semibold text-sm cursor-pointer hover:bg-forest-900 transition-colors">
               Calculate
             </button>
           </div>
@@ -1740,12 +1753,12 @@ function CulturePage() {
   ]
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA]">
+    <div className="min-h-screen bg-paper">
       <section className="group relative h-64 flex items-end overflow-hidden">
-        <img src={HERO_IMAGES.culture} alt="Culture" className="absolute inset-0 w-full h-full object-cover bg-gray-800 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
+        <img src={HERO_IMAGES.culture} alt="Culture" className="absolute inset-0 w-full h-full object-cover bg-forest-900 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 to-transparent" />
         <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-10 pt-24 w-full">
-          <h1 className="text-5xl font-extrabold text-white mb-2">Discover Local Culture</h1>
+          <h1 className="font-heading text-5xl font-extrabold text-white mb-2">Discover Local Culture</h1>
           <p className="text-white/60">Understand traditions, people and lifestyle before your journey</p>
         </div>
       </section>
@@ -1761,19 +1774,19 @@ function CulturePage() {
             { icon: BadgeCheck, label: "Etiquette", value: "Local Rules" },
             { icon: Globe2, label: "Identity", value: "National Pride" },
           ].map(({ icon: Icon, label, value }) => (
-            <div key={label} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 text-center hover:shadow-md transition-all cursor-pointer">
-              <div className="w-10 h-10 mx-auto rounded-xl bg-purple-100 flex items-center justify-center mb-3">
-                <Icon className="w-5 h-5 text-purple-600" />
+            <div key={label} className="bg-cream rounded-2xl p-5 shadow-sm border border-sand-100 text-center hover:shadow-md transition-all cursor-pointer">
+              <div className="w-10 h-10 mx-auto rounded-xl bg-sand-200 flex items-center justify-center mb-3">
+                <Icon className="w-5 h-5 text-forest-800" />
               </div>
-              <p className="font-bold text-[#111827] text-sm">{label}</p>
-              <p className="text-[#94A3B8] text-xs mt-0.5">{value}</p>
+              <p className="font-bold text-ink text-sm">{label}</p>
+              <p className="text-ink-mute text-xs mt-0.5">{value}</p>
             </div>
           ))}
         </div>
 
         {/* Etiquette */}
-        <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 mb-10">
-          <h2 className="text-2xl font-bold text-[#111827] mb-6">Local Rules & Etiquette</h2>
+        <div className="bg-cream rounded-2xl p-8 shadow-sm border border-sand-100 mb-10">
+          <h2 className="font-heading text-2xl font-bold text-ink mb-6">Local Rules & Etiquette</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {[
               { icon: "🤝", label: "How To Greet", desc: "Bowing in Japan, handshakes in Europe, cheek kisses in France" },
@@ -1783,28 +1796,28 @@ function CulturePage() {
               { icon: "📷", label: "Photography", desc: "Always ask before photographing people or sacred sites" },
               { icon: "👗", label: "Dress Code", desc: "Respect local standards — conservative dress in many regions" },
             ].map(({ icon, label, desc }) => (
-              <div key={label} className="p-5 rounded-2xl bg-[#F5F7FA] hover:bg-purple-50 transition-colors">
+              <div key={label} className="p-5 rounded-2xl bg-paper hover:bg-sand-100 transition-colors">
                 <span className="text-2xl mb-3 block">{icon}</span>
-                <h3 className="font-semibold text-[#111827] text-sm mb-1">{label}</h3>
-                <p className="text-[#94A3B8] text-xs leading-relaxed">{desc}</p>
+                <h3 className="font-heading font-semibold text-ink text-sm mb-1">{label}</h3>
+                <p className="text-ink-mute text-xs leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Cultural Experiences */}
-        <h2 className="text-2xl font-bold text-[#111827] mb-6">Cultural Experiences</h2>
+        <h2 className="font-heading text-2xl font-bold text-ink mb-6">Cultural Experiences</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {experiences.map(e => (
-            <div key={e.title} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer">
-              <div className="relative h-44 overflow-hidden bg-gray-200">
+            <div key={e.title} className="group bg-cream rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer">
+              <div className="relative h-44 overflow-hidden bg-sand-200">
                 <img src={e.image} alt={e.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                <div className="absolute top-3 left-3 bg-white/90 rounded-full px-3 py-1 text-xs font-semibold text-[#111827]">{e.tag}</div>
+                <div className="absolute top-3 left-3 bg-white/90 rounded-full px-3 py-1 text-xs font-semibold text-ink">{e.tag}</div>
               </div>
               <div className="p-5">
-                <h3 className="font-bold text-[#111827] mb-1">{e.title}</h3>
-                <p className="text-[#94A3B8] text-sm">{e.desc}</p>
-                <button className="mt-4 text-[#1677FF] text-sm font-semibold hover:underline cursor-pointer">Learn More →</button>
+                <h3 className="font-heading font-bold text-ink mb-1">{e.title}</h3>
+                <p className="text-ink-mute text-sm">{e.desc}</p>
+                <button className="mt-4 text-gold-700 text-sm font-semibold hover:underline cursor-pointer">Learn More →</button>
               </div>
             </div>
           ))}
@@ -1823,12 +1836,12 @@ function SafetyPage() {
   const items = ["Valid Passport", "Travel Visa", "Travel Insurance", "Emergency Contacts", "Local Currency", "Medicine Supply", "Backup Documents", "Mobile Data Plan"]
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA]">
+    <div className="min-h-screen bg-paper">
       <section className="group relative h-64 flex items-end overflow-hidden">
-        <img src={HERO_IMAGES.safety} alt="Safety" className="absolute inset-0 w-full h-full object-cover bg-gray-800 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
+        <img src={HERO_IMAGES.safety} alt="Safety" className="absolute inset-0 w-full h-full object-cover bg-forest-900 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 to-transparent" />
         <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-10 pt-24 w-full">
-          <h1 className="text-5xl font-extrabold text-white mb-2">Travel Safe Anywhere</h1>
+          <h1 className="font-heading text-5xl font-extrabold text-white mb-2">Travel Safe Anywhere</h1>
           <p className="text-white/60">Important safety information before and during your trip</p>
         </div>
       </section>
@@ -1836,14 +1849,14 @@ function SafetyPage() {
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
           {/* Safety Score */}
-          <div className="bg-[#0B1F3A] rounded-2xl p-8 text-center">
-            <div className="w-32 h-32 mx-auto rounded-full border-4 border-[#22C55E] flex items-center justify-center mb-5">
+          <div className="bg-forest-900 rounded-2xl p-8 text-center">
+            <div className="w-32 h-32 mx-auto rounded-full border-4 border-forest-500 flex items-center justify-center mb-5">
               <div>
-                <p className="text-4xl font-extrabold text-[#22C55E]">95%</p>
+                <p className="text-4xl font-extrabold text-forest-400">95%</p>
                 <p className="text-white/50 text-xs">Safe</p>
               </div>
             </div>
-            <h3 className="text-white font-bold text-xl mb-5">Japan Safety Score</h3>
+            <h3 className="font-heading text-white font-bold text-xl mb-5">Japan Safety Score</h3>
             <div className="space-y-3 text-left">
               {[
                 { label: "Crime Level", value: "Very Low", pct: 95 },
@@ -1854,10 +1867,10 @@ function SafetyPage() {
                 <div key={label}>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-white/50">{label}</span>
-                    <span className="text-[#22C55E] font-medium">{value}</span>
+                    <span className="text-forest-400 font-medium">{value}</span>
                   </div>
                   <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-[#22C55E] rounded-full" style={{ width: `${pct}%` }} />
+                    <div className="h-full bg-forest-500 rounded-full" style={{ width: `${pct}%` }} />
                   </div>
                 </div>
               ))}
@@ -1866,20 +1879,20 @@ function SafetyPage() {
 
           {/* Emergency Contacts */}
           <div className="lg:col-span-2">
-            <h2 className="text-2xl font-bold text-[#111827] mb-5">Emergency Contacts</h2>
+            <h2 className="font-heading text-2xl font-bold text-ink mb-5">Emergency Contacts</h2>
             <div className="grid grid-cols-2 gap-4">
               {[
-                { icon: Shield, label: "Police", number: "110", color: "bg-blue-500", light: "bg-blue-50" },
-                { icon: Phone, label: "Ambulance", number: "119", color: "bg-red-500", light: "bg-red-50" },
-                { icon: AlertTriangle, label: "Fire Dept.", number: "119", color: "bg-orange-500", light: "bg-orange-50" },
-                { icon: Globe, label: "Embassy", number: "+81-3-3224-5000", color: "bg-purple-500", light: "bg-purple-50" },
+                { icon: Shield, label: "Police", number: "110", color: "bg-forest-800", light: "bg-sand-100" },
+                { icon: Phone, label: "Ambulance", number: "119", color: "bg-[#b5452f]", light: "bg-[#f7e6df]" },
+                { icon: AlertTriangle, label: "Fire Dept.", number: "119", color: "bg-gold-500", light: "bg-gold-100" },
+                { icon: Globe, label: "Embassy", number: "+81-3-3224-5000", color: "bg-forest-700", light: "bg-sand-100" },
               ].map(({ icon: Icon, label, number, color, light }) => (
-                <div key={label} className={`${light} rounded-2xl p-6 border border-gray-100`}>
+                <div key={label} className={`${light} rounded-2xl p-6 border border-sand-100`}>
                   <div className={`w-12 h-12 ${color} rounded-2xl flex items-center justify-center mb-4`}>
                     <Icon className="w-6 h-6 text-white" />
                   </div>
-                  <p className="text-[#94A3B8] text-sm mb-1">{label}</p>
-                  <p className="text-2xl font-extrabold text-[#111827]">{number}</p>
+                  <p className="text-ink-mute text-sm mb-1">{label}</p>
+                  <p className="text-2xl font-extrabold text-ink">{number}</p>
                   <button className={`mt-4 w-full py-2 ${color} text-white text-sm rounded-xl font-medium cursor-pointer hover:opacity-90 transition-opacity`}>
                     Call Now
                   </button>
@@ -1890,33 +1903,33 @@ function SafetyPage() {
         </div>
 
         {/* Travel Checklist */}
-        <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-          <h2 className="text-2xl font-bold text-[#111827] mb-6">Pre-Travel Checklist</h2>
+        <div className="bg-cream rounded-2xl p-8 shadow-sm border border-sand-100">
+          <h2 className="font-heading text-2xl font-bold text-ink mb-6">Pre-Travel Checklist</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {items.map(item => (
-              <label key={item} className="flex items-center gap-3 p-4 rounded-xl hover:bg-[#F5F7FA] cursor-pointer transition-colors">
+              <label key={item} className="flex items-center gap-3 p-4 rounded-xl hover:bg-paper cursor-pointer transition-colors">
                 <input
                   type="checkbox"
                   checked={!!checklist[item]}
                   onChange={() => setChecklist(prev => ({ ...prev, [item]: !prev[item] }))}
-                  className="w-5 h-5 rounded accent-[#1677FF] cursor-pointer"
+                  className="w-5 h-5 rounded accent-gold-500 cursor-pointer"
                 />
-                <span className={`font-medium text-sm ${checklist[item] ? "line-through text-[#94A3B8]" : "text-[#111827]"}`}>
+                <span className={`font-medium text-sm ${checklist[item] ? "line-through text-ink-mute" : "text-ink"}`}>
                   {item}
                 </span>
-                {checklist[item] && <CheckCircle className="w-4 h-4 text-[#22C55E] ml-auto" />}
+                {checklist[item] && <CheckCircle className="w-4 h-4 text-forest-500 ml-auto" />}
               </label>
             ))}
           </div>
-          <div className="mt-6 p-4 bg-[#F5F7FA] rounded-xl flex items-center justify-between">
-            <span className="text-sm text-[#94A3B8]">{Object.values(checklist).filter(Boolean).length} of {items.length} items checked</span>
-            <div className="flex-1 mx-4 h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div className="mt-6 p-4 bg-paper rounded-xl flex items-center justify-between">
+            <span className="text-sm text-ink-mute">{Object.values(checklist).filter(Boolean).length} of {items.length} items checked</span>
+            <div className="flex-1 mx-4 h-2 bg-sand-200 rounded-full overflow-hidden">
               <div
-                className="h-full bg-[#22C55E] rounded-full transition-all"
+                className="h-full bg-forest-500 rounded-full transition-all"
                 style={{ width: `${(Object.values(checklist).filter(Boolean).length / items.length) * 100}%` }}
               />
             </div>
-            <span className="text-sm font-bold text-[#22C55E]">
+            <span className="text-sm font-bold text-forest-600">
               {Math.round((Object.values(checklist).filter(Boolean).length / items.length) * 100)}%
             </span>
           </div>
@@ -1946,25 +1959,25 @@ function MapPage() {
   const visibleMarkers = markers.filter(m => m.type === activeFilter)
 
   const typeColors: Record<string, string> = {
-    Attractions: "bg-blue-500",
-    Hotels: "bg-purple-500",
-    Restaurants: "bg-orange-500",
-    Museums: "bg-yellow-500",
-    Hospitals: "bg-red-500",
-    Transport: "bg-green-500",
+    Attractions: "bg-forest-800",
+    Hotels: "bg-forest-700",
+    Restaurants: "bg-gold-500",
+    Museums: "bg-gold-500",
+    Hospitals: "bg-[#b5452f]",
+    Transport: "bg-forest-600",
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA]">
+    <div className="min-h-screen bg-paper">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pt-24 pb-10">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-4xl font-extrabold text-[#111827]">Explore The World Map</h1>
-            <p className="text-[#94A3B8] mt-1">Discover places, hotels, restaurants and more</p>
+            <h1 className="font-heading text-4xl font-extrabold text-ink">Explore The World Map</h1>
+            <p className="text-ink-mute mt-1">Discover places, hotels, restaurants and more</p>
           </div>
-          <div className="flex items-center gap-3 border border-gray-200 bg-white rounded-xl px-4 py-2.5">
-            <Search className="w-4 h-4 text-[#94A3B8]" />
-            <input placeholder="Search location..." className="text-sm outline-none text-[#111827] placeholder-gray-400 w-48" />
+          <div className="flex items-center gap-3 border border-sand-200 bg-cream rounded-xl px-4 py-2.5">
+            <Search className="w-4 h-4 text-ink-mute" />
+            <input placeholder="Search location..." className="text-sm outline-none text-ink placeholder-ink-mute w-48" />
           </div>
         </div>
 
@@ -1973,7 +1986,7 @@ function MapPage() {
             <button
               key={f}
               onClick={() => setActiveFilter(f)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors cursor-pointer ${activeFilter === f ? `${typeColors[f]} text-white` : "bg-white text-[#94A3B8] border border-gray-200 hover:text-[#111827]"}`}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors cursor-pointer ${activeFilter === f ? `${typeColors[f]} text-white` : "bg-cream text-ink-mute border border-sand-200 hover:text-ink"}`}
             >
               {f}
             </button>
@@ -1982,7 +1995,7 @@ function MapPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
           <div className="lg:col-span-3">
-            <div className="group bg-[#0B1F3A] rounded-2xl overflow-hidden" style={{ height: 520 }}>
+            <div className="group bg-forest-900 rounded-2xl overflow-hidden" style={{ height: 520 }}>
               <div className="relative w-full h-full">
                 <img
                   src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=1200&h=600&fit=crop&auto=format"
@@ -2000,7 +2013,7 @@ function MapPage() {
                 ))}
                 <div className="absolute bottom-5 right-5 flex flex-col gap-2">
                   {["+", "−", "⊙"].map(ctrl => (
-                    <button key={ctrl} className="w-9 h-9 bg-white rounded-lg shadow flex items-center justify-center text-[#111827] font-bold cursor-pointer hover:bg-gray-50 text-sm">
+                    <button key={ctrl} className="w-9 h-9 bg-cream rounded-lg shadow flex items-center justify-center text-ink font-bold cursor-pointer hover:bg-paper text-sm">
                       {ctrl}
                     </button>
                   ))}
@@ -2009,19 +2022,19 @@ function MapPage() {
             </div>
           </div>
           <div className="space-y-3">
-            <h3 className="font-bold text-[#111827]">{activeFilter} ({visibleMarkers.length})</h3>
+            <h3 className="font-heading font-bold text-ink">{activeFilter} ({visibleMarkers.length})</h3>
             {visibleMarkers.map(m => (
-              <div key={m.name} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-all cursor-pointer">
+              <div key={m.name} className="bg-cream rounded-2xl p-4 shadow-sm border border-sand-100 hover:shadow-md transition-all cursor-pointer">
                 <div className="flex items-start gap-3">
                   <div className={`w-8 h-8 ${typeColors[m.type]} rounded-xl flex items-center justify-center shrink-0`}>
                     <MapPin className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <p className="font-semibold text-[#111827] text-sm">{m.name}</p>
-                    <p className="text-[#94A3B8] text-xs mt-0.5">{m.desc}</p>
+                    <p className="font-semibold text-ink text-sm">{m.name}</p>
+                    <p className="text-ink-mute text-xs mt-0.5">{m.desc}</p>
                     <div className="flex items-center gap-1 mt-2">
-                      <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                      <span className="text-xs font-semibold text-[#111827]">{m.rating}</span>
+                      <Star className="w-3 h-3 fill-gold-400 text-gold-400" />
+                      <span className="text-xs font-semibold text-ink">{m.rating}</span>
                     </div>
                   </div>
                 </div>
@@ -2083,20 +2096,20 @@ function AIAssistantPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA] pt-20">
+    <div className="min-h-screen bg-paper pt-20">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col" style={{ height: 680 }}>
+            <div className="bg-cream rounded-2xl shadow-sm border border-sand-100 overflow-hidden flex flex-col" style={{ height: 680 }}>
               {/* Header */}
-              <div className="bg-[#0B1F3A] px-6 py-4 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#1677FF] flex items-center justify-center">
+              <div className="bg-forest-900 px-6 py-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-forest-900 flex items-center justify-center">
                   <Zap className="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <p className="text-white font-bold">TravelWorld AI</p>
                   <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-forest-500" />
                     <p className="text-white/50 text-xs">Online — responds instantly</p>
                   </div>
                 </div>
@@ -2107,15 +2120,15 @@ function AIAssistantPage() {
                 {messages.map((m, i) => (
                   <div key={i} className={`flex ${m.from === "user" ? "justify-end" : "gap-3"}`}>
                     {m.from === "ai" && (
-                      <div className="w-8 h-8 rounded-full bg-[#0B1F3A] flex items-center justify-center shrink-0 mt-1">
-                        <Zap className="w-4 h-4 text-[#1677FF]" />
+                      <div className="w-8 h-8 rounded-full bg-forest-900 flex items-center justify-center shrink-0 mt-1">
+                        <Zap className="w-4 h-4 text-gold-700" />
                       </div>
                     )}
                     <div
                       className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-line ${
                         m.from === "user"
-                          ? "bg-[#1677FF] text-white rounded-tr-sm"
-                          : "bg-[#F5F7FA] border border-gray-100 text-[#111827] rounded-tl-sm"
+                          ? "bg-forest-900 text-white rounded-tr-sm"
+                          : "bg-paper border border-sand-100 text-ink rounded-tl-sm"
                       }`}
                     >
                       {m.text}
@@ -2124,13 +2137,13 @@ function AIAssistantPage() {
                 ))}
                 {loading && (
                   <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[#0B1F3A] flex items-center justify-center shrink-0">
-                      <Zap className="w-4 h-4 text-[#1677FF]" />
+                    <div className="w-8 h-8 rounded-full bg-forest-900 flex items-center justify-center shrink-0">
+                      <Zap className="w-4 h-4 text-gold-700" />
                     </div>
-                    <div className="bg-[#F5F7FA] border border-gray-100 rounded-2xl rounded-tl-sm px-4 py-3">
+                    <div className="bg-paper border border-sand-100 rounded-2xl rounded-tl-sm px-4 py-3">
                       <div className="flex gap-1.5">
                         {[0, 1, 2].map(i => (
-                          <div key={i} className="w-2 h-2 rounded-full bg-[#94A3B8] animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
+                          <div key={i} className="w-2 h-2 rounded-full bg-ink-mute animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
                         ))}
                       </div>
                     </div>
@@ -2139,18 +2152,18 @@ function AIAssistantPage() {
               </div>
 
               {/* Input */}
-              <div className="p-4 border-t border-gray-100">
+              <div className="p-4 border-t border-sand-100">
                 <div className="flex gap-3">
                   <input
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={e => e.key === "Enter" && sendMessage()}
                     placeholder="Ask about any destination..."
-                    className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none text-[#111827] placeholder-gray-400 focus:border-[#1677FF] transition-colors"
+                    className="flex-1 border border-sand-200 rounded-xl px-4 py-2.5 text-sm outline-none text-ink placeholder-ink-mute focus:border-gold-500 transition-colors"
                   />
                   <button
                     onClick={() => sendMessage()}
-                    className="w-10 h-10 bg-[#1677FF] rounded-xl flex items-center justify-center cursor-pointer hover:bg-blue-600 transition-colors"
+                    className="w-10 h-10 bg-forest-900 rounded-xl flex items-center justify-center cursor-pointer hover:bg-forest-900 transition-colors"
                   >
                     <Send className="w-4 h-4 text-white" />
                   </button>
@@ -2161,14 +2174,14 @@ function AIAssistantPage() {
 
           {/* Sidebar */}
           <div className="space-y-5">
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-              <h3 className="font-bold text-[#111827] mb-4">Quick Questions</h3>
+            <div className="bg-cream rounded-2xl p-5 shadow-sm border border-sand-100">
+              <h3 className="font-heading font-bold text-ink mb-4">Quick Questions</h3>
               <div className="flex flex-col gap-2">
                 {quickQuestions.map(q => (
                   <button
                     key={q}
                     onClick={() => sendMessage(q)}
-                    className="text-left text-sm px-4 py-2.5 rounded-xl bg-[#F5F7FA] text-[#111827] hover:bg-[#1677FF]/5 hover:text-[#1677FF] transition-colors cursor-pointer font-medium"
+                    className="text-left text-sm px-4 py-2.5 rounded-xl bg-paper text-ink hover:bg-gold-400/5 hover:text-gold-700 transition-colors cursor-pointer font-medium"
                   >
                     {q}
                   </button>
@@ -2176,8 +2189,8 @@ function AIAssistantPage() {
               </div>
             </div>
 
-            <div className="bg-[#0B1F3A] rounded-2xl p-5">
-              <h3 className="font-bold text-white mb-4">AI Features</h3>
+            <div className="bg-forest-900 rounded-2xl p-5">
+              <h3 className="font-heading font-bold text-white mb-4">AI Features</h3>
               <div className="space-y-3">
                 {[
                   { icon: Calendar, label: "Trip Planning", desc: "Full itinerary creation" },
@@ -2186,8 +2199,8 @@ function AIAssistantPage() {
                   { icon: Shield, label: "Safety Tips", desc: "Real-time alerts" },
                 ].map(({ icon: Icon, label, desc }) => (
                   <div key={label} className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-[#1677FF]/20 flex items-center justify-center shrink-0">
-                      <Icon className="w-4 h-4 text-[#1677FF]" />
+                    <div className="w-8 h-8 rounded-lg bg-gold-400/20 flex items-center justify-center shrink-0">
+                      <Icon className="w-4 h-4 text-gold-700" />
                     </div>
                     <div>
                       <p className="text-white text-sm font-medium">{label}</p>
@@ -2223,12 +2236,12 @@ function GalleryPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA]">
+    <div className="min-h-screen bg-paper">
       <section className="group relative h-64 flex items-end overflow-hidden">
-        <img src={HERO_IMAGES.gallery} alt="Gallery" className="absolute inset-0 w-full h-full object-cover bg-gray-800 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
+        <img src={HERO_IMAGES.gallery} alt="Gallery" className="absolute inset-0 w-full h-full object-cover bg-forest-900 transition-transform duration-[1500ms] ease-out group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 to-transparent" />
         <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-10 pt-24 w-full">
-          <h1 className="text-5xl font-extrabold text-white mb-2">Explore The World Through Photos</h1>
+          <h1 className="font-heading text-5xl font-extrabold text-white mb-2">Explore The World Through Photos</h1>
           <p className="text-white/60">Discover amazing places captured by travelers</p>
         </div>
       </section>
@@ -2240,22 +2253,22 @@ function GalleryPage() {
               <button
                 key={t}
                 onClick={() => setActiveTab(t)}
-                className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors cursor-pointer ${activeTab === t ? "bg-[#0B1F3A] text-white" : "bg-white text-[#94A3B8] border border-gray-200 hover:text-[#111827]"}`}
+                className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors cursor-pointer ${activeTab === t ? "bg-forest-900 text-white" : "bg-cream text-ink-mute border border-sand-200 hover:text-ink"}`}
               >
                 {t}
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-3 border border-gray-200 bg-white rounded-xl px-4 py-2.5">
-            <Search className="w-4 h-4 text-[#94A3B8]" />
-            <input placeholder="Search destination..." className="text-sm outline-none text-[#111827] placeholder-gray-400 w-40" />
+          <div className="flex items-center gap-3 border border-sand-200 bg-cream rounded-xl px-4 py-2.5">
+            <Search className="w-4 h-4 text-ink-mute" />
+            <input placeholder="Search destination..." className="text-sm outline-none text-ink placeholder-ink-mute w-40" />
           </div>
         </div>
 
         {activeTab === "Photos" && (
           <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
             {photos.map(p => (
-              <div key={p.image} className="group relative overflow-hidden rounded-2xl cursor-pointer bg-gray-200 break-inside-avoid">
+              <div key={p.image} className="group relative overflow-hidden rounded-2xl cursor-pointer bg-sand-200 break-inside-avoid">
                 <img src={p.image} alt={p.location} className="w-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
@@ -2277,7 +2290,7 @@ function GalleryPage() {
         {activeTab === "Videos" && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {["Tokyo Street Life", "Paris Morning Walk", "Santorini Sunset", "Rome Ancient Streets", "Tokyo Shibuya Night", "Kyoto Bamboo Forest"].map((title, i) => (
-              <div key={title} className="group relative h-52 rounded-2xl overflow-hidden cursor-pointer bg-gray-300">
+              <div key={title} className="group relative h-52 rounded-2xl overflow-hidden cursor-pointer bg-sand-300">
                 <img
                   src={photos[i % photos.length].image}
                   alt={title}
@@ -2300,7 +2313,7 @@ function GalleryPage() {
         {activeTab === "360°" && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {["Tokyo Shibuya Crossing", "Paris Eiffel Tower Base", "Santorini Caldera View"].map((title, i) => (
-              <div key={title} className="group relative h-64 rounded-2xl overflow-hidden cursor-pointer bg-gray-300">
+              <div key={title} className="group relative h-64 rounded-2xl overflow-hidden cursor-pointer bg-sand-300">
                 <img src={photos[i].image} alt={title} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110" />
                 <div className="absolute inset-0 bg-black/30" />
                 <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1.5 flex items-center gap-1.5">
@@ -2322,13 +2335,13 @@ function GalleryPage() {
         )}
 
         {/* Upload */}
-        <div className="mt-12 border-2 border-dashed border-gray-300 rounded-2xl p-12 text-center hover:border-[#1677FF] transition-colors cursor-pointer group">
-          <div className="w-14 h-14 mx-auto rounded-2xl bg-[#F5F7FA] group-hover:bg-[#1677FF]/10 flex items-center justify-center mb-4 transition-colors">
-            <Upload className="w-7 h-7 text-[#94A3B8] group-hover:text-[#1677FF] transition-colors" />
+        <div className="mt-12 border-2 border-dashed border-sand-300 rounded-2xl p-12 text-center hover:border-gold-500 transition-colors cursor-pointer group">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-paper group-hover:bg-gold-400/10 flex items-center justify-center mb-4 transition-colors">
+            <Upload className="w-7 h-7 text-ink-mute group-hover:text-gold-700 transition-colors" />
           </div>
-          <p className="font-bold text-[#111827] text-lg mb-1">Share Your Travel Photos</p>
-          <p className="text-[#94A3B8] text-sm mb-4">Drag & drop photos or click to browse</p>
-          <button className="px-6 py-2.5 bg-[#1677FF] text-white rounded-xl font-semibold text-sm hover:bg-blue-600 transition-colors cursor-pointer">
+          <p className="font-bold text-ink text-lg mb-1">Share Your Travel Photos</p>
+          <p className="text-ink-mute text-sm mb-4">Drag & drop photos or click to browse</p>
+          <button className="px-6 py-2.5 bg-forest-900 text-white rounded-xl font-semibold text-sm hover:bg-forest-900 transition-colors cursor-pointer">
             Upload Photos
           </button>
         </div>
@@ -2346,10 +2359,10 @@ function AdminPage({ onNavigate }: { onNavigate: NavigateFn }) {
   const adminSections = ["Dashboard", "Countries", "Hotels", "Users", "Reviews", "Settings"]
 
   const stats = [
-    { label: "Total Users", value: "2.4M", change: "+12%", color: "bg-blue-500" },
-    { label: "Countries", value: "195", change: "+3", color: "bg-green-500" },
-    { label: "Trips Created", value: "892K", change: "+18%", color: "bg-orange-500" },
-    { label: "Reviews", value: "4.1M", change: "+7%", color: "bg-purple-500" },
+    { label: "Total Users", value: "2.4M", change: "+12%", color: "bg-forest-800" },
+    { label: "Countries", value: "195", change: "+3", color: "bg-forest-600" },
+    { label: "Trips Created", value: "892K", change: "+18%", color: "bg-gold-500" },
+    { label: "Reviews", value: "4.1M", change: "+7%", color: "bg-forest-700" },
   ]
 
   const users = [
@@ -2360,15 +2373,15 @@ function AdminPage({ onNavigate }: { onNavigate: NavigateFn }) {
   ]
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA] pt-20 flex">
+    <div className="min-h-screen bg-paper pt-20 flex">
       {/* Sidebar */}
-      <aside className="w-64 bg-[#0B1F3A] min-h-screen fixed left-0 top-20 p-5 hidden lg:block">
+      <aside className="w-64 bg-forest-900 min-h-screen fixed left-0 top-20 p-5 hidden lg:block">
         <p className="text-white/30 text-xs uppercase tracking-wider mb-4 px-3">Management</p>
         {adminSections.map(s => (
           <button
             key={s}
             onClick={() => setActiveAdmin(s)}
-            className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium mb-1 transition-colors cursor-pointer ${activeAdmin === s ? "bg-[#1677FF] text-white" : "text-white/60 hover:text-white hover:bg-white/5"}`}
+            className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium mb-1 transition-colors cursor-pointer ${activeAdmin === s ? "bg-forest-900 text-white" : "text-white/60 hover:text-white hover:bg-white/5"}`}
           >
             {s}
           </button>
@@ -2386,10 +2399,10 @@ function AdminPage({ onNavigate }: { onNavigate: NavigateFn }) {
           <>
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h1 className="text-3xl font-extrabold text-[#111827]">Dashboard</h1>
-                <p className="text-[#94A3B8]">Welcome back, Admin</p>
+                <h1 className="font-heading text-3xl font-extrabold text-ink">Dashboard</h1>
+                <p className="text-ink-mute">Welcome back, Admin</p>
               </div>
-              <div className="flex items-center gap-2 text-sm text-[#94A3B8]">
+              <div className="flex items-center gap-2 text-sm text-ink-mute">
                 <Clock className="w-4 h-4" />
                 <span>Last updated: July 13, 2026</span>
               </div>
@@ -2397,20 +2410,20 @@ function AdminPage({ onNavigate }: { onNavigate: NavigateFn }) {
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
               {stats.map(({ label, value, change, color }) => (
-                <div key={label} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                <div key={label} className="bg-cream rounded-2xl p-5 shadow-sm border border-sand-100">
                   <div className={`w-10 h-10 ${color} rounded-xl flex items-center justify-center mb-3`}>
                     <BarChart3 className="w-5 h-5 text-white" />
                   </div>
-                  <p className="text-3xl font-extrabold text-[#111827]">{value}</p>
-                  <p className="text-[#94A3B8] text-sm mt-0.5">{label}</p>
-                  <p className="text-[#22C55E] text-xs font-semibold mt-1">{change} this month</p>
+                  <p className="text-3xl font-extrabold text-ink">{value}</p>
+                  <p className="text-ink-mute text-sm mt-0.5">{label}</p>
+                  <p className="text-forest-600 text-xs font-semibold mt-1">{change} this month</p>
                 </div>
               ))}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <h3 className="font-bold text-[#111827] mb-5">Popular Countries This Month</h3>
+              <div className="bg-cream rounded-2xl p-6 shadow-sm border border-sand-100">
+                <h3 className="font-heading font-bold text-ink mb-5">Popular Countries This Month</h3>
                 {[
                   { name: "Japan 🇯🇵", views: 284700, pct: 92 },
                   { name: "France 🇫🇷", views: 241300, pct: 78 },
@@ -2420,27 +2433,27 @@ function AdminPage({ onNavigate }: { onNavigate: NavigateFn }) {
                 ].map(({ name, views, pct }) => (
                   <div key={name} className="mb-4 last:mb-0">
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-sm font-medium text-[#111827]">{name}</span>
-                      <span className="text-xs text-[#94A3B8]">{views.toLocaleString()} views</span>
+                      <span className="text-sm font-medium text-ink">{name}</span>
+                      <span className="text-xs text-ink-mute">{views.toLocaleString()} views</span>
                     </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-[#1677FF] rounded-full" style={{ width: `${pct}%` }} />
+                    <div className="h-2 bg-sand-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-forest-900 rounded-full" style={{ width: `${pct}%` }} />
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <h3 className="font-bold text-[#111827] mb-5">Recent Users</h3>
+              <div className="bg-cream rounded-2xl p-6 shadow-sm border border-sand-100">
+                <h3 className="font-heading font-bold text-ink mb-5">Recent Users</h3>
                 <div className="space-y-4">
                   {users.map(u => (
                     <div key={u.email} className="flex items-center gap-3">
-                      <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full object-cover bg-gray-200" />
+                      <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full object-cover bg-sand-200" />
                       <div className="flex-1">
-                        <p className="font-semibold text-[#111827] text-sm">{u.name}</p>
-                        <p className="text-[#94A3B8] text-xs">{u.email}</p>
+                        <p className="font-semibold text-ink text-sm">{u.name}</p>
+                        <p className="text-ink-mute text-xs">{u.email}</p>
                       </div>
-                      <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${u.status === "Active" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${u.status === "Active" ? "bg-sand-200 text-forest-700" : "bg-sand-100 text-ink-soft"}`}>
                         {u.status}
                       </span>
                     </div>
@@ -2453,9 +2466,9 @@ function AdminPage({ onNavigate }: { onNavigate: NavigateFn }) {
 
         {activeAdmin !== "Dashboard" && (
           <div className="text-center py-24">
-            <Settings className="w-14 h-14 mx-auto text-[#94A3B8] opacity-20 mb-4" />
-            <h2 className="text-2xl font-bold text-[#111827] mb-2">{activeAdmin}</h2>
-            <p className="text-[#94A3B8]">This section is ready for data integration</p>
+            <Settings className="w-14 h-14 mx-auto text-ink-mute opacity-20 mb-4" />
+            <h2 className="font-heading text-2xl font-bold text-ink mb-2">{activeAdmin}</h2>
+            <p className="text-ink-mute">This section is ready for data integration</p>
           </div>
         )}
       </main>
